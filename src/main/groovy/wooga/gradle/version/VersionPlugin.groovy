@@ -17,32 +17,83 @@
 
 package wooga.gradle.version
 
+import org.ajoberstar.gradle.git.release.base.ReleaseVersion
+import org.ajoberstar.grgit.Grgit
+import org.eclipse.jgit.errors.RepositoryNotFoundException
+import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.logging.Logging
+import org.gradle.api.provider.Provider
 import org.slf4j.Logger
 import wooga.gradle.version.internal.DefaultVersionPluginExtension
-import wooga.gradle.version.tasks.Version
+
 
 class VersionPlugin implements Plugin<Project> {
-
+    static String EXTENSION_NAME = "versionBuilder"
     static Logger logger = Logging.getLogger(VersionPlugin)
-
-    static String EXTENSION_NAME = "version"
 
     @Override
     void apply(Project project) {
-        def extension = create_and_configure_extension(project)
+        if (project != project.getRootProject()) {
+            logger.warn("net.wooga.atlas-version can only be applied to the root project.")
+            return
+        }
 
-        def exampleTask = project.tasks.create("example", Version)
-        exampleTask.group = "version"
-        exampleTask.description = "example task"
-
+        String gitRoot = project.properties.getOrDefault(VersionConsts.GIT_ROOT_PROPERTY, project.rootProject.projectDir.path)
+        VersionPluginExtension extension = create_and_configure_extension(project)
+        try {
+            Grgit git = Grgit.open(dir: gitRoot)
+            project.gradle.buildFinished {
+                project.logger.info "Closing Git repo: ${git.repository.rootDir}"
+                git.close()
+            }
+            extension.git.set(git)
+        }
+        catch(RepositoryNotFoundException e) {
+            project.logger.warn("Git repository not found at $gitRoot ")
+        }
+        finally {
+            DelayedVersion sharedVersion = new DelayedVersion(extension.version)
+            project.allprojects(new Action<Project>() {
+                @Override
+                void execute(Project prj) {
+                    prj.setVersion(sharedVersion)
+                }
+            })
+        }
     }
 
     protected static VersionPluginExtension create_and_configure_extension(Project project) {
         def extension = project.extensions.create(VersionPluginExtension, EXTENSION_NAME, DefaultVersionPluginExtension, project)
 
+        extension.scheme.set(project.provider({
+            System.getenv()[VersionConsts.VERSION_SCHEME_ENV_VAR] ?:
+                    project.properties.getOrDefault(VersionConsts.VERSION_SCHEME_OPTION,
+                            project.properties.getOrDefault(VersionConsts.LEGACY_VERSION_SCHEME_OPTION, VersionConsts.VERSION_SCHEME_DEFAULT)).toString()
+        }))
+
         extension
+    }
+
+    static final class DelayedVersion {
+        private ReleaseVersion inferredVersion
+        private final Provider<ReleaseVersion> versionProvider;
+
+        DelayedVersion(Provider<ReleaseVersion> version) {
+            this.versionProvider = version
+        }
+
+        ReleaseVersion getVersion() {
+            if(!inferredVersion) {
+                inferredVersion = versionProvider.get()
+            }
+            return inferredVersion
+        }
+
+        @Override
+        String toString() {
+            return version.version.toString();
+        }
     }
 }
