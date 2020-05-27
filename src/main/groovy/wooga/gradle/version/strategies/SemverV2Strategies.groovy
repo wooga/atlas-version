@@ -17,17 +17,17 @@
 
 package wooga.gradle.version.strategies
 
-import nebula.plugin.release.NetflixOssStrategies
-import org.ajoberstar.gradle.git.release.opinion.Strategies
-import org.ajoberstar.gradle.git.release.opinion.Strategies.BuildMetadata
-import org.ajoberstar.gradle.git.release.semver.ChangeScope
-import org.ajoberstar.gradle.git.release.semver.PartialSemVerStrategy
-import org.ajoberstar.gradle.git.release.semver.SemVerStrategy
-import org.ajoberstar.gradle.git.release.semver.SemVerStrategyState
+
+import wooga.gradle.version.internal.release.opinion.Strategies
+import wooga.gradle.version.internal.release.opinion.Strategies.BuildMetadata
+import wooga.gradle.version.internal.release.semver.ChangeScope
+import wooga.gradle.version.internal.release.semver.PartialSemVerStrategy
+import wooga.gradle.version.internal.release.semver.SemVerStrategy
+import wooga.gradle.version.internal.release.semver.SemVerStrategyState
 
 import java.util.regex.Pattern
 
-import static org.ajoberstar.gradle.git.release.semver.StrategyUtil.*
+import static wooga.gradle.version.internal.release.semver.StrategyUtil.*
 
 final class SemverV2Strategies {
 

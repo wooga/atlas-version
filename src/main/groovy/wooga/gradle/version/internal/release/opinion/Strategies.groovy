@@ -13,25 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ajoberstar.gradle.git.release.opinion
+package wooga.gradle.version.internal.release.opinion
 
-import static org.ajoberstar.gradle.git.release.semver.StrategyUtil.*
+
+import static wooga.gradle.version.internal.release.semver.StrategyUtil.*
 
 import java.util.regex.Pattern
 
-import org.ajoberstar.gradle.git.release.semver.ChangeScope
-import org.ajoberstar.gradle.git.release.semver.PartialSemVerStrategy
-import org.ajoberstar.gradle.git.release.semver.SemVerStrategy
+import wooga.gradle.version.internal.release.semver.PartialSemVerStrategy
+import wooga.gradle.version.internal.release.semver.SemVerStrategy
 
 import org.gradle.api.GradleException
 
 /**
  * Opinionated sample strategies. These can either be used as-is or as an
  * example for others.
- * @see org.ajoberstar.gradle.git.release.base.VersionStrategy
- * @see org.ajoberstar.gradle.git.release.semver.SemVerStrategy
- * @see org.ajoberstar.gradle.git.release.semver.SemVerStrategyState
- * @see org.ajoberstar.gradle.git.release.semver.PartialSemVerStrategy
+ * @see wooga.gradle.version.internal.release.base.VersionStrategy
+ * @see SemVerStrategy
+ * @see wooga.gradle.version.internal.release.semver.SemVerStrategyState
+ * @see PartialSemVerStrategy
  */
 final class Strategies {
     /**
@@ -150,13 +150,13 @@ final class Strategies {
 
                     if (majorDiff == 1 && minor <= 0) {
                         // major is off by one and minor is either 0 or not in the branch name
-                        return incrementNormalFromScope(state, ChangeScope.MAJOR)
+                        return incrementNormalFromScope(state, wooga.gradle.version.internal.release.semver.ChangeScope.MAJOR)
                     } else if (minorDiff == 1 && minor > 0) {
                         // minor is off by one and specified in the branch name
-                        return incrementNormalFromScope(state, ChangeScope.MINOR)
+                        return incrementNormalFromScope(state, wooga.gradle.version.internal.release.semver.ChangeScope.MINOR)
                     } else if (majorDiff == 0 && minorDiff == 0 && minor >= 0) {
                         // major and minor match, both are specified in branch name
-                        return incrementNormalFromScope(state, ChangeScope.PATCH)
+                        return incrementNormalFromScope(state, wooga.gradle.version.internal.release.semver.ChangeScope.PATCH)
                     } else if (majorDiff == 0 && minor < 0) {
                         // only major specified in branch name and already matches
                         return state
@@ -172,7 +172,7 @@ final class Strategies {
         /**
          * Always use the scope provided to increment the normal component.
          */
-        static PartialSemVerStrategy useScope(ChangeScope scope) {
+        static PartialSemVerStrategy useScope(wooga.gradle.version.internal.release.semver.ChangeScope scope) {
             return closure { state -> incrementNormalFromScope(state, scope) }
         }
     }
@@ -280,11 +280,11 @@ final class Strategies {
      * If the {@code release.scope} property is set, use it. Or if the nearest any's normal component is different
      * than the nearest normal version, use it. Or, if nothing else, use PATCH scope.
      */
-    static final SemVerStrategy DEFAULT = new SemVerStrategy(
+    static final wooga.gradle.version.internal.release.semver.SemVerStrategy DEFAULT = new wooga.gradle.version.internal.release.semver.SemVerStrategy(
         name: '',
         stages: [] as SortedSet,
         allowDirtyRepo: false,
-        normalStrategy: one(Normal.USE_SCOPE_PROP, Normal.USE_NEAREST_ANY, Normal.useScope(ChangeScope.PATCH)),
+        normalStrategy: one(Normal.USE_SCOPE_PROP, Normal.USE_NEAREST_ANY, Normal.useScope(wooga.gradle.version.internal.release.semver.ChangeScope.PATCH)),
         preReleaseStrategy: PreRelease.NONE,
         buildMetadataStrategy: BuildMetadata.NONE,
         createTag: true,
@@ -296,7 +296,7 @@ final class Strategies {
      * not enforce precedence. The pre-release compoment will always be "SNAPSHOT"
      * and no build metadata will be used. Tags will not be created for these versions.
      */
-    static final SemVerStrategy SNAPSHOT = DEFAULT.copyWith(
+    static final wooga.gradle.version.internal.release.semver.SemVerStrategy SNAPSHOT = DEFAULT.copyWith(
         name: 'snapshot',
         stages: ['SNAPSHOT'] as SortedSet,
         allowDirtyRepo: true,
@@ -314,7 +314,7 @@ final class Strategies {
      * will note if the repository is dirty. The abbreviated ID of the HEAD will
      * be used as build metadata.
      */
-    static final SemVerStrategy DEVELOPMENT = DEFAULT.copyWith(
+    static final wooga.gradle.version.internal.release.semver.SemVerStrategy DEVELOPMENT = DEFAULT.copyWith(
         name: 'development',
         stages: ['dev'] as SortedSet,
         allowDirtyRepo: true,
@@ -331,7 +331,7 @@ final class Strategies {
      * note that this strategy uses the same name as {@code PRE_RELEASE_ALPHA_BETA}
      * so it cannot be used at the same time.
      */
-    static final SemVerStrategy PRE_RELEASE = DEFAULT.copyWith(
+    static final wooga.gradle.version.internal.release.semver.SemVerStrategy PRE_RELEASE = DEFAULT.copyWith(
         name: 'pre-release',
         stages: ['milestone', 'rc'] as SortedSet,
         preReleaseStrategy: all(PreRelease.STAGE_FIXED, PreRelease.COUNT_INCREMENTED)
@@ -345,7 +345,7 @@ final class Strategies {
      * that this strategy uses the same name as {@code PRE_RELEASE} so it cannot be used
      * at the same time.
      */
-    static final SemVerStrategy PRE_RELEASE_ALPHA_BETA = PRE_RELEASE.copyWith(
+    static final wooga.gradle.version.internal.release.semver.SemVerStrategy PRE_RELEASE_ALPHA_BETA = PRE_RELEASE.copyWith(
         name: 'pre-release',
         stages: ['alpha', 'beta', 'rc'] as SortedSet
     )
@@ -355,7 +355,7 @@ final class Strategies {
      * will enforce precedence. The pre-release and build metadata components
      * will always be empty.
      */
-    static final SemVerStrategy FINAL = DEFAULT.copyWith(
+    static final wooga.gradle.version.internal.release.semver.SemVerStrategy FINAL = DEFAULT.copyWith(
         name: 'final',
         stages: ['final'] as SortedSet
     )

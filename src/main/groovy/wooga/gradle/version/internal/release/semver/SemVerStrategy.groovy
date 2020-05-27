@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ajoberstar.gradle.git.release.semver
+package wooga.gradle.version.internal.release.semver
 
 import groovy.transform.Immutable
 import groovy.transform.PackageScope
 
 import com.github.zafarkhaja.semver.Version
-import org.ajoberstar.gradle.git.release.base.ReleaseVersion
-import org.ajoberstar.gradle.git.release.base.DefaultVersionStrategy
+import wooga.gradle.version.internal.release.base.ReleaseVersion
+import wooga.gradle.version.internal.release.base.DefaultVersionStrategy
 import org.ajoberstar.grgit.Grgit
 
 import org.gradle.api.GradleException

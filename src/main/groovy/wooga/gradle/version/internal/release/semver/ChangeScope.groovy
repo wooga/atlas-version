@@ -13,7 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/**
- * Support for version strategies that support semantic versioning.
- */
-package org.ajoberstar.gradle.git.release.semver
+package wooga.gradle.version.internal.release.semver
+
+enum ChangeScope {
+    MAJOR,
+    MINOR,
+    PATCH
+}

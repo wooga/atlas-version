@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ajoberstar.gradle.git.release.base
+package wooga.gradle.version.internal.release.base
 
 import com.github.zafarkhaja.semver.ParseException
 import com.github.zafarkhaja.semver.Version

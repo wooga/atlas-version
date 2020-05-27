@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ajoberstar.gradle.git.release.base
+package wooga.gradle.version.internal.release.base
 
 import org.ajoberstar.grgit.Grgit
 
@@ -23,8 +23,8 @@ import org.gradle.api.Project
  * Strategy to infer a version from the project's and Git repository's state. This
  * also supports being selected as a default strategy. This is a temporary interface
  * and should be replaced in some other way in gradle-git 2.0.0.
- * @see org.ajoberstar.gradle.git.release.semver.SemVerStrategy
- * @see org.ajoberstar.gradle.git.release.opinion.Strategies
+ * @see wooga.gradle.version.internal.release.semver.SemVerStrategy
+ * @see wooga.gradle.version.internal.release.opinion.Strategies
  */
 interface DefaultVersionStrategy extends VersionStrategy {
     /**

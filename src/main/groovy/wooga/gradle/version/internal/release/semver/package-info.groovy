@@ -13,16 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ajoberstar.gradle.git.release.semver
-
 /**
- * Strategy to infer portions of a semantic version.
- * @see SemVerStrategy
+ * Support for version strategies that support semantic versioning.
  */
-interface PartialSemVerStrategy {
-    /**
-     * Infers a portion of a semantic version and returns the new state
-     * to be used as inference continues.
-     */
-    SemVerStrategyState infer(SemVerStrategyState state)
-}
+package wooga.gradle.version.internal.release.semver

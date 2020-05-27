@@ -18,9 +18,9 @@
 
 package wooga.gradle.version
 
-import org.ajoberstar.gradle.git.release.base.ReleaseVersion
-import org.ajoberstar.gradle.git.release.base.TagStrategy
-import org.ajoberstar.gradle.git.release.semver.ChangeScope
+import wooga.gradle.version.internal.release.base.ReleaseVersion
+import wooga.gradle.version.internal.release.base.TagStrategy
+import wooga.gradle.version.internal.release.semver.ChangeScope
 import org.ajoberstar.grgit.Grgit
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider

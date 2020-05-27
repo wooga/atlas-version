@@ -18,11 +18,11 @@
 
 package wooga.gradle.version.internal
 
-import org.ajoberstar.gradle.git.release.base.DefaultVersionStrategy
-import org.ajoberstar.gradle.git.release.base.ReleaseVersion
-import org.ajoberstar.gradle.git.release.base.TagStrategy
-import org.ajoberstar.gradle.git.release.base.VersionStrategy
-import org.ajoberstar.gradle.git.release.semver.ChangeScope
+import wooga.gradle.version.internal.release.base.DefaultVersionStrategy
+import wooga.gradle.version.internal.release.base.ReleaseVersion
+import wooga.gradle.version.internal.release.base.TagStrategy
+import wooga.gradle.version.internal.release.base.VersionStrategy
+import wooga.gradle.version.internal.release.semver.ChangeScope
 import org.ajoberstar.grgit.Grgit
 import org.gradle.api.GradleException
 import org.gradle.api.Project
