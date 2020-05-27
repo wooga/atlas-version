@@ -94,7 +94,7 @@ final class SemVerStrategy implements DefaultVersionStrategy {
      */
     @Override
     boolean defaultSelector(Project project, Grgit grgit) {
-        String stage = getPropertyOrNull(project, STAGE_PROP)
+        String stage = project.extensions.getByType(VersionPluginExtension).stage.getOrNull()
         if (stage != null && !stages.contains(stage)) {
             logger.info('Skipping {} default strategy because stage ({}) is not one of: {}', name, stage, stages)
             return false
