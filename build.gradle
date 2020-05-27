@@ -17,6 +17,7 @@
 
 plugins {
     id 'net.wooga.plugins' version '1.5.0'
+    id 'java-library'
 }
 
 group 'net.wooga.gradle'
@@ -30,8 +31,9 @@ pluginBundle {
     plugins {
         version {
             id = 'net.wooga.version'
-            displayName = 'Wooga Gradle plugin'
-            description = ''
+            displayName = 'Wooga Version plugin'
+            description = 'Infer a project\'s version from your Git repository'
+            tags = ['semver', 'git', 'version', 'versioning']
         }
     }
 }
@@ -41,6 +43,9 @@ github {
 }
 
 dependencies {
+    compile 'com.github.zafarkhaja:java-semver:0.9.0'
+    compile "org.ajoberstar:grgit:2.3.0"
+    compile 'com.google.guava:guava:latest.release'
     testCompile('org.spockframework:spock-core:1.2-groovy-2.4') {
         exclude module: 'groovy-all'
     }

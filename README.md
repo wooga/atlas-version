@@ -8,7 +8,7 @@ atlas-version
 [![GitHub tag](https://img.shields.io/github/tag/wooga/atlas-version.svg?style=flat-square)]()
 [![GitHub release](https://img.shields.io/github/release/wooga/atlas-version.svg?style=flat-square)]()
 
-A gradle plugin to generate semver version from the current git repository.
+A [gradle] plugin to generate semver version from the current git repository.
 
 # Applying the plugin
 
@@ -24,8 +24,10 @@ Documentation
 
 - [API docs](https://wooga.github.io/atlas-version/docs/api/)
 
-Gradle
-======
+Gradle and Java Compatibility
+=============================
+
+Built with OpenJDK8
 
 | Gradle Version | Works       |
 | :------------- | :---------: |
@@ -63,3 +65,9 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
+
+<!-- Links -->
+[gradle]:               https://gradle.org/ "Gradle"
+
+[yes]:                  https://atlas-resources.wooga.com/icons/icon_check.svg "yes"
+[no]:                   https://atlas-resources.wooga.com/icons/icon_uncheck.svg "no"
