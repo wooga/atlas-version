@@ -18,7 +18,7 @@
 
 package wooga.gradle.version
 
-import org.ajoberstar.gradle.git.release.semver.ChangeScope
+import wooga.gradle.version.internal.release.semver.ChangeScope
 import spock.lang.Unroll
 
 class VersionPluginIntegrationSpec extends IntegrationSpec {

@@ -17,7 +17,7 @@
 
 package wooga.gradle.version
 
-import org.ajoberstar.gradle.git.release.base.ReleaseVersion
+import wooga.gradle.version.internal.release.base.ReleaseVersion
 import org.ajoberstar.grgit.Grgit
 import org.eclipse.jgit.errors.RepositoryNotFoundException
 import org.gradle.api.Action

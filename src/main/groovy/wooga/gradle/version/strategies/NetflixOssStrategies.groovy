@@ -13,21 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nebula.plugin.release
+package wooga.gradle.version.strategies
 
-import org.ajoberstar.gradle.git.release.opinion.Strategies
-import org.ajoberstar.gradle.git.release.semver.ChangeScope
-import org.ajoberstar.gradle.git.release.semver.PartialSemVerStrategy
-import org.ajoberstar.gradle.git.release.semver.SemVerStrategy
-import org.ajoberstar.gradle.git.release.semver.StrategyUtil
+import wooga.gradle.version.internal.release.opinion.Strategies
+import wooga.gradle.version.internal.release.semver.ChangeScope
+import wooga.gradle.version.internal.release.semver.PartialSemVerStrategy
+import wooga.gradle.version.internal.release.semver.SemVerStrategy
+import wooga.gradle.version.internal.release.semver.StrategyUtil
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 
 import java.util.regex.Pattern
 
-import static org.ajoberstar.gradle.git.release.semver.StrategyUtil.closure
-import static org.ajoberstar.gradle.git.release.semver.StrategyUtil.incrementNormalFromScope
-import static org.ajoberstar.gradle.git.release.semver.StrategyUtil.parseIntOrZero
+import static wooga.gradle.version.internal.release.semver.StrategyUtil.closure
+import static wooga.gradle.version.internal.release.semver.StrategyUtil.incrementNormalFromScope
+import static wooga.gradle.version.internal.release.semver.StrategyUtil.parseIntOrZero
 
 class NetflixOssStrategies {
     static final PartialSemVerStrategy TRAVIS_BRANCH_MAJOR_X = fromTravisPropertyPattern(~/^(\d+)\.x$/)

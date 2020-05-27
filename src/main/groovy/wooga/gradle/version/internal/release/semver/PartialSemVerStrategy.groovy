@@ -13,10 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ajoberstar.gradle.git.release.semver
+package wooga.gradle.version.internal.release.semver
 
-enum ChangeScope {
-    MAJOR,
-    MINOR,
-    PATCH
+/**
+ * Strategy to infer portions of a semantic version.
+ * @see SemVerStrategy
+ */
+interface PartialSemVerStrategy {
+    /**
+     * Infers a portion of a semantic version and returns the new state
+     * to be used as inference continues.
+     */
+    SemVerStrategyState infer(SemVerStrategyState state)
 }
