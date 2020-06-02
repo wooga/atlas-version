@@ -64,6 +64,13 @@ class IntegrationSpec extends nebula.test.IntegrationSpec {
         def subType = (subtypeMatches.matches()) ? subtypeMatches.group("subType") : null
         type = (subtypeMatches.matches()) ? subtypeMatches.group("mainType") : type
         switch (type) {
+            case "VersionScheme":
+                if(VersionScheme.isInstance(rawValue)) {
+                    value = "wooga.gradle.version.VersionScheme.${rawValue.toString()}"
+                } else {
+                    value = "wooga.gradle.version.VersionScheme.valueOf('${rawValue.toString()}')"
+                }
+                break
             case "Closure":
                 if (subType) {
                     value = "{${wrapValueBasedOnType(rawValue, subType)}}"

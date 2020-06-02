@@ -22,6 +22,7 @@ import org.ajoberstar.grgit.Grgit
 import org.gradle.cache.internal.VersionStrategy
 import spock.lang.Ignore
 import spock.lang.Unroll
+import wooga.gradle.version.internal.ToStringProvider
 
 class VersionPluginSpec extends ProjectSpec {
 
@@ -478,6 +479,20 @@ class VersionPluginSpec extends ProjectSpec {
         nearestNormal = '1.0.0'
         nearestAnyTitle = (nearestAny == _) ? "unset" : nearestAny
         scopeTitle = (scope == _) ? "unset" : scope
+    }
+
+    @Unroll
+    def "project property #property is a #type"() {
+        given:
+        project.plugins.apply(PLUGIN_NAME)
+        def value = project.property(property)
+
+        expect:
+        type.isInstance(value)
+
+        where:
+        property      | type
+        "version"     | ToStringProvider.class
     }
 
     @Unroll('verify version branch rename for branch #branchName')

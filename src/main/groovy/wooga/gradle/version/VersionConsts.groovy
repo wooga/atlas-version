@@ -22,16 +22,14 @@ class VersionConsts {
     static final String GIT_ROOT_PROPERTY = "git.root"
     static final String UNINITIALIZED_VERSION = '0.1.0-dev.0.uninitialized'
 
-    static final String VERSION_SCHEME_DEFAULT = VERSION_SCHEME_SEMVER_1
-    static final String VERSION_SCHEME_SEMVER_1 = 'semver'
-    static final String VERSION_SCHEME_SEMVER_2 = 'semver2'
+    static final VersionScheme VERSION_SCHEME_DEFAULT = VersionScheme.semver
 
     static final String LEGACY_VERSION_SCHEME_OPTION = "version.scheme"
     static final String LEGACY_VERSION_SCOPE_OPTION = "release.scope"
     static final String LEGACY_VERSION_STAGE_OPTION = "release.stage"
 
-    static final String VERSION_SCHEME_OPTION = "versionBuilder.scheme"
-    static final String VERSION_SCHEME_ENV_VAR = "VERSION_BUILDER_SCHEME"
+    static final String VERSION_SCHEME_OPTION = "versionBuilder.versionScheme"
+    static final String VERSION_SCHEME_ENV_VAR = "VERSION_BUILDER_VERSION_SCHEME"
 
     static final String VERSION_SCOPE_OPTION = "versionBuilder.scope"
     static final String VERSION_SCOPE_ENV_VAR = "VERSION_BUILDER_SCOPE"

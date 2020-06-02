@@ -17,17 +17,15 @@
 
 package wooga.gradle.version
 
-import wooga.gradle.version.internal.release.base.ReleaseVersion
 import org.ajoberstar.grgit.Grgit
 import org.eclipse.jgit.errors.RepositoryNotFoundException
 import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.logging.Logging
-import org.gradle.api.provider.Provider
 import org.slf4j.Logger
 import wooga.gradle.version.internal.DefaultVersionPluginExtension
-
+import wooga.gradle.version.internal.ToStringProvider
 
 class VersionPlugin implements Plugin<Project> {
     static String EXTENSION_NAME = "versionBuilder"
@@ -54,7 +52,7 @@ class VersionPlugin implements Plugin<Project> {
             project.logger.warn("Git repository not found at $gitRoot ")
         }
         finally {
-            DelayedVersion sharedVersion = new DelayedVersion(extension.version)
+            def sharedVersion = new ToStringProvider(extension.version.map({it.version}))
             project.allprojects(new Action<Project>() {
                 @Override
                 void execute(Project prj) {
@@ -67,33 +65,16 @@ class VersionPlugin implements Plugin<Project> {
     protected static VersionPluginExtension create_and_configure_extension(Project project) {
         def extension = project.extensions.create(VersionPluginExtension, EXTENSION_NAME, DefaultVersionPluginExtension, project)
 
-        extension.scheme.set(project.provider({
-            System.getenv()[VersionConsts.VERSION_SCHEME_ENV_VAR] ?:
+        extension.versionScheme.set(project.provider({
+            def rawValue = System.getenv()[VersionConsts.VERSION_SCHEME_ENV_VAR] ?:
                     project.properties.getOrDefault(VersionConsts.VERSION_SCHEME_OPTION,
-                            project.properties.getOrDefault(VersionConsts.LEGACY_VERSION_SCHEME_OPTION, VersionConsts.VERSION_SCHEME_DEFAULT)).toString()
+                            project.properties.get(VersionConsts.LEGACY_VERSION_SCHEME_OPTION))
+            if(rawValue) {
+                return VersionScheme.valueOf(rawValue.toString().trim())
+            }
+            VersionConsts.VERSION_SCHEME_DEFAULT
         }))
 
         extension
-    }
-
-    static final class DelayedVersion {
-        private ReleaseVersion inferredVersion
-        private final Provider<ReleaseVersion> versionProvider;
-
-        DelayedVersion(Provider<ReleaseVersion> version) {
-            this.versionProvider = version
-        }
-
-        ReleaseVersion getVersion() {
-            if(!inferredVersion) {
-                inferredVersion = versionProvider.get()
-            }
-            return inferredVersion
-        }
-
-        @Override
-        String toString() {
-            return version.version.toString();
-        }
     }
 }
