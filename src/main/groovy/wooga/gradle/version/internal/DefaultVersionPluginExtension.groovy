@@ -18,6 +18,7 @@
 
 package wooga.gradle.version.internal
 
+import wooga.gradle.version.VersionScheme
 import wooga.gradle.version.internal.release.base.DefaultVersionStrategy
 import wooga.gradle.version.internal.release.base.ReleaseVersion
 import wooga.gradle.version.internal.release.base.TagStrategy
@@ -44,7 +45,7 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
     protected final Property<VersionStrategy> defaultStrategy
 
     final Provider<List<VersionStrategy>> versionStrategies
-    final Property<String> scheme
+    final Property<VersionScheme> versionScheme
     final Provider<ChangeScope> scope
     final Provider<String> stage
     final Property<Grgit> git
@@ -52,23 +53,38 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
     final Provider<ReleaseVersion> version
 
     @Override
-    void scheme(String value) {
-        setScheme(value)
+    void versionScheme(VersionScheme value) {
+        setVersionScheme(value)
     }
 
     @Override
-    void setScheme(String value) {
-        scheme.set(value)
+    void versionScheme(Provider<VersionScheme> value) {
+        setVersionScheme(value)
     }
 
     @Override
-    void setScheme(Provider<String> value) {
-        scheme.set(value)
+    void setVersionScheme(VersionScheme value) {
+        versionScheme.set(value)
+    }
+
+    @Override
+    void setVersionScheme(Provider<VersionScheme> value) {
+        versionScheme.set(value)
+    }
+
+    @Override
+    void versionScheme(String value) {
+        setVersionScheme(value)
+    }
+
+    @Override
+    void setVersionScheme(String value) {
+        versionScheme.set(VersionScheme.valueOf(value.trim()))
     }
 
     DefaultVersionPluginExtension(Project project) {
         this.project = project
-        scheme = project.objects.property(String)
+        versionScheme = project.objects.property(VersionScheme)
         git = project.objects.property(Grgit)
 
         snapshotStrategy = project.objects.property(VersionStrategy)
@@ -77,20 +93,20 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
         finalStrategy = project.objects.property(VersionStrategy)
         defaultStrategy = project.objects.property(VersionStrategy)
 
-        snapshotStrategy.set(scheme.map({ scheme ->
-            scheme == VersionConsts.VERSION_SCHEME_SEMVER_2 ? SemverV2Strategies.SNAPSHOT : SemverV1Strategies.SNAPSHOT
+        snapshotStrategy.set(versionScheme.map({ scheme ->
+            scheme == VersionScheme.semver2 ? SemverV2Strategies.SNAPSHOT : SemverV1Strategies.SNAPSHOT
         }))
 
-        developmentStrategy.set(scheme.map({ scheme ->
-            scheme == VersionConsts.VERSION_SCHEME_SEMVER_2 ? SemverV2Strategies.DEVELOPMENT : SemverV1Strategies.DEVELOPMENT
+        developmentStrategy.set(versionScheme.map({ scheme ->
+            scheme == VersionScheme.semver2 ? SemverV2Strategies.DEVELOPMENT : SemverV1Strategies.DEVELOPMENT
         }))
 
-        preReleaseStrategy.set(scheme.map({ scheme ->
-            scheme == VersionConsts.VERSION_SCHEME_SEMVER_2 ? SemverV2Strategies.PRE_RELEASE : SemverV1Strategies.PRE_RELEASE
+        preReleaseStrategy.set(versionScheme.map({ scheme ->
+            scheme == VersionScheme.semver2 ? SemverV2Strategies.PRE_RELEASE : SemverV1Strategies.PRE_RELEASE
         }))
 
-        finalStrategy.set(scheme.map({ scheme ->
-            scheme == VersionConsts.VERSION_SCHEME_SEMVER_2 ? SemverV2Strategies.FINAL : SemverV1Strategies.FINAL
+        finalStrategy.set(versionScheme.map({ scheme ->
+            scheme == VersionScheme.semver2 ? SemverV2Strategies.FINAL : SemverV1Strategies.FINAL
         }))
 
         defaultStrategy.set(developmentStrategy)
@@ -103,11 +119,11 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
         scope = project.provider({
             String scope = System.getenv()[VersionConsts.VERSION_SCOPE_ENV_VAR] ?:
                     project.properties.get(VersionConsts.VERSION_SCOPE_OPTION)
-            if(!scope) {
+            if (!scope) {
                 scope = project.properties.get(VersionConsts.LEGACY_VERSION_SCOPE_OPTION)
             }
 
-            if(scope) {
+            if (scope) {
                 return ChangeScope.valueOf(scope.toUpperCase())
             }
             null
@@ -119,11 +135,11 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
                             project.properties.get(VersionConsts.LEGACY_VERSION_STAGE_OPTION)
         })
 
-        version = project.provider({
+        version = new MemoisationProvider(project.provider({
             def versionStrategies = versionStrategies.get()
             def defaultStrategy = defaultStrategy.get()
             def git = git.getOrNull()
-            if(git) {
+            if (git) {
                 VersionStrategy selectedStrategy = versionStrategies.find { strategy ->
                     strategy.selector(project, git)
                 }
@@ -147,6 +163,6 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
             } else {
                 new ReleaseVersion(version: VersionConsts.UNINITIALIZED_VERSION)
             }
-        })
+        }))
     }
 }

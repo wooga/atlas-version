@@ -92,29 +92,33 @@ class VersionPluginIntegrationSpec extends IntegrationSpec {
         result.standardOutput.contains("${extensionName}.${property}: ${testValue}")
 
         where:
-        property | value      | expectedValue     | location
-        "scope"  | "major"    | ChangeScope.MAJOR | PropertyLocation.env
-        "scope"  | "MAJOR"    | ChangeScope.MAJOR | PropertyLocation.env
-        "scope"  | "Major"    | ChangeScope.MAJOR | PropertyLocation.env
-        "scope"  | "minor"    | ChangeScope.MINOR | PropertyLocation.env
-        "scope"  | "MINOR"    | ChangeScope.MINOR | PropertyLocation.env
-        "scope"  | "Minor"    | ChangeScope.MINOR | PropertyLocation.env
-        "scope"  | "patch"    | ChangeScope.PATCH | PropertyLocation.env
-        "scope"  | "PATCH"    | ChangeScope.PATCH | PropertyLocation.env
-        "scope"  | "Patch"    | ChangeScope.PATCH | PropertyLocation.env
-        "scope"  | "major"    | ChangeScope.MAJOR | PropertyLocation.property
-        "scope"  | "MAJOR"    | ChangeScope.MAJOR | PropertyLocation.property
-        "scope"  | "Major"    | ChangeScope.MAJOR | PropertyLocation.property
-        "scope"  | "minor"    | ChangeScope.MINOR | PropertyLocation.property
-        "scope"  | "MINOR"    | ChangeScope.MINOR | PropertyLocation.property
-        "scope"  | "Minor"    | ChangeScope.MINOR | PropertyLocation.property
-        "scope"  | "patch"    | ChangeScope.PATCH | PropertyLocation.property
-        "scope"  | "PATCH"    | ChangeScope.PATCH | PropertyLocation.property
-        "scope"  | "Patch"    | ChangeScope.PATCH | PropertyLocation.property
-        "scope"  | "null"     | _                 | PropertyLocation.none
-        "stage"  | "snapshot" | _                 | PropertyLocation.env
-        "stage"  | "final"    | _                 | PropertyLocation.property
-        "stage"  | "null"     | _                 | PropertyLocation.none
+        property            | value               | expectedValue                       | location
+        "scope"             | "major"             | ChangeScope.MAJOR                   | PropertyLocation.env
+        "scope"             | "MAJOR"             | ChangeScope.MAJOR                   | PropertyLocation.env
+        "scope"             | "Major"             | ChangeScope.MAJOR                   | PropertyLocation.env
+        "scope"             | "minor"             | ChangeScope.MINOR                   | PropertyLocation.env
+        "scope"             | "MINOR"             | ChangeScope.MINOR                   | PropertyLocation.env
+        "scope"             | "Minor"             | ChangeScope.MINOR                   | PropertyLocation.env
+        "scope"             | "patch"             | ChangeScope.PATCH                   | PropertyLocation.env
+        "scope"             | "PATCH"             | ChangeScope.PATCH                   | PropertyLocation.env
+        "scope"             | "Patch"             | ChangeScope.PATCH                   | PropertyLocation.env
+        "scope"             | "major"             | ChangeScope.MAJOR                   | PropertyLocation.property
+        "scope"             | "MAJOR"             | ChangeScope.MAJOR                   | PropertyLocation.property
+        "scope"             | "Major"             | ChangeScope.MAJOR                   | PropertyLocation.property
+        "scope"             | "minor"             | ChangeScope.MINOR                   | PropertyLocation.property
+        "scope"             | "MINOR"             | ChangeScope.MINOR                   | PropertyLocation.property
+        "scope"             | "Minor"             | ChangeScope.MINOR                   | PropertyLocation.property
+        "scope"             | "patch"             | ChangeScope.PATCH                   | PropertyLocation.property
+        "scope"             | "PATCH"             | ChangeScope.PATCH                   | PropertyLocation.property
+        "scope"             | "Patch"             | ChangeScope.PATCH                   | PropertyLocation.property
+        "scope"             | "null"              | _                                   | PropertyLocation.none
+        "stage"             | "snapshot"          | _                                   | PropertyLocation.env
+        "stage"             | "final"             | _                                   | PropertyLocation.property
+        "stage"             | "null"              | _                                   | PropertyLocation.none
+        "versionScheme"     | "semver2"           | VersionScheme.semver2               | PropertyLocation.env
+        "versionScheme"     | "semver"            | VersionScheme.semver                | PropertyLocation.env
+        "versionScheme"     | "semver2"           | VersionScheme.semver2               | PropertyLocation.property
+        "versionScheme"     | "semver"            | VersionScheme.semver                | PropertyLocation.property
 
         extensionName = "versionBuilder"
         testValue = (expectedValue == _) ? value : expectedValue
@@ -148,12 +152,15 @@ class VersionPluginIntegrationSpec extends IntegrationSpec {
         result.standardOutput.contains("${extensionName}.${property}: ${rawValue}")
 
         where:
-        property | method       | rawValue | type
-        "scheme" | "scheme"     | "value1" | "String"
-        "scheme" | "scheme.set" | "value2" | "String"
-        "scheme" | "scheme.set" | "value2" | "Provider<String>"
-        "scheme" | "setScheme"  | "value2" | "String"
-        "scheme" | "setScheme"  | "value2" | "Provider<String>"
+        property            | method                  | rawValue                            | type
+        "versionScheme"     | "versionScheme"         | "semver"                            | "String"
+        "versionScheme"     | "versionScheme"         | VersionScheme.semver2               | "VersionScheme"
+        "versionScheme"     | "versionScheme"         | VersionScheme.semver                | "Provider<VersionScheme>"
+        "versionScheme"     | "versionScheme.set"     | VersionScheme.semver2               | "VersionScheme"
+        "versionScheme"     | "versionScheme.set"     | VersionScheme.semver                | "Provider<VersionScheme>"
+        "versionScheme"     | "setVersionScheme"      | "semver"                            | "String"
+        "versionScheme"     | "setVersionScheme"      | VersionScheme.semver2               | "VersionScheme"
+        "versionScheme"     | "setVersionScheme"      | VersionScheme.semver                | "Provider<VersionScheme>"
 
         value = wrapValueBasedOnType(rawValue, type)
         extensionName = "versionBuilder"

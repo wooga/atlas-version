@@ -27,10 +27,13 @@ import org.gradle.api.provider.Provider
 
 interface VersionPluginExtension {
 
-    Property<String> getScheme()
-    void scheme(String scheme)
-    void setScheme(String scheme)
-    void setScheme(Provider<String> scheme)
+    Property<VersionScheme> getVersionScheme()
+    void versionScheme(VersionScheme value)
+    void versionScheme(Provider<VersionScheme> value)
+    void versionScheme(String value)
+    void setVersionScheme(VersionScheme value)
+    void setVersionScheme(Provider<VersionScheme> value)
+    void setVersionScheme(String value)
 
     Property<Grgit> getGit()
 
