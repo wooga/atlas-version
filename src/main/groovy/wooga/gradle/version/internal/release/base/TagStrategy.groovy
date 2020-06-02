@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory
  * Strategy for creating a Git tag associated with a release.
  */
 class TagStrategy {
-
+    final boolean parseVersionsWithoutPrefixV
     /**
      * Closure taking a version String as an argument and returning a string to be used as a tag name.
      */
@@ -38,14 +38,25 @@ class TagStrategy {
      */
     Closure<Version> parseTag = { Tag tag ->
         try {
-            Version.valueOf(tag.name[0] == 'v' ? tag.name[1..-1] : tag.name)
+            if(parseVersionsWithoutPrefixV) {
+                Version.valueOf(tag.name[0] == 'v' ? tag.name[1..-1] : tag.name)
+            } else
+            {
+                Version.valueOf(tag.name[1..-1])
+            }
+
         } catch (ParseException e) {
             null
         }
     }
 
-    TagStrategy() {
+    TagStrategy(boolean parseVersionsWithoutPrefixV) {
+        this.prefixNameWithV = parseVersionsWithoutPrefixV
         setPrefixNameWithV(true)
+    }
+
+    TagStrategy() {
+        this(true)
     }
 
     private static final Logger logger = LoggerFactory.getLogger(TagStrategy)

@@ -24,6 +24,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.logging.Logging
 import org.slf4j.Logger
+import wooga.gradle.version.internal.DefaultVersionCodeExtension
 import wooga.gradle.version.internal.DefaultVersionPluginExtension
 import wooga.gradle.version.internal.ToStringProvider
 
@@ -57,6 +58,7 @@ class VersionPlugin implements Plugin<Project> {
                 @Override
                 void execute(Project prj) {
                     prj.setVersion(sharedVersion)
+                    prj.extensions.create(VersionCodeExtension, "versionCode", DefaultVersionCodeExtension.class, prj, extension.versionCode)
                 }
             })
         }
@@ -73,6 +75,21 @@ class VersionPlugin implements Plugin<Project> {
                 return VersionScheme.valueOf(rawValue.toString().trim())
             }
             VersionConsts.VERSION_SCHEME_DEFAULT
+        }))
+
+        extension.versionCodeScheme.set(project.provider({
+            def rawValue = System.getenv()[VersionConsts.VERSION_CODE_SCHEME_ENV_VAR] ?:
+                    project.properties.get(VersionConsts.VERSION_CODE_SCHEME_OPTION)
+            if(rawValue) {
+                return VersionCodeScheme.valueOf(rawValue.toString().trim())
+            }
+            VersionConsts.VERSION_CODE_SCHEME_DEFAULT
+        }))
+
+        extension.versionCodeOffset.set(project.provider({
+            def rawValue = System.getenv()[VersionConsts.VERSION_CODE_OFFSET_ENV_VAR] ?:
+                    project.properties.getOrDefault(VersionConsts.VERSION_CODE_OFFSET_OPTION, "0")
+            Integer.parseInt(rawValue.toString())
         }))
 
         extension

@@ -119,6 +119,16 @@ class VersionPluginIntegrationSpec extends IntegrationSpec {
         "versionScheme"     | "semver"            | VersionScheme.semver                | PropertyLocation.env
         "versionScheme"     | "semver2"           | VersionScheme.semver2               | PropertyLocation.property
         "versionScheme"     | "semver"            | VersionScheme.semver                | PropertyLocation.property
+        "versionCodeScheme" | "releaseCountBasic" | VersionCodeScheme.releaseCountBasic | PropertyLocation.env
+        "versionCodeScheme" | "releaseCount"      | VersionCodeScheme.releaseCount      | PropertyLocation.env
+        "versionCodeScheme" | "semver"            | VersionCodeScheme.semver            | PropertyLocation.env
+        "versionCodeScheme" | "none"              | VersionCodeScheme.none              | PropertyLocation.env
+        "versionCodeScheme" | "releaseCountBasic" | VersionCodeScheme.releaseCountBasic | PropertyLocation.property
+        "versionCodeScheme" | "releaseCount"      | VersionCodeScheme.releaseCount      | PropertyLocation.property
+        "versionCodeScheme" | "semver"            | VersionCodeScheme.semver            | PropertyLocation.property
+        "versionCodeScheme" | "none"              | VersionCodeScheme.none              | PropertyLocation.property
+        "versionCodeOffset" | 100                 | _                                   | PropertyLocation.env
+        "versionCodeOffset" | 200                 | _                                   | PropertyLocation.property
 
         extensionName = "versionBuilder"
         testValue = (expectedValue == _) ? value : expectedValue
@@ -126,7 +136,7 @@ class VersionPluginIntegrationSpec extends IntegrationSpec {
     }
 
     @Unroll
-    def "can set property :#property with :#method and type '#type'"() {
+    def "can set extension property :#property with :#method and type '#type'"() {
         given: "a task to print appCenter properties"
         buildFile << """
             task(custom) {
@@ -162,8 +172,57 @@ class VersionPluginIntegrationSpec extends IntegrationSpec {
         "versionScheme"     | "setVersionScheme"      | VersionScheme.semver2               | "VersionScheme"
         "versionScheme"     | "setVersionScheme"      | VersionScheme.semver                | "Provider<VersionScheme>"
 
+        "versionCodeScheme" | "versionCodeScheme"     | "releaseCountBasic"                 | "String"
+        "versionCodeScheme" | "versionCodeScheme"     | VersionCodeScheme.semver            | "VersionCodeScheme"
+        "versionCodeScheme" | "versionCodeScheme"     | VersionCodeScheme.releaseCountBasic | "Provider<VersionCodeScheme>"
+        "versionCodeScheme" | "versionCodeScheme.set" | VersionCodeScheme.semver            | "VersionCodeScheme"
+        "versionCodeScheme" | "versionCodeScheme.set" | VersionCodeScheme.releaseCountBasic | "Provider<VersionCodeScheme>"
+        "versionCodeScheme" | "setVersionCodeScheme"  | "releaseCount"                      | "String"
+        "versionCodeScheme" | "setVersionCodeScheme"  | VersionCodeScheme.none              | "VersionCodeScheme"
+        "versionCodeScheme" | "setVersionCodeScheme"  | VersionCodeScheme.releaseCount      | "Provider<VersionCodeScheme>"
+
+        "versionCodeOffset" | "versionCodeOffset"     | 1                                   | "Integer"
+        "versionCodeOffset" | "versionCodeOffset"     | 2                                   | "Provider<Integer>"
+        "versionCodeOffset" | "versionCodeOffset.set" | 3                                   | "Integer"
+        "versionCodeOffset" | "versionCodeOffset.set" | 4                                   | "Provider<Integer>"
+        "versionCodeOffset" | "setVersionCodeOffset"  | 5                                   | "Integer"
+        "versionCodeOffset" | "setVersionCodeOffset"  | 6                                   | "Provider<Integer>"
+
         value = wrapValueBasedOnType(rawValue, type)
         extensionName = "versionBuilder"
+    }
+
+    @Unroll
+    def "can custom versionCode with :#method and type '#type'"() {
+        given: "a task to print appCenter properties"
+        buildFile << """
+            task(custom) {
+                doLast {
+                    def value = ${fetchMethod}
+                    println("project.${property}: " + value)
+                }
+            }
+        """
+
+        and: "some configured property"
+        buildFile << methodInvocation
+
+        when: ""
+        def result = runTasksSuccessfully("custom")
+
+        then:
+        result.standardOutput.contains("project.${property}: ${rawValue}")
+
+        where:
+        property      | method            | rawValue | type                | isProperty
+
+        "versionCode" | "ext.versionCode" | 1        | "Integer"           | true
+        "versionCode" | "versionCode.set" | 5        | "Integer"           | false
+        "versionCode" | "versionCode.set" | 6        | "Provider<Integer>" | false
+
+        value = wrapValueBasedOnType(rawValue, type)
+        methodInvocation = isProperty ? "${method} = ${value}" : "${method}(${value})"
+        fetchMethod = method.startsWith("ext") ? "project.${property}" : "project.${property}.get()"
     }
 
 }

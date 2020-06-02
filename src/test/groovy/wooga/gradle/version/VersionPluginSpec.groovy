@@ -272,6 +272,134 @@ class VersionPluginSpec extends ProjectSpec {
         scopeTitle = (scope == _) ? "unset" : scope
     }
 
+    @Unroll('verify inferred custom semver versioncode with scheme #versionCodeScheme from nearestNormal: #nearestNormal, nearestAny: #nearestAnyTitle, scope: #scopeTitle, stage: #stage and branch: #branchName to be #expectedVersion')
+    def "uses custom wooga versioncode strategy semver"() {
+
+        given: "a project with specified release stage and scope"
+
+        project.ext.set('release.stage', stage)
+        project.ext.set('version.scheme', 'semver2')
+        project.ext.set('versionBuilder.versionCodeScheme', versionCodeScheme)
+        if (scope != _) {
+            project.ext.set('release.scope', scope)
+        }
+
+        and: "a history"
+
+        if (branchName != "master") {
+            git.checkout(branch: "$branchName", startPoint: 'master', createBranch: true)
+        }
+
+        5.times {
+            git.commit(message: 'feature commit')
+        }
+
+        git.tag.add(name: "v$nearestNormal")
+
+        distance.times {
+            git.commit(message: 'fix commit')
+        }
+
+        if (nearestAny != _) {
+            git.tag.add(name: "v$nearestAny")
+            distance.times {
+                git.commit(message: 'fix commit')
+            }
+        }
+
+        when:
+        project.plugins.apply(PLUGIN_NAME)
+
+        then:
+        project.version.toString() == expectedVersion
+        def versionBuilder = project.extensions.getByType(VersionPluginExtension)
+        versionBuilder.versionCode.get() == expectedVersionCode
+        project.versionCode.toString() == expectedVersionCode.toString()
+
+        where:
+        nearestAny        | distance | stage      | scope   | branchName | versionCodeScheme                        | expectedVersion   | expectedVersionCode
+        _                 | 1        | "snapshot" | _       | "master"   | VersionCodeScheme.semver      | "1.1.0-master.1"  | 101000
+        _                 | 2        | "snapshot" | "major" | "master"   | VersionCodeScheme.semver      | "2.0.0-master.2"  | 200000
+        _                 | 3        | "snapshot" | "minor" | "master"   | VersionCodeScheme.semver      | "1.1.0-master.3"  | 101000
+        _                 | 4        | "snapshot" | "patch" | "master"   | VersionCodeScheme.semver      | "1.0.1-master.4"  | 100010
+        _                 | 1        | "snapshot" | _       | "develop"  | VersionCodeScheme.semver      | "1.1.0-develop.1" | 101000
+        _                 | 2        | "snapshot" | "major" | "develop"  | VersionCodeScheme.semver      | "2.0.0-develop.2" | 200000
+        _                 | 3        | "snapshot" | "minor" | "develop"  | VersionCodeScheme.semver      | "1.1.0-develop.3" | 101000
+        _                 | 4        | "snapshot" | "patch" | "develop"  | VersionCodeScheme.semver      | "1.0.1-develop.4" | 100010
+        _                 | 1        | "rc"       | _       | "master"   | VersionCodeScheme.semver      | "1.1.0-rc.1"      | 101000
+        _                 | 2        | "rc"       | "major" | "master"   | VersionCodeScheme.semver      | "2.0.0-rc.1"      | 200000
+        _                 | 3        | "rc"       | "minor" | "master"   | VersionCodeScheme.semver      | "1.1.0-rc.1"      | 101000
+        _                 | 4        | "rc"       | "patch" | "master"   | VersionCodeScheme.semver      | "1.0.1-rc.1"      | 100010
+        '1.1.0-staging.1' | 1        | "staging"  | _       | "master"   | VersionCodeScheme.semver      | "1.1.0-staging.2" | 101002
+        '1.1.0-staging.2' | 1        | "staging"  | _       | "master"   | VersionCodeScheme.semver      | "1.1.0-staging.3" | 101003
+
+        _                 | 1        | "snapshot" | _       | "master"   | VersionCodeScheme.semverBasic | "1.1.0-master.1"  | 10100
+        _                 | 2        | "snapshot" | "major" | "master"   | VersionCodeScheme.semverBasic | "2.0.0-master.2"  | 20000
+        _                 | 3        | "snapshot" | "minor" | "master"   | VersionCodeScheme.semverBasic | "1.1.0-master.3"  | 10100
+        _                 | 4        | "snapshot" | "patch" | "master"   | VersionCodeScheme.semverBasic | "1.0.1-master.4"  | 10001
+        _                 | 1        | "snapshot" | _       | "develop"  | VersionCodeScheme.semverBasic | "1.1.0-develop.1" | 10100
+        _                 | 2        | "snapshot" | "major" | "develop"  | VersionCodeScheme.semverBasic | "2.0.0-develop.2" | 20000
+        _                 | 3        | "snapshot" | "minor" | "develop"  | VersionCodeScheme.semverBasic | "1.1.0-develop.3" | 10100
+        _                 | 4        | "snapshot" | "patch" | "develop"  | VersionCodeScheme.semverBasic | "1.0.1-develop.4" | 10001
+        _                 | 1        | "rc"       | _       | "master"   | VersionCodeScheme.semverBasic | "1.1.0-rc.1"      | 10100
+        _                 | 2        | "rc"       | "major" | "master"   | VersionCodeScheme.semverBasic | "2.0.0-rc.1"      | 20000
+        _                 | 3        | "rc"       | "minor" | "master"   | VersionCodeScheme.semverBasic | "1.1.0-rc.1"      | 10100
+        _                 | 4        | "rc"       | "patch" | "master"   | VersionCodeScheme.semverBasic | "1.0.1-rc.1"      | 10001
+        '1.1.0-staging.1' | 1        | "staging"  | _       | "master"   | VersionCodeScheme.semverBasic | "1.1.0-staging.2" | 10100
+        '1.1.0-staging.2' | 1        | "staging"  | _       | "master"   | VersionCodeScheme.semverBasic | "1.1.0-staging.3" | 10100
+
+        nearestNormal = '1.0.0'
+        nearestAnyTitle = (nearestAny == _) ? "unset" : nearestAny
+        scopeTitle = (scope == _) ? "unset" : scope
+    }
+
+    @Unroll("verify inferred custom semver versioncode #expectedVersionCode from scheme #scheme with #numberOfFinalReleases release tags, #numberOfPrereleases pre release tags and offset #offset")
+    def "uses custom wooga versioncode strategy"() {
+        given: "a project with specified versionCodeScheme"
+        if (scheme != _) {
+            project.ext.set('versionBuilder.versionCodeScheme', scheme)
+        }
+
+        project.ext.set('versionBuilder.versionCodeOffset', offset)
+
+        git.commit(message: 'initial commit')
+
+        and: "correct number of tags since the repo contains one tag already"
+        numberOfFinalReleases -= 1
+
+        numberOfFinalReleases.times {
+            git.commit(message: 'a commit')
+            if (it < numberOfPrereleases) {
+                git.tag.add(name: "${it}.0.0-rc.1")
+                git.tag.add(name: "v${it}.0.0-rc.1")
+            }
+            git.tag.add(name: "v${it}.0.0")
+        }
+
+        Math.max(numberOfPrereleases - numberOfFinalReleases, 0).times {
+            git.commit(message: 'a commit')
+            git.tag.add(name: "v${numberOfFinalReleases + 1}.0.0-rc.${it}")
+        }
+
+        when:
+        project.plugins.apply(PLUGIN_NAME)
+
+        then:
+        def versionBuilder = project.extensions.getByType(VersionPluginExtension)
+        versionBuilder.versionCode.get() == expectedVersionCode
+        project.versionCode.toString() == expectedVersionCode.toString()
+
+        where:
+        numberOfFinalReleases | numberOfPrereleases | offset | scheme                              | expectedVersionCode
+        5                     | 5                   | 0      | VersionCodeScheme.releaseCountBasic | 6
+        5                     | 5                   | 3      | VersionCodeScheme.releaseCountBasic | 9
+        10                    | 2                   | 0      | VersionCodeScheme.releaseCount      | 13
+        7                     | 0                   | 5      | VersionCodeScheme.releaseCount      | 13
+        3                     | 8                   | 5      | VersionCodeScheme.none              | 0
+        3                     | 8                   | 5      | _                                   | 0
+    }
+
+
     def "returns initial version '#expectedVersion' when no git repo is found"() {
         given: "a project without git repo"
         git.close()
@@ -493,6 +621,30 @@ class VersionPluginSpec extends ProjectSpec {
         where:
         property      | type
         "version"     | ToStringProvider.class
+        "versionCode" | VersionCodeExtension.class
+    }
+
+    def "can set custom versionCode"() {
+        given:
+        project.plugins.apply(PLUGIN_NAME)
+
+        when:
+        project.ext.versionCode = 12345
+
+        then:
+        project.property("versionCode") == 12345
+    }
+
+    def "can set custom versionCode in provided extension"() {
+        given:
+        project.plugins.apply(PLUGIN_NAME)
+        def extension = project.extensions.getByType(VersionCodeExtension)
+
+        when:
+        extension.set(12345)
+
+        then:
+        project.property("versionCode").get() == 12345
     }
 
     @Unroll('verify version branch rename for branch #branchName')

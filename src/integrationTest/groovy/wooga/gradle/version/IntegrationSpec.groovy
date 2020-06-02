@@ -71,6 +71,13 @@ class IntegrationSpec extends nebula.test.IntegrationSpec {
                     value = "wooga.gradle.version.VersionScheme.valueOf('${rawValue.toString()}')"
                 }
                 break
+            case "VersionCodeScheme":
+                if(VersionCodeScheme.isInstance(rawValue)) {
+                    value = "wooga.gradle.version.VersionCodeScheme.${rawValue.toString()}"
+                } else {
+                    value = "wooga.gradle.version.VersionCodeScheme.valueOf('${rawValue.toString()}')"
+                }
+                break
             case "Closure":
                 if (subType) {
                     value = "{${wrapValueBasedOnType(rawValue, subType)}}"
