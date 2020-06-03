@@ -35,9 +35,25 @@ interface VersionPluginExtension {
     void setVersionScheme(Provider<VersionScheme> value)
     void setVersionScheme(String value)
 
+    Property<VersionCodeScheme> getVersionCodeScheme()
+    void versionCodeScheme(VersionCodeScheme value)
+    void versionCodeScheme(Provider<VersionCodeScheme> value)
+    void versionCodeScheme(String value)
+    void setVersionCodeScheme(VersionCodeScheme value)
+    void setVersionCodeScheme(Provider<VersionCodeScheme> value)
+    void setVersionCodeScheme(String value)
+
+    Property<Integer> getVersionCodeOffset()
+    void versionCodeOffset(Integer value)
+    void versionCodeOffset(Provider<Integer> value)
+    void setVersionCodeOffset(Integer value)
+    void setVersionCodeOffset(Provider<Integer> value)
+
     Property<Grgit> getGit()
 
     Provider<ReleaseVersion> getVersion()
+    Provider<Integer> getVersionCode()
+
     Provider<String> getStage()
     Provider<ChangeScope> getScope()
 

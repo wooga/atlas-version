@@ -18,6 +18,7 @@
 
 package wooga.gradle.version.internal
 
+import wooga.gradle.version.VersionCodeScheme
 import wooga.gradle.version.VersionScheme
 import wooga.gradle.version.internal.release.base.DefaultVersionStrategy
 import wooga.gradle.version.internal.release.base.ReleaseVersion
@@ -46,11 +47,14 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
 
     final Provider<List<VersionStrategy>> versionStrategies
     final Property<VersionScheme> versionScheme
+    final Property<VersionCodeScheme> versionCodeScheme
+    final Property<Integer> versionCodeOffset
     final Provider<ChangeScope> scope
     final Provider<String> stage
     final Property<Grgit> git
     final TagStrategy tagStrategy = new TagStrategy()
     final Provider<ReleaseVersion> version
+    final Provider<Integer> versionCode
 
     @Override
     void versionScheme(VersionScheme value) {
@@ -82,9 +86,61 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
         versionScheme.set(VersionScheme.valueOf(value.trim()))
     }
 
+    @Override
+    void versionCodeScheme(VersionCodeScheme value) {
+        setVersionCodeScheme(value)
+    }
+
+    @Override
+    void versionCodeScheme(Provider<VersionCodeScheme> value) {
+        setVersionCodeScheme(value)
+    }
+
+    @Override
+    void setVersionCodeScheme(VersionCodeScheme value) {
+        versionCodeScheme.set(value)
+    }
+
+    @Override
+    void setVersionCodeScheme(Provider<VersionCodeScheme> value) {
+        versionCodeScheme.set(value)
+    }
+
+    @Override
+    void versionCodeScheme(String value) {
+        setVersionCodeScheme(value)
+    }
+
+    @Override
+    void setVersionCodeScheme(String value) {
+        versionCodeScheme.set(VersionCodeScheme.valueOf(value.trim()))
+    }
+
+    @Override
+    void versionCodeOffset(Integer value) {
+        setVersionCodeOffset(value)
+    }
+
+    @Override
+    void versionCodeOffset(Provider<Integer> value) {
+        setVersionCodeOffset(value)
+    }
+
+    @Override
+    void setVersionCodeOffset(Integer value) {
+        versionCodeOffset.set(value)
+    }
+
+    @Override
+    void setVersionCodeOffset(Provider<Integer> value) {
+        versionCodeOffset.set(value)
+    }
+
     DefaultVersionPluginExtension(Project project) {
         this.project = project
         versionScheme = project.objects.property(VersionScheme)
+        versionCodeScheme = project.objects.property(VersionCodeScheme)
+        versionCodeOffset = project.objects.property(Integer)
         git = project.objects.property(Grgit)
 
         snapshotStrategy = project.objects.property(VersionStrategy)
@@ -162,6 +218,27 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
                 return selectedStrategy.infer(project, git)
             } else {
                 new ReleaseVersion(version: VersionConsts.UNINITIALIZED_VERSION)
+            }
+        }))
+
+        versionCode = new MemoisationProvider(versionCodeScheme.map({ scheme ->
+            def offset = versionCodeOffset.getOrElse(0)
+            switch (scheme) {
+                case VersionCodeScheme.semverBasic:
+                    def version = this.version.get().version
+                    return VersionCode.generateSemverVersionCode(version) + offset
+                    break
+                case VersionCodeScheme.semver:
+                    def version = this.version.get().version
+                    return VersionCode.generateSemverVersionCode(version, true) + offset
+                    break
+                case VersionCodeScheme.releaseCountBasic:
+                    return VersionCode.generateBuildNumberVersionCode(git.get(), false, offset)
+                    break
+                case VersionCodeScheme.releaseCount:
+                    return VersionCode.generateBuildNumberVersionCode(git.get(), true, offset)
+                default:
+                    0
             }
         }))
     }
