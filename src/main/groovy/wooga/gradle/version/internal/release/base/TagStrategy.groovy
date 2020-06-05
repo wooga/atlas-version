@@ -51,7 +51,7 @@ class TagStrategy {
     }
 
     TagStrategy(boolean parseVersionsWithoutPrefixV) {
-        this.prefixNameWithV = parseVersionsWithoutPrefixV
+        this.parseVersionsWithoutPrefixV = parseVersionsWithoutPrefixV
         setPrefixNameWithV(true)
     }
 
