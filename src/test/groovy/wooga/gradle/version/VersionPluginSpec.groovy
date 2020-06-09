@@ -317,7 +317,7 @@ class VersionPluginSpec extends ProjectSpec {
         project.versionCode.toString() == expectedVersionCode.toString()
 
         where:
-        nearestAny        | distance | stage      | scope   | branchName | versionCodeScheme                        | expectedVersion   | expectedVersionCode
+        nearestAny        | distance | stage      | scope   | branchName | versionCodeScheme             | expectedVersion   | expectedVersionCode
         _                 | 1        | "snapshot" | _       | "master"   | VersionCodeScheme.semver      | "1.1.0-master.1"  | 101000
         _                 | 2        | "snapshot" | "major" | "master"   | VersionCodeScheme.semver      | "2.0.0-master.2"  | 200000
         _                 | 3        | "snapshot" | "minor" | "master"   | VersionCodeScheme.semver      | "1.1.0-master.3"  | 101000
@@ -607,6 +607,59 @@ class VersionPluginSpec extends ProjectSpec {
         nearestNormal = '1.0.0'
         nearestAnyTitle = (nearestAny == _) ? "unset" : nearestAny
         scopeTitle = (scope == _) ? "unset" : scope
+    }
+
+    @Unroll("Finds correct nearest version #useTagPrefix from nearestNormal: #nearestNormal, nearestAny: #nearestAnyTitle, scope: #scopeTitle, stage: #stage and branch: #branchName")
+    def "finds nearest version tag"() {
+        given: "a project with specified release stage and scope"
+
+        project.ext.set('release.stage', stage)
+        project.ext.set('version.scheme', scheme)
+        if (scope != _) {
+            project.ext.set('release.scope', scope)
+        }
+
+        and: "a history"
+
+        if (branchName != "master") {
+            git.checkout(branch: "$branchName", startPoint: 'master', createBranch: true)
+        }
+
+        5.times {
+            git.commit(message: 'feature commit')
+        }
+
+        git.tag.add(name: "$tagPrefix$nearestNormal")
+
+        distance.times {
+            git.commit(message: 'fix commit')
+        }
+
+        if (nearestAny != _) {
+            git.tag.add(name: "$tagPrefix$nearestAny")
+            distance.times {
+                git.commit(message: 'fix commit')
+            }
+        }
+
+        when:
+        project.plugins.apply(PLUGIN_NAME)
+
+        then:
+        project.version.toString() == expectedVersion
+
+        where:
+        nearestAny | distance | stage      | scope | scheme                | branchName | prefixTag | expectedVersion
+        _          | 1        | "ci"       | _     | VersionScheme.semver2 | "master"   | true      | "1.1.0-master.1"
+        _          | 1        | "ci"       | _     | VersionScheme.semver2 | "master"   | false     | "1.1.0-master.1"
+        _          | 1        | "snapshot" | _     | VersionScheme.semver  | "master"   | true      | "1.0.1-master00001"
+        _          | 1        | "snapshot" | _     | VersionScheme.semver  | "master"   | false     | "1.0.1-master00001"
+
+        nearestNormal = '1.0.0'
+        nearestAnyTitle = (nearestAny == _) ? "unset" : nearestAny
+        scopeTitle = (scope == _) ? "unset" : scope
+        tagPrefix = (prefixTag) ? "v" : ""
+        useTagPrefix = (prefixTag) ? "with tag prefix v" : "without tag prefix"
     }
 
     @Unroll
