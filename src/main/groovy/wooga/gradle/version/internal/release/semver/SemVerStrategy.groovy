@@ -19,6 +19,7 @@ import groovy.transform.Immutable
 import groovy.transform.PackageScope
 
 import com.github.zafarkhaja.semver.Version
+import wooga.gradle.version.internal.release.base.MarkerTagStrategy
 import wooga.gradle.version.internal.release.base.ReleaseVersion
 import wooga.gradle.version.internal.release.base.DefaultVersionStrategy
 import org.ajoberstar.grgit.Grgit
@@ -148,12 +149,18 @@ final class SemVerStrategy implements DefaultVersionStrategy {
     ReleaseVersion doInfer(Project project, Grgit grgit, NearestVersionLocator locator) {
         ChangeScope scope = project.extensions.getByType(VersionPluginExtension).scope.getOrNull()
         String stage = project.extensions.getByType(VersionPluginExtension).stage.getOrNull() ?: stages.first()
+
+        String releaseBranchPattern = project.extensions.getByType(VersionPluginExtension).releaseBranchPattern.get()
+        String mainBranchPattern = project.extensions.getByType(VersionPluginExtension).mainBranchPattern.get()
+
         if (!stages.contains(stage)) {
             throw new GradleException("Stage ${stage} is not one of ${stages} allowed for strategy ${name}.")
         }
         logger.info('Beginning version inference using {} strategy and input scope ({}) and stage ({})', name, scope, stage)
 
         NearestVersion nearestVersion = locator.locate(grgit)
+        NearestVersion nearestCiMarker = new NearestVersionLocator(new MarkerTagStrategy("ci-")).locate(grgit)
+        NearestVersion nearestReleaseMarker = new NearestVersionLocator(new MarkerTagStrategy("release-")).locate(grgit)
         logger.debug('Located nearest version: {}', nearestVersion)
 
         SemVerStrategyState state = new SemVerStrategyState(
@@ -162,7 +169,11 @@ final class SemVerStrategy implements DefaultVersionStrategy {
             currentHead: grgit.head(),
             currentBranch: grgit.branch.current,
             repoDirty: !grgit.status().clean,
-            nearestVersion: nearestVersion
+            nearestVersion: nearestVersion,
+            nearestCiMarker: nearestCiMarker,
+            nearestReleaseMarker: nearestReleaseMarker,
+            releaseBranchPattern: releaseBranchPattern,
+            mainBranchPattern: mainBranchPattern
         )
 
         Version version = StrategyUtil.all(

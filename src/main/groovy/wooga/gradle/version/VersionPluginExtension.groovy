@@ -49,6 +49,18 @@ interface VersionPluginExtension {
     void setVersionCodeOffset(Integer value)
     void setVersionCodeOffset(Provider<Integer> value)
 
+    Property<String> getReleaseBranchPattern()
+    void releaseBranchPattern(String value)
+    void releaseBranchPattern(Provider<String> value)
+    void setReleaseBranchPattern(String value)
+    void setReleaseBranchPattern(Provider<String> value)
+
+    Property<String> getMainBranchPattern()
+    void mainBranchPattern(String value)
+    void mainBranchPattern(Provider<String> value)
+    void setMainBranchPattern(String value)
+    void setMainBranchPattern(Provider<String> value)
+
     Property<Grgit> getGit()
 
     Provider<ReleaseVersion> getVersion()

@@ -22,6 +22,9 @@ class VersionConsts {
     static final String GIT_ROOT_PROPERTY = "git.root"
     static final String UNINITIALIZED_VERSION = '0.1.0-dev.0.uninitialized'
 
+    static final String DEFAULT_MAIN_BRANCH_PATTERN = /(^master$|^develop$)/
+    static final String DEFAULT_RELEASE_BRANCH_PATTERN = /(^release\/.*|^master$)/
+
     static final VersionScheme VERSION_SCHEME_DEFAULT = VersionScheme.semver
     static final VersionCodeScheme VERSION_CODE_SCHEME_DEFAULT = VersionCodeScheme.none
 
@@ -43,4 +46,10 @@ class VersionConsts {
 
     static final String VERSION_STAGE_OPTION = "versionBuilder.stage"
     static final String VERSION_STAGE_ENV_VAR = "VERSION_BUILDER_STAGE"
+
+    static final String RELEASE_BRANCH_PATTERN_OPTION = "versionBuilder.releaseBranchPattern"
+    static final String RELEASE_BRANCH_PATTERN_ENV_VAR = "VERSION_BUILDER_RELEASE_BRANCH_PATTERN"
+
+    static final String MAIN_BRANCH_PATTERN_OPTION = "versionBuilder.mainBranchPattern"
+    static final String MAIN_BRANCH_PATTERN_ENV_VAR = "VERSION_BUILDER_MAIN_BRANCH_PATTERN"
 }

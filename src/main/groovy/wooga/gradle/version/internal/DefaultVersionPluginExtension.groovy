@@ -34,6 +34,7 @@ import wooga.gradle.version.VersionConsts
 import wooga.gradle.version.VersionPluginExtension
 import wooga.gradle.version.strategies.SemverV1Strategies
 import wooga.gradle.version.strategies.SemverV2Strategies
+import wooga.gradle.version.strategies.StaticMarkerStrategies
 
 class DefaultVersionPluginExtension implements VersionPluginExtension {
 
@@ -55,6 +56,8 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
     final TagStrategy tagStrategy = new TagStrategy()
     final Provider<ReleaseVersion> version
     final Provider<Integer> versionCode
+    final Property<String> releaseBranchPattern
+    final Property<String> mainBranchPattern
 
     @Override
     void versionScheme(VersionScheme value) {
@@ -136,6 +139,46 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
         versionCodeOffset.set(value)
     }
 
+    @Override
+    void releaseBranchPattern(String value) {
+        setReleaseBranchPattern(value)
+    }
+
+    @Override
+    void releaseBranchPattern(Provider<String> value) {
+        setReleaseBranchPattern(value)
+    }
+
+    @Override
+    void setReleaseBranchPattern(String value) {
+        releaseBranchPattern.set(value)
+    }
+
+    @Override
+    void setReleaseBranchPattern(Provider<String> value) {
+        releaseBranchPattern.set(value)
+    }
+
+    @Override
+    void mainBranchPattern(String value) {
+        setMainBranchPattern(value)
+    }
+
+    @Override
+    void mainBranchPattern(Provider<String> value) {
+        setMainBranchPattern(value)
+    }
+
+    @Override
+    void setMainBranchPattern(String value) {
+        mainBranchPattern.set(value)
+    }
+
+    @Override
+    void setMainBranchPattern(Provider<String> value) {
+        mainBranchPattern.set(value)
+    }
+
     DefaultVersionPluginExtension(Project project) {
         this.project = project
         versionScheme = project.objects.property(VersionScheme)
@@ -148,21 +191,59 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
         preReleaseStrategy = project.objects.property(VersionStrategy)
         finalStrategy = project.objects.property(VersionStrategy)
         defaultStrategy = project.objects.property(VersionStrategy)
+        releaseBranchPattern = project.objects.property(String)
+        mainBranchPattern = project.objects.property(String)
 
         snapshotStrategy.set(versionScheme.map({ scheme ->
-            scheme == VersionScheme.semver2 ? SemverV2Strategies.SNAPSHOT : SemverV1Strategies.SNAPSHOT
+            switch (scheme) {
+                case VersionScheme.semver2:
+                    SemverV2Strategies.SNAPSHOT
+                    break;
+                case VersionScheme.staticMarker:
+                    StaticMarkerStrategies.SNAPSHOT
+                    break
+                default:
+                    SemverV1Strategies.SNAPSHOT
+            }
         }))
 
         developmentStrategy.set(versionScheme.map({ scheme ->
-            scheme == VersionScheme.semver2 ? SemverV2Strategies.DEVELOPMENT : SemverV1Strategies.DEVELOPMENT
+            switch (scheme) {
+                case VersionScheme.semver2:
+                    SemverV2Strategies.DEVELOPMENT
+                    break;
+                case VersionScheme.staticMarker:
+                    StaticMarkerStrategies.DEVELOPMENT
+                    break
+                default:
+                    SemverV1Strategies.DEVELOPMENT
+            }
         }))
 
         preReleaseStrategy.set(versionScheme.map({ scheme ->
-            scheme == VersionScheme.semver2 ? SemverV2Strategies.PRE_RELEASE : SemverV1Strategies.PRE_RELEASE
+            switch (scheme) {
+                case VersionScheme.semver2:
+                    SemverV2Strategies.PRE_RELEASE
+                    break;
+                case VersionScheme.staticMarker:
+                    StaticMarkerStrategies.PRE_RELEASE
+                    break
+                default:
+                    SemverV1Strategies.PRE_RELEASE
+            }
         }))
 
         finalStrategy.set(versionScheme.map({ scheme ->
-            scheme == VersionScheme.semver2 ? SemverV2Strategies.FINAL : SemverV1Strategies.FINAL
+            switch (scheme) {
+                case VersionScheme.semver2:
+                    SemverV2Strategies.FINAL
+                    break;
+                case VersionScheme.staticMarker:
+                    StaticMarkerStrategies.FINAL
+                    break
+                default:
+                    SemverV1Strategies.FINAL
+            }
         }))
 
         defaultStrategy.set(developmentStrategy)
@@ -190,6 +271,18 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
                     project.properties.get(VersionConsts.VERSION_STAGE_OPTION) ?:
                             project.properties.get(VersionConsts.LEGACY_VERSION_STAGE_OPTION)
         })
+
+        releaseBranchPattern.set( project.provider({
+            (System.getenv()[VersionConsts.RELEASE_BRANCH_PATTERN_ENV_VAR] ?:
+                    project.properties.get(VersionConsts.RELEASE_BRANCH_PATTERN_OPTION) ?:
+                            VersionConsts.DEFAULT_RELEASE_BRANCH_PATTERN).toString()
+        }))
+
+        mainBranchPattern.set(project.provider({
+            (System.getenv()[VersionConsts.MAIN_BRANCH_PATTERN_ENV_VAR] ?:
+                    project.properties.get(VersionConsts.MAIN_BRANCH_PATTERN_OPTION) ?:
+                            VersionConsts.DEFAULT_MAIN_BRANCH_PATTERN).toString()
+        }))
 
         version = new MemoisationProvider(project.provider({
             def versionStrategies = versionStrategies.get()
