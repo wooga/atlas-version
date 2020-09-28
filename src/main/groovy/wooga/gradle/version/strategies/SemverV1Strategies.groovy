@@ -195,6 +195,7 @@ class SemverV1Strategies {
                 if( branchName != "master") {
                     branchName = "$prefix${branchName.capitalize()}"
                 }
+
                 branchName = branchName.replaceAll(/(\/|-|_)([\w])/) {all, delimiter, firstAfter -> "${firstAfter.capitalize()}" }
                 branchName = branchName.replaceAll(/\./, "Dot")
                 branchName = branchName.replaceAll(/0/, "Zero")

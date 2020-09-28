@@ -1,11 +1,11 @@
 /*
- * Copyright 2017 the original author or authors.
+ * Copyright 2018-2020 Wooga GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ *        http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,78 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
+ *
  */
 
 package wooga.gradle.version.strategies
 
-
 import wooga.gradle.version.internal.release.opinion.Strategies
-import wooga.gradle.version.internal.release.opinion.Strategies.BuildMetadata
-import wooga.gradle.version.internal.release.semver.ChangeScope
-import wooga.gradle.version.internal.release.semver.PartialSemVerStrategy
 import wooga.gradle.version.internal.release.semver.SemVerStrategy
-import wooga.gradle.version.internal.release.semver.SemVerStrategyState
 
-import java.util.regex.Pattern
+import static wooga.gradle.version.internal.release.semver.StrategyUtil.all
+import static wooga.gradle.version.internal.release.semver.StrategyUtil.one
 
-import static wooga.gradle.version.internal.release.semver.StrategyUtil.*
+class StaticMarkerStrategies {
 
-final class SemverV2Strategies {
-
-    private static final scopes = one(
-            Strategies.Normal.USE_SCOPE_PROP,
-            Normal.matchBranchPatternAndUseScope(~/feature(?:\/|-).+$/, ChangeScope.MINOR),
-            Normal.matchBranchPatternAndUseScope(~/hotfix(?:\/|-).+$/, ChangeScope.PATCH),
-            Normal.matchBranchPatternAndUseScope(~/fix(?:\/|-).+$/, ChangeScope.MINOR),
-            Strategies.Normal.ENFORCE_GITFLOW_BRANCH_MAJOR_X,
-            Strategies.Normal.ENFORCE_BRANCH_MAJOR_X,
-            Strategies.Normal.ENFORCE_GITFLOW_BRANCH_MAJOR_MINOR_X,
-            Strategies.Normal.ENFORCE_BRANCH_MAJOR_MINOR_X,
-            Strategies.Normal.USE_NEAREST_ANY,
-            Strategies.Normal.useScope(ChangeScope.MINOR)
-    )
-
-    static final class Normal {
-        static PartialSemVerStrategy matchBranchPatternAndUseScope(Pattern pattern, ChangeScope scope) {
-            return closure { SemVerStrategyState state ->
-                def m = state.currentBranch.name =~ pattern
-                if (m.matches()) {
-                    return incrementNormalFromScope(state, scope)
-                }
-
-                return state
-            }
-        }
-    }
-
-    static final class PreRelease {
-        static PartialSemVerStrategy STAGE_BRANCH_NAME = closure { SemVerStrategyState state ->
-            String branchName = state.currentBranch.name
-            String prefix = "branch"
-
-            if (branchName == "HEAD" && System.getenv("BRANCH_NAME")) {
-                branchName = System.getenv("BRANCH_NAME")
-            }
-
-            if (!branchName.matches(state.mainBranchPattern)) {
-                branchName = "$prefix.${branchName.toLowerCase()}"
-            }
-            //Split at branch delimiter /-_+ and replace with .
-            branchName = branchName.replaceAll(/((\/|-|_|\.)+)([\w])/) { all, delimiterAll, delimiter , firstAfter -> ".${firstAfter}" }
-            //Remove all hanging /-_+
-            branchName = branchName.replaceAll(/[-\/_\+]+$/) { "" }
-            //parse all digits and replace with unpadded value e.g. 001 -> 1
-            branchName = branchName.replaceAll(/([\w\.])([0-9]+)/) { all, s, delimiter ->
-                if(s == ".") {
-                    s = ""
-                }
-
-                "${s}.${Integer.parseInt(delimiter).toString()}"
-            }
-
-            state.copyWith(inferredPreRelease: branchName)
-        }
-    }
+    private static final scopes = one(Strategies.Normal.USE_MARKER_TAG)
 
     static final SemVerStrategy DEFAULT = new SemVerStrategy(
             name: '',
@@ -92,7 +34,7 @@ final class SemverV2Strategies {
             allowDirtyRepo: true,
             normalStrategy: scopes,
             preReleaseStrategy: Strategies.PreRelease.NONE,
-            buildMetadataStrategy: BuildMetadata.NONE,
+            buildMetadataStrategy: Strategies.BuildMetadata.NONE,
             createTag: true,
             enforcePrecedence: true
     )
@@ -113,8 +55,7 @@ final class SemverV2Strategies {
      */
     static final SemVerStrategy FINAL = DEFAULT.copyWith(
             name: 'production',
-
-            stages: ['final','production'] as SortedSet
+            stages: ['production'] as SortedSet
     )
 
     /**
@@ -155,7 +96,7 @@ final class SemverV2Strategies {
      */
     static final SemVerStrategy PRE_RELEASE = DEFAULT.copyWith(
             name: 'pre-release',
-            stages: ['rc', 'staging'] as SortedSet,
+            stages: ['staging'] as SortedSet,
             preReleaseStrategy: all(Strategies.PreRelease.STAGE_FIXED, Strategies.PreRelease.COUNT_INCREMENTED)
     )
 
@@ -212,9 +153,9 @@ final class SemverV2Strategies {
      */
     static final SemVerStrategy SNAPSHOT = DEFAULT.copyWith(
             name: 'snapshot',
-            stages: ['ci', 'snapshot', 'SNAPSHOT'] as SortedSet,
+            stages: ['ci'] as SortedSet,
             createTag: false,
-            preReleaseStrategy: all(PreRelease.STAGE_BRANCH_NAME, Strategies.PreRelease.COUNT_COMMITS_SINCE_ANY),
+            preReleaseStrategy: all(SemverV2Strategies.PreRelease.STAGE_BRANCH_NAME, Strategies.PreRelease.COUNT_COMMITS_SINCE_MARKER),
             enforcePrecedence: false
     )
 }

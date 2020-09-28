@@ -22,6 +22,7 @@ import com.github.zafarkhaja.semver.Version
 
 import org.ajoberstar.grgit.Branch
 import org.ajoberstar.grgit.Commit
+import org.ajoberstar.grgit.Tag
 
 /**
  * Working state used by {@link PartialSemVerStrategy}.
@@ -38,6 +39,11 @@ final class SemVerStrategyState {
     String inferredNormal
     String inferredPreRelease
     String inferredBuildMetadata
+    NearestVersion nearestCiMarker
+    NearestVersion nearestReleaseMarker
+
+    String releaseBranchPattern
+    String mainBranchPattern
 
     Version toVersion() {
         return new Version.Builder().with {

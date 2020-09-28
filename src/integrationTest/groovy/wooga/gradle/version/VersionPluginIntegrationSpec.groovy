@@ -92,43 +92,49 @@ class VersionPluginIntegrationSpec extends IntegrationSpec {
         result.standardOutput.contains("${extensionName}.${property}: ${testValue}")
 
         where:
-        property            | value               | expectedValue                       | location
-        "scope"             | "major"             | ChangeScope.MAJOR                   | PropertyLocation.env
-        "scope"             | "MAJOR"             | ChangeScope.MAJOR                   | PropertyLocation.env
-        "scope"             | "Major"             | ChangeScope.MAJOR                   | PropertyLocation.env
-        "scope"             | "minor"             | ChangeScope.MINOR                   | PropertyLocation.env
-        "scope"             | "MINOR"             | ChangeScope.MINOR                   | PropertyLocation.env
-        "scope"             | "Minor"             | ChangeScope.MINOR                   | PropertyLocation.env
-        "scope"             | "patch"             | ChangeScope.PATCH                   | PropertyLocation.env
-        "scope"             | "PATCH"             | ChangeScope.PATCH                   | PropertyLocation.env
-        "scope"             | "Patch"             | ChangeScope.PATCH                   | PropertyLocation.env
-        "scope"             | "major"             | ChangeScope.MAJOR                   | PropertyLocation.property
-        "scope"             | "MAJOR"             | ChangeScope.MAJOR                   | PropertyLocation.property
-        "scope"             | "Major"             | ChangeScope.MAJOR                   | PropertyLocation.property
-        "scope"             | "minor"             | ChangeScope.MINOR                   | PropertyLocation.property
-        "scope"             | "MINOR"             | ChangeScope.MINOR                   | PropertyLocation.property
-        "scope"             | "Minor"             | ChangeScope.MINOR                   | PropertyLocation.property
-        "scope"             | "patch"             | ChangeScope.PATCH                   | PropertyLocation.property
-        "scope"             | "PATCH"             | ChangeScope.PATCH                   | PropertyLocation.property
-        "scope"             | "Patch"             | ChangeScope.PATCH                   | PropertyLocation.property
-        "scope"             | "null"              | _                                   | PropertyLocation.none
-        "stage"             | "snapshot"          | _                                   | PropertyLocation.env
-        "stage"             | "final"             | _                                   | PropertyLocation.property
-        "stage"             | "null"              | _                                   | PropertyLocation.none
-        "versionScheme"     | "semver2"           | VersionScheme.semver2               | PropertyLocation.env
-        "versionScheme"     | "semver"            | VersionScheme.semver                | PropertyLocation.env
-        "versionScheme"     | "semver2"           | VersionScheme.semver2               | PropertyLocation.property
-        "versionScheme"     | "semver"            | VersionScheme.semver                | PropertyLocation.property
-        "versionCodeScheme" | "releaseCountBasic" | VersionCodeScheme.releaseCountBasic | PropertyLocation.env
-        "versionCodeScheme" | "releaseCount"      | VersionCodeScheme.releaseCount      | PropertyLocation.env
-        "versionCodeScheme" | "semver"            | VersionCodeScheme.semver            | PropertyLocation.env
-        "versionCodeScheme" | "none"              | VersionCodeScheme.none              | PropertyLocation.env
-        "versionCodeScheme" | "releaseCountBasic" | VersionCodeScheme.releaseCountBasic | PropertyLocation.property
-        "versionCodeScheme" | "releaseCount"      | VersionCodeScheme.releaseCount      | PropertyLocation.property
-        "versionCodeScheme" | "semver"            | VersionCodeScheme.semver            | PropertyLocation.property
-        "versionCodeScheme" | "none"              | VersionCodeScheme.none              | PropertyLocation.property
-        "versionCodeOffset" | 100                 | _                                   | PropertyLocation.env
-        "versionCodeOffset" | 200                 | _                                   | PropertyLocation.property
+        property               | value               | expectedValue                       | location
+        "scope"                | "major"             | ChangeScope.MAJOR                   | PropertyLocation.env
+        "scope"                | "MAJOR"             | ChangeScope.MAJOR                   | PropertyLocation.env
+        "scope"                | "Major"             | ChangeScope.MAJOR                   | PropertyLocation.env
+        "scope"                | "minor"             | ChangeScope.MINOR                   | PropertyLocation.env
+        "scope"                | "MINOR"             | ChangeScope.MINOR                   | PropertyLocation.env
+        "scope"                | "Minor"             | ChangeScope.MINOR                   | PropertyLocation.env
+        "scope"                | "patch"             | ChangeScope.PATCH                   | PropertyLocation.env
+        "scope"                | "PATCH"             | ChangeScope.PATCH                   | PropertyLocation.env
+        "scope"                | "Patch"             | ChangeScope.PATCH                   | PropertyLocation.env
+        "scope"                | "major"             | ChangeScope.MAJOR                   | PropertyLocation.property
+        "scope"                | "MAJOR"             | ChangeScope.MAJOR                   | PropertyLocation.property
+        "scope"                | "Major"             | ChangeScope.MAJOR                   | PropertyLocation.property
+        "scope"                | "minor"             | ChangeScope.MINOR                   | PropertyLocation.property
+        "scope"                | "MINOR"             | ChangeScope.MINOR                   | PropertyLocation.property
+        "scope"                | "Minor"             | ChangeScope.MINOR                   | PropertyLocation.property
+        "scope"                | "patch"             | ChangeScope.PATCH                   | PropertyLocation.property
+        "scope"                | "PATCH"             | ChangeScope.PATCH                   | PropertyLocation.property
+        "scope"                | "Patch"             | ChangeScope.PATCH                   | PropertyLocation.property
+        "scope"                | "null"              | _                                   | PropertyLocation.none
+        "stage"                | "snapshot"          | _                                   | PropertyLocation.env
+        "stage"                | "final"             | _                                   | PropertyLocation.property
+        "stage"                | "null"              | _                                   | PropertyLocation.none
+        "versionScheme"        | "semver2"           | VersionScheme.semver2               | PropertyLocation.env
+        "versionScheme"        | "semver"            | VersionScheme.semver                | PropertyLocation.env
+        "versionScheme"        | "semver2"           | VersionScheme.semver2               | PropertyLocation.property
+        "versionScheme"        | "semver"            | VersionScheme.semver                | PropertyLocation.property
+        "versionCodeScheme"    | "releaseCountBasic" | VersionCodeScheme.releaseCountBasic | PropertyLocation.env
+        "versionCodeScheme"    | "releaseCount"      | VersionCodeScheme.releaseCount      | PropertyLocation.env
+        "versionCodeScheme"    | "semver"            | VersionCodeScheme.semver            | PropertyLocation.env
+        "versionCodeScheme"    | "none"              | VersionCodeScheme.none              | PropertyLocation.env
+        "versionCodeScheme"    | "releaseCountBasic" | VersionCodeScheme.releaseCountBasic | PropertyLocation.property
+        "versionCodeScheme"    | "releaseCount"      | VersionCodeScheme.releaseCount      | PropertyLocation.property
+        "versionCodeScheme"    | "semver"            | VersionCodeScheme.semver            | PropertyLocation.property
+        "versionCodeScheme"    | "none"              | VersionCodeScheme.none              | PropertyLocation.property
+        "versionCodeOffset"    | 100                 | _                                   | PropertyLocation.env
+        "versionCodeOffset"    | 200                 | _                                   | PropertyLocation.property
+        "releaseBranchPattern" | /^m.*/              | _                                   | PropertyLocation.property
+        "releaseBranchPattern" | /(some|value)/      | _                                   | PropertyLocation.env
+        "releaseBranchPattern" | '/.*/'              | /.*/                                | PropertyLocation.script
+        "mainBranchPattern"    | /^m.*/              | _                                   | PropertyLocation.property
+        "mainBranchPattern"    | /(some|value)/      | _                                   | PropertyLocation.env
+        "mainBranchPattern"    | '/.*/'              | /.*/                                | PropertyLocation.script
 
         extensionName = "versionBuilder"
         testValue = (expectedValue == _) ? value : expectedValue
@@ -162,31 +168,47 @@ class VersionPluginIntegrationSpec extends IntegrationSpec {
         result.standardOutput.contains("${extensionName}.${property}: ${rawValue}")
 
         where:
-        property            | method                  | rawValue                            | type
-        "versionScheme"     | "versionScheme"         | "semver"                            | "String"
-        "versionScheme"     | "versionScheme"         | VersionScheme.semver2               | "VersionScheme"
-        "versionScheme"     | "versionScheme"         | VersionScheme.semver                | "Provider<VersionScheme>"
-        "versionScheme"     | "versionScheme.set"     | VersionScheme.semver2               | "VersionScheme"
-        "versionScheme"     | "versionScheme.set"     | VersionScheme.semver                | "Provider<VersionScheme>"
-        "versionScheme"     | "setVersionScheme"      | "semver"                            | "String"
-        "versionScheme"     | "setVersionScheme"      | VersionScheme.semver2               | "VersionScheme"
-        "versionScheme"     | "setVersionScheme"      | VersionScheme.semver                | "Provider<VersionScheme>"
+        property               | method                     | rawValue                            | type
+        "versionScheme"        | "versionScheme"            | "semver"                            | "String"
+        "versionScheme"        | "versionScheme"            | VersionScheme.semver2               | "VersionScheme"
+        "versionScheme"        | "versionScheme"            | VersionScheme.semver                | "Provider<VersionScheme>"
+        "versionScheme"        | "versionScheme"            | VersionScheme.staticMarker          | "Provider<VersionScheme>"
+        "versionScheme"        | "versionScheme.set"        | VersionScheme.semver2               | "VersionScheme"
+        "versionScheme"        | "versionScheme.set"        | VersionScheme.semver                | "Provider<VersionScheme>"
+        "versionScheme"        | "versionScheme.set"        | VersionScheme.staticMarker          | "Provider<VersionScheme>"
+        "versionScheme"        | "setVersionScheme"         | "semver"                            | "String"
+        "versionScheme"        | "setVersionScheme"         | VersionScheme.semver2               | "VersionScheme"
+        "versionScheme"        | "setVersionScheme"         | VersionScheme.semver                | "Provider<VersionScheme>"
 
-        "versionCodeScheme" | "versionCodeScheme"     | "releaseCountBasic"                 | "String"
-        "versionCodeScheme" | "versionCodeScheme"     | VersionCodeScheme.semver            | "VersionCodeScheme"
-        "versionCodeScheme" | "versionCodeScheme"     | VersionCodeScheme.releaseCountBasic | "Provider<VersionCodeScheme>"
-        "versionCodeScheme" | "versionCodeScheme.set" | VersionCodeScheme.semver            | "VersionCodeScheme"
-        "versionCodeScheme" | "versionCodeScheme.set" | VersionCodeScheme.releaseCountBasic | "Provider<VersionCodeScheme>"
-        "versionCodeScheme" | "setVersionCodeScheme"  | "releaseCount"                      | "String"
-        "versionCodeScheme" | "setVersionCodeScheme"  | VersionCodeScheme.none              | "VersionCodeScheme"
-        "versionCodeScheme" | "setVersionCodeScheme"  | VersionCodeScheme.releaseCount      | "Provider<VersionCodeScheme>"
+        "versionCodeScheme"    | "versionCodeScheme"        | "releaseCountBasic"                 | "String"
+        "versionCodeScheme"    | "versionCodeScheme"        | VersionCodeScheme.semver            | "VersionCodeScheme"
+        "versionCodeScheme"    | "versionCodeScheme"        | VersionCodeScheme.releaseCountBasic | "Provider<VersionCodeScheme>"
+        "versionCodeScheme"    | "versionCodeScheme.set"    | VersionCodeScheme.semver            | "VersionCodeScheme"
+        "versionCodeScheme"    | "versionCodeScheme.set"    | VersionCodeScheme.releaseCountBasic | "Provider<VersionCodeScheme>"
+        "versionCodeScheme"    | "setVersionCodeScheme"     | "releaseCount"                      | "String"
+        "versionCodeScheme"    | "setVersionCodeScheme"     | VersionCodeScheme.none              | "VersionCodeScheme"
+        "versionCodeScheme"    | "setVersionCodeScheme"     | VersionCodeScheme.releaseCount      | "Provider<VersionCodeScheme>"
 
-        "versionCodeOffset" | "versionCodeOffset"     | 1                                   | "Integer"
-        "versionCodeOffset" | "versionCodeOffset"     | 2                                   | "Provider<Integer>"
-        "versionCodeOffset" | "versionCodeOffset.set" | 3                                   | "Integer"
-        "versionCodeOffset" | "versionCodeOffset.set" | 4                                   | "Provider<Integer>"
-        "versionCodeOffset" | "setVersionCodeOffset"  | 5                                   | "Integer"
-        "versionCodeOffset" | "setVersionCodeOffset"  | 6                                   | "Provider<Integer>"
+        "versionCodeOffset"    | "versionCodeOffset"        | 1                                   | "Integer"
+        "versionCodeOffset"    | "versionCodeOffset"        | 2                                   | "Provider<Integer>"
+        "versionCodeOffset"    | "versionCodeOffset.set"    | 3                                   | "Integer"
+        "versionCodeOffset"    | "versionCodeOffset.set"    | 4                                   | "Provider<Integer>"
+        "versionCodeOffset"    | "setVersionCodeOffset"     | 5                                   | "Integer"
+        "versionCodeOffset"    | "setVersionCodeOffset"     | 6                                   | "Provider<Integer>"
+
+        "releaseBranchPattern" | "releaseBranchPattern"     | /.*/                                | "String"
+        "releaseBranchPattern" | "releaseBranchPattern"     | /(some|value)/                      | "Provider<String>"
+        "releaseBranchPattern" | "releaseBranchPattern.set" | /[a-z]/                             | "String"
+        "releaseBranchPattern" | "releaseBranchPattern.set" | /[0-9]/                             | "Provider<String>"
+        "releaseBranchPattern" | "setReleaseBranchPattern"  | /[alto]-[sierra]/                   | "String"
+        "releaseBranchPattern" | "setReleaseBranchPattern"  | /[whooom]/                          | "Provider<String>"
+
+        "mainBranchPattern"    | "mainBranchPattern"        | /.*/                                | "String"
+        "mainBranchPattern"    | "mainBranchPattern"        | /(some|value)/                      | "Provider<String>"
+        "mainBranchPattern"    | "mainBranchPattern.set"    | /[a-z]/                             | "String"
+        "mainBranchPattern"    | "mainBranchPattern.set"    | /[0-9]/                             | "Provider<String>"
+        "mainBranchPattern"    | "setMainBranchPattern"     | /[alto]-[sierra]/                   | "String"
+        "mainBranchPattern"    | "setMainBranchPattern"     | /[whooom]/                          | "Provider<String>"
 
         value = wrapValueBasedOnType(rawValue, type)
         extensionName = "versionBuilder"

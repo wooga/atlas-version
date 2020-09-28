@@ -609,6 +609,105 @@ class VersionPluginSpec extends ProjectSpec {
         scopeTitle = (scope == _) ? "unset" : scope
     }
 
+    @Unroll('verify inferred semver 2.x version from productionMarker: #productionMarkerTitle, ciMarker: #ciMarkerTitle, stage: #stage and branch: #branchName to be #expectedVersion')
+    def "uses custom wooga application strategies static marker"() {
+        given: "a project with specified release stage and scope"
+
+        project.ext.set('release.stage', stage)
+        project.ext.set('version.scheme', 'staticMarker')
+
+        if (releaseBranchPattern != _) {
+            project.ext.set('versionBuilder.releaseBranchPattern', releaseBranchPattern)
+        }
+
+        if (mainBranchPattern != _) {
+            project.ext.set('versionBuilder.mainBranchPattern', mainBranchPattern)
+        }
+
+        and: "a history"
+
+        if (branchName != "master") {
+            git.checkout(branch: "$branchName", startPoint: 'master', createBranch: true)
+        }
+
+        5.times {
+            git.commit(message: 'feature commit')
+        }
+
+        if (ciMarker != _) {
+            git.tag.add(name: "ci-${ciMarker}")
+        }
+
+        if (productionMarker != _) {
+            git.tag.add(name: "release-${productionMarker}")
+        }
+
+        (distance - distanceNearestAny).times {
+            git.commit(message: 'fix commit')
+        }
+
+        if (nearestAny != _) {
+            git.tag.add(name: "v${nearestAny}")
+        }
+
+        distanceNearestAny.times {
+            git.commit(message: 'fix commit')
+        }
+
+        when:
+        project.plugins.apply(PLUGIN_NAME)
+
+        then:
+        project.version.toString() == expectedVersion
+
+
+        where:
+        nearestAny        | ciMarker | productionMarker | distance | distanceNearestAny | stage        | branchName                 | releaseBranchPattern         | mainBranchPattern       | expectedVersion
+        _                 | "0.2.0"  | "0.1.0"          | 1        | 0                  | "ci"         | "develop"                  | _                            | _                       | "0.2.0-develop.1"
+        _                 | "0.2.0"  | "0.1.0"          | 2        | 0                  | "ci"         | "develop"                  | _                            | /^master$/              | "0.2.0-branch.develop.2"
+        _                 | "0.2.0"  | "0.1.0"          | 3        | 0                  | "ci"         | "master"                   | _                            | _                       | "0.1.0-master.3"
+        _                 | "0.2.0"  | "0.1.0"          | 4        | 0                  | "ci"         | "master"                   | /^(release\/.*|production)$/ | _                       | "0.2.0-master.4"
+        _                 | "0.2.0"  | "0.1.0"          | 5        | 0                  | "ci"         | "production"               | /^(release\/.*|production)$/ | /^(master|production)$/ | "0.1.0-production.5"
+        _                 | "0.2.0"  | "0.1.0"          | 6        | 0                  | "ci"         | "feature/test"             | _                            | _                       | "0.2.0-branch.feature.test.6"
+        "0.2.0"           | "0.3.0"  | "0.2.0"          | 7        | 3                  | "ci"         | "master"                   | _                            | _                       | "0.2.0-master.7"
+        "0.2.0"           | "0.3.0"  | "0.2.0"          | 7        | 3                  | "ci"         | "develop"                  | _                            | _                       | "0.3.0-develop.7"
+
+        _                 | "0.2.0"  | "0.1.0"          | 1        | 0                  | "staging"    | "develop"                  | _                            | _                       | "0.2.0-staging.1"
+        _                 | "0.2.0"  | "0.1.0"          | 2        | 0                  | "staging"    | "develop"                  | _                            | /^master$/              | "0.2.0-staging.1"
+        _                 | "0.2.0"  | "0.1.0"          | 3        | 0                  | "staging"    | "master"                   | _                            | _                       | "0.1.0-staging.1"
+        _                 | "0.2.0"  | "0.1.0"          | 4        | 0                  | "staging"    | "master"                   | /^(release\/.*|production)$/ | _                       | "0.2.0-staging.1"
+        _                 | "0.2.0"  | "0.1.0"          | 5        | 0                  | "staging"    | "production"               | /^(release\/.*|production)$/ | /^(master|production)$/ | "0.1.0-staging.1"
+        _                 | "0.2.0"  | "0.1.0"          | 6        | 0                  | "staging"    | "feature/test"             | _                            | _                       | "0.2.0-staging.1"
+        "0.2.0-staging.1" | "0.3.0"  | "0.2.0"          | 7        | 3                  | "staging"    | "master"                   | _                            | _                       | "0.2.0-staging.2"
+        "0.2.0-staging.1" | "0.3.0"  | "0.2.0"          | 7        | 3                  | "staging"    | "develop"                  | _                            | _                       | "0.3.0-staging.1"
+
+        _                 | "0.2.0"  | "0.1.0"          | 1        | 0                  | "production" | "develop"                  | _                            | _                       | "0.2.0"
+        _                 | "0.2.0"  | "0.1.0"          | 2        | 0                  | "production" | "develop"                  | _                            | /^master$/              | "0.2.0"
+        _                 | "0.2.0"  | "0.1.0"          | 3        | 0                  | "production" | "master"                   | _                            | _                       | "0.1.0"
+        _                 | "0.2.0"  | "0.1.0"          | 4        | 0                  | "production" | "master"                   | /^(release\/.*|production)$/ | _                       | "0.2.0"
+        _                 | "0.2.0"  | "0.1.0"          | 5        | 0                  | "production" | "production"               | /^(release\/.*|production)$/ | /^(master|production)$/ | "0.1.0"
+        _                 | "0.2.0"  | "0.1.0"          | 6        | 0                  | "production" | "feature/test"             | _                            | _                       | "0.2.0"
+        "0.2.0-staging.1" | "0.3.0"  | "0.2.0"          | 7        | 3                  | "production" | "master"                   | _                            | _                       | "0.2.0"
+        "0.2.0-staging.1" | "0.3.0"  | "0.2.0"          | 7        | 3                  | "production" | "develop"                  | _                            | _                       | "0.3.0"
+
+        _                 | "0.2.0"  | "0.1.0"          | 10       | 0                  | "ci"         | "test/build01-"            | _                            | _                       | "0.2.0-branch.test.build.1.10"
+        _                 | "0.2.0"  | _                | 22       | 0                  | "ci"         | "test/build01+"            | _                            | _                       | "0.2.0-branch.test.build.1.22"
+        _                 | "0.2.0"  | _                | 45       | 0                  | "ci"         | "test/build01_"            | _                            | _                       | "0.2.0-branch.test.build.1.45"
+        _                 | "0.2.0"  | _                | 204      | 0                  | "ci"         | "test/build01"             | _                            | _                       | "0.2.0-branch.test.build.1.204"
+        _                 | "0.2.0"  | _                | 100      | 0                  | "ci"         | "test/build.01"            | _                            | _                       | "0.2.0-branch.test.build.1.100"
+        _                 | "0.2.0"  | _                | 55       | 0                  | "ci"         | "test/build002"            | _                            | _                       | "0.2.0-branch.test.build.2.55"
+        _                 | "0.2.0"  | _                | 66       | 0                  | "ci"         | "test/build.002"           | _                            | _                       | "0.2.0-branch.test.build.2.66"
+        _                 | "0.2.0"  | _                | 789      | 0                  | "ci"         | "test/build000000000003"   | _                            | _                       | "0.2.0-branch.test.build.3.789"
+        _                 | "0.2.0"  | _                | 777      | 0                  | "ci"         | "test/build.000000000003"  | _                            | _                       | "0.2.0-branch.test.build.3.777"
+        _                 | "0.2.0"  | _                | 789      | 0                  | "ci"         | "test/build000000.000003"  | _                            | _                       | "0.2.0-branch.test.build.0.3.789"
+        _                 | "0.2.0"  | _                | 3        | 0                  | "ci"         | "test/build.000000.000003" | _                            | _                       | "0.2.0-branch.test.build.0.3.3"
+        _                 | "0.2.0"  | "0.1.0"          | 3        | 0                  | "ci"         | "release/1.00.x"           | _                            | _                       | "0.1.0-branch.release.1.0.x.3"
+
+        nearestNormal = '1.0.0'
+        productionMarkerTitle = (productionMarker == _) ? "unset" : productionMarker
+        ciMarkerTitle = (ciMarker == _) ? "unset" : ciMarker
+    }
+
     @Unroll("Finds correct nearest version #useTagPrefix from nearestNormal: #nearestNormal, nearestAny: #nearestAnyTitle, scope: #scopeTitle, stage: #stage and branch: #branchName")
     def "finds nearest version tag"() {
         given: "a project with specified release stage and scope"
