@@ -284,7 +284,7 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
                             VersionConsts.DEFAULT_MAIN_BRANCH_PATTERN).toString()
         }))
 
-        version = new MemoisationProvider(project.provider({
+        version = project.provider({
             def versionStrategies = versionStrategies.get()
             def defaultStrategy = defaultStrategy.get()
             def git = git.getOrNull()
@@ -312,9 +312,9 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
             } else {
                 new ReleaseVersion(version: VersionConsts.UNINITIALIZED_VERSION)
             }
-        }))
+        }.memoize())
 
-        versionCode = new MemoisationProvider(versionCodeScheme.map({ scheme ->
+        versionCode = versionCodeScheme.map ({ scheme ->
             def offset = versionCodeOffset.getOrElse(0)
             switch (scheme) {
                 case VersionCodeScheme.semverBasic:
@@ -333,6 +333,6 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
                 default:
                     0
             }
-        }))
+        }.memoize())
     }
 }
