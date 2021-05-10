@@ -18,29 +18,29 @@
 
 package wooga.gradle.version.internal
 
-import org.gradle.api.internal.provider.AbstractProvider
+import org.gradle.api.internal.provider.AbstractMinimalProvider
 import org.gradle.api.provider.Provider
 
-class ToStringProvider <T> extends AbstractProvider<T> implements Provider<T> {
+class ToStringProvider <T> extends AbstractMinimalProvider<T> {
 
-    private final Provider<T> inner
+    private final Provider<T> inner;
 
-    ToStringProvider(Provider<T> inner) {
-        this.inner = inner
+    ToStringProvider(Provider<T> provider) {
+        this.inner = provider
     }
 
     @Override
-    Class<T> getType() {
-        return null
-    }
-
-    @Override
-    T getOrNull() {
-        return inner.getOrNull()
+    protected Value<? extends T> calculateOwnValue(ValueConsumer valueConsumer) {
+        return Value.ofNullable(inner.getOrNull())
     }
 
     @Override
     String toString() {
         return getOrNull().toString()
+    }
+
+    @Override
+    Class<T> getType() {
+        return null
     }
 }

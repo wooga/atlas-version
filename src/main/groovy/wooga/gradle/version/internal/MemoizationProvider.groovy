@@ -18,28 +18,37 @@
 
 package wooga.gradle.version.internal
 
-import org.gradle.api.internal.provider.AbstractProvider
+import org.gradle.api.internal.provider.AbstractMinimalProvider
 import org.gradle.api.provider.Provider
 
-class MemoisationProvider<T> extends AbstractProvider<T> implements Provider<T> {
+import java.util.concurrent.Callable
 
-    private T inferredValue
+class MemoizationProvider<T> extends AbstractMinimalProvider<T> {
+
     private final Provider<T> inner
+    private final Callable<? extends T> value;
+    private Value<T> inferredValue
 
-    MemoisationProvider(Provider<T> provider) {
+    MemoizationProvider(Provider<T> provider) {
         this.inner = provider
+        this.value = new Callable<T>() {
+            @Override
+            T call() throws Exception {
+                return inner.get()
+            }
+        }
+    }
+
+    @Override
+    protected Value<? extends T> calculateOwnValue(ValueConsumer _) {
+        if(!inferredValue) {
+            inferredValue = Value.ofNullable(inner.getOrNull())
+        }
+        return inferredValue
     }
 
     @Override
     Class<T> getType() {
-        null
-    }
-
-    @Override
-    T getOrNull() {
-        if(!inferredValue) {
-            inferredValue = inner.getOrNull()
-        }
-        inferredValue
+        return null
     }
 }

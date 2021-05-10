@@ -21,7 +21,7 @@ package wooga.gradle.version.internal
 import nebula.test.ProjectSpec
 import spock.lang.Unroll
 
-class MemoisationProviderSpec extends ProjectSpec {
+class MemoizationProviderSpec extends ProjectSpec {
     def "provider caches value"() {
         given: "a random number generator"
         def random = new Random()
@@ -29,7 +29,7 @@ class MemoisationProviderSpec extends ProjectSpec {
         def baseProvider = project.provider({ random.nextInt() })
 
         and: "a memoisation provider"
-        def subject = new MemoisationProvider(baseProvider)
+        def subject = new MemoizationProvider(baseProvider)
 
         expect:
         subject.get() == subject.get()
@@ -44,7 +44,7 @@ class MemoisationProviderSpec extends ProjectSpec {
     def "getOrNull returns value or null"() {
         given: "a memoisation provider"
         def baseProvider = project.provider({ innerValue })
-        def subject = new MemoisationProvider(baseProvider)
+        def subject = new MemoizationProvider(baseProvider)
 
         when:
         def value = subject.getOrNull()
@@ -61,7 +61,7 @@ class MemoisationProviderSpec extends ProjectSpec {
     def "get throws error when value is null"() {
         given: "a memoisation provider"
         def baseProvider = project.provider({ null })
-        def subject = new MemoisationProvider(baseProvider)
+        def subject = new MemoizationProvider(baseProvider)
 
         when:
         subject.get()
@@ -74,7 +74,7 @@ class MemoisationProviderSpec extends ProjectSpec {
     def "present returns #expectedValue when value is #message"() {
         given: "a memoisation provider"
         def baseProvider = project.provider({ innerValue })
-        def subject = new MemoisationProvider(baseProvider)
+        def subject = new MemoizationProvider(baseProvider)
 
         when:
         def value = subject.isPresent()
