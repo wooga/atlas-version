@@ -48,4 +48,9 @@ interface VersionStrategy {
      * @return the inferred version
      */
     ReleaseVersion infer(Project project, Grgit grgit)
+
+    /**
+     * The stages supported by this strategy.
+     */
+    SortedSet<String> getStages()
 }

@@ -18,6 +18,7 @@
 
 package wooga.gradle.version.internal
 
+import wooga.gradle.version.ReleaseStage
 import wooga.gradle.version.VersionCodeScheme
 import wooga.gradle.version.VersionScheme
 import wooga.gradle.version.internal.release.base.DefaultVersionStrategy
@@ -43,6 +44,7 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
     protected final Property<VersionStrategy> preReleaseStrategy
     protected final Property<VersionStrategy> finalStrategy
     protected final Property<VersionStrategy> defaultStrategy
+
 
     final Provider<List<VersionStrategy>> versionStrategies
 
@@ -177,5 +179,21 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
                     0
             }
         }.memoize())
+
+        // TODO: Test these providers are resolved correctly
+        // Set up providers to evaluate the release stage of a project,
+        // which  can be used by client projects
+        isDevelopment = developmentStrategy.map({
+            it.stages.contains(this.stage.get())
+        })
+        isSnapshot = snapshotStrategy.map({
+            it.stages.contains(this.stage.get())
+        })
+        isPrerelease = preReleaseStrategy.map({
+            it.stages.contains(this.stage.get())
+        })
+        isFinal = finalStrategy.map({
+            it.stages.contains(this.stage.get())
+        })
     }
 }

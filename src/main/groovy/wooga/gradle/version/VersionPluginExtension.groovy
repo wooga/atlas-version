@@ -19,12 +19,14 @@
 package wooga.gradle.version
 
 import com.wooga.gradle.BaseSpec
+import org.gradle.api.provider.ProviderFactory
 import wooga.gradle.version.internal.release.base.ReleaseVersion
 import wooga.gradle.version.internal.release.base.TagStrategy
 import wooga.gradle.version.internal.release.semver.ChangeScope
 import org.ajoberstar.grgit.Grgit
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
+import wooga.gradle.version.strategies.SemverV2Strategies
 
 trait VersionPluginExtension implements BaseSpec {
 
@@ -97,7 +99,7 @@ trait VersionPluginExtension implements BaseSpec {
     /**
      * @return If set, used during the evaluation of {@code versionCode}
      */
-    Property<Integer> getVersionCodeOffset(){
+    Property<Integer> getVersionCodeOffset() {
         versionCodeOffset
     }
 
@@ -187,7 +189,7 @@ trait VersionPluginExtension implements BaseSpec {
 
     private Provider<ReleaseVersion> version
 
-    void setVersion(Provider<ReleaseVersion> value){
+    void setVersion(Provider<ReleaseVersion> value) {
         version = value
     }
 
@@ -238,4 +240,84 @@ trait VersionPluginExtension implements BaseSpec {
     }
 
     TagStrategy tagStrategy = new TagStrategy()
+
+    /**
+     * @return Whether this is a development build
+     */
+    Provider<Boolean> getIsDevelopment() {
+        isDevelopment
+    }
+
+    void setIsDevelopment(Provider<Boolean> value) {
+        isDevelopment = value
+    }
+
+    Provider<Boolean> isDevelopment
+
+    /**
+     * @return Whether this is a production build
+     */
+    Provider<Boolean> getIsFinal() {
+        isFinal
+    }
+
+    Provider<Boolean> isFinal
+
+    void setIsFinal(Provider<Boolean> value) {
+        isFinal = value
+    }
+
+    /**
+     * @return Whether this is a pre-release build
+     */
+    Provider<Boolean> getIsPrerelease() {
+        isPrerelease
+    }
+
+    Provider<Boolean> isPrerelease
+
+    void setIsPrerelease(Provider<Boolean> value) {
+        isPrerelease = value
+    }
+
+    /**
+     * @return Whether this is a snapshot build (such as from a CI environment)
+     */
+    Provider<Boolean> getIsSnapshot() {
+        isSnapshot
+    }
+
+    Provider<Boolean> isSnapshot
+
+    void setIsSnapshot(Provider<Boolean> value) {
+        isSnapshot = value
+    }
+
+    /**
+     * @return The deduced release stage for this build
+     */
+    Provider<ReleaseStage> getReleaseStage() {
+        releaseStage
+    }
+
+    final Provider<ReleaseStage> releaseStage = providers.provider({
+        if (isDevelopment.get()) {
+            return ReleaseStage.Development
+        } else if (isSnapshot.get()) {
+            return ReleaseStage.Snapshot
+        } else if (isPrerelease.get()) {
+            return ReleaseStage.Prerelease
+        } else if (isFinal.get()) {
+            return ReleaseStage.Final
+        }
+        return ReleaseStage.Unknown
+    })
+}
+
+enum ReleaseStage {
+    Development,
+    Snapshot,
+    Prerelease,
+    Final,
+    Unknown
 }
