@@ -30,7 +30,7 @@ import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
-import wooga.gradle.version.VersionConsts
+import wooga.gradle.version.VersionPluginConventions
 import wooga.gradle.version.VersionPluginExtension
 import wooga.gradle.version.strategies.SemverV1Strategies
 import wooga.gradle.version.strategies.SemverV2Strategies
@@ -253,36 +253,16 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
              preReleaseStrategy.getOrNull(), finalStrategy.getOrNull()].findAll { it != null }
         })
 
-        scope = project.provider({
-            String scope = System.getenv()[VersionConsts.VERSION_SCOPE_ENV_VAR] ?:
-                    project.properties.get(VersionConsts.VERSION_SCOPE_OPTION)
-            if (!scope) {
-                scope = project.properties.get(VersionConsts.LEGACY_VERSION_SCOPE_OPTION)
-            }
-
-            if (scope) {
-                return ChangeScope.valueOf(scope.toUpperCase())
+        scope = VersionPluginConventions.scope.getStringValueProvider(project).map({
+            if (it) {
+                return ChangeScope.valueOf(it.toUpperCase())
             }
             null
         })
 
-        stage = project.provider({
-            System.getenv()[VersionConsts.VERSION_STAGE_ENV_VAR] ?:
-                    project.properties.get(VersionConsts.VERSION_STAGE_OPTION) ?:
-                            project.properties.get(VersionConsts.LEGACY_VERSION_STAGE_OPTION)
-        })
-
-        releaseBranchPattern.set( project.provider({
-            (System.getenv()[VersionConsts.RELEASE_BRANCH_PATTERN_ENV_VAR] ?:
-                    project.properties.get(VersionConsts.RELEASE_BRANCH_PATTERN_OPTION) ?:
-                            VersionConsts.DEFAULT_RELEASE_BRANCH_PATTERN).toString()
-        }))
-
-        mainBranchPattern.set(project.provider({
-            (System.getenv()[VersionConsts.MAIN_BRANCH_PATTERN_ENV_VAR] ?:
-                    project.properties.get(VersionConsts.MAIN_BRANCH_PATTERN_OPTION) ?:
-                            VersionConsts.DEFAULT_MAIN_BRANCH_PATTERN).toString()
-        }))
+        stage = VersionPluginConventions.stage.getStringValueProvider(project)
+        releaseBranchPattern.set(VersionPluginConventions.releaseBranchPattern.getStringValueProvider(project))
+        mainBranchPattern.set(VersionPluginConventions.mainBranchPattern.getStringValueProvider(project))
 
         version = project.provider({
             def versionStrategies = versionStrategies.get()
@@ -310,7 +290,7 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
                 }
                 return selectedStrategy.infer(project, git)
             } else {
-                new ReleaseVersion(version: VersionConsts.UNINITIALIZED_VERSION)
+                new ReleaseVersion(version: VersionPluginConventions.UNINITIALIZED_VERSION)
             }
         }.memoize())
 
