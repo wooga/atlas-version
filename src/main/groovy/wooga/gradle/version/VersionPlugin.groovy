@@ -34,13 +34,19 @@ class VersionPlugin implements Plugin<Project> {
 
     @Override
     void apply(Project project) {
+
         if (project != project.getRootProject()) {
             logger.warn("net.wooga.atlas-version can only be applied to the root project.")
             return
         }
 
-        String gitRoot = project.properties.getOrDefault(VersionConsts.GIT_ROOT_PROPERTY, project.rootProject.projectDir.path)
-        VersionPluginExtension extension = create_and_configure_extension(project)
+        // TODO: Does this have to be evaluated here?
+        String gitRoot = project.properties.getOrDefault(VersionPluginConventions.GIT_ROOT_PROPERTY, project.rootProject.projectDir.path)
+        VersionPluginExtension extension = createAndConfigureExtension(project)
+        setProjectVersion(gitRoot, project, extension)
+    }
+
+    private static void setProjectVersion(String gitRoot, Project project, VersionPluginExtension extension) {
         try {
             Grgit git = Grgit.open(dir: gitRoot)
             project.gradle.buildFinished {
@@ -49,11 +55,11 @@ class VersionPlugin implements Plugin<Project> {
             }
             extension.git.set(git)
         }
-        catch(RepositoryNotFoundException e) {
+        catch (RepositoryNotFoundException e) {
             project.logger.warn("Git repository not found at $gitRoot ")
         }
         finally {
-            def sharedVersion = new ToStringProvider(extension.version.map({it.version}))
+            def sharedVersion = new ToStringProvider(extension.version.map({ it.version }))
             project.allprojects(new Action<Project>() {
                 @Override
                 void execute(Project prj) {
@@ -64,31 +70,20 @@ class VersionPlugin implements Plugin<Project> {
         }
     }
 
-    protected static VersionPluginExtension create_and_configure_extension(Project project) {
+    protected static VersionPluginExtension createAndConfigureExtension(Project project) {
         def extension = project.extensions.create(VersionPluginExtension, EXTENSION_NAME, DefaultVersionPluginExtension, project)
 
-        extension.versionScheme.set(project.provider({
-            def rawValue = System.getenv()[VersionConsts.VERSION_SCHEME_ENV_VAR] ?:
-                    project.properties.getOrDefault(VersionConsts.VERSION_SCHEME_OPTION,
-                            project.properties.get(VersionConsts.LEGACY_VERSION_SCHEME_OPTION))
-            if(rawValue) {
-                return VersionScheme.valueOf(rawValue.toString().trim())
-            }
-            VersionConsts.VERSION_SCHEME_DEFAULT
+        extension.versionScheme.set(VersionPluginConventions.versionScheme.getStringValueProvider(project).map({
+            VersionScheme.valueOf(it.trim())
+            }))
+
+        extension.versionCodeScheme.set(VersionPluginConventions.versionCodeScheme.getStringValueProvider(project).map({
+            VersionCodeScheme.valueOf(it.trim())
         }))
 
-        extension.versionCodeScheme.set(project.provider({
-            def rawValue = System.getenv()[VersionConsts.VERSION_CODE_SCHEME_ENV_VAR] ?:
-                    project.properties.get(VersionConsts.VERSION_CODE_SCHEME_OPTION)
-            if(rawValue) {
-                return VersionCodeScheme.valueOf(rawValue.toString().trim())
-            }
-            VersionConsts.VERSION_CODE_SCHEME_DEFAULT
-        }))
-
+        // TODO: Refactor once integer / object providers are added on gradle-commons
         extension.versionCodeOffset.set(project.provider({
-            def rawValue = System.getenv()[VersionConsts.VERSION_CODE_OFFSET_ENV_VAR] ?:
-                    project.properties.getOrDefault(VersionConsts.VERSION_CODE_OFFSET_OPTION, "0")
+            def rawValue = VersionPluginConventions.versionCodeOffset.getValue(project)
             Integer.parseInt(rawValue.toString())
         }))
 

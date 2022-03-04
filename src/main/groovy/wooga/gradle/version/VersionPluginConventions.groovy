@@ -18,7 +18,10 @@
 
 package wooga.gradle.version
 
-class VersionConsts {
+import com.wooga.gradle.PropertyLookup
+
+class VersionPluginConventions {
+
     static final String GIT_ROOT_PROPERTY = "git.root"
     static final String UNINITIALIZED_VERSION = '0.1.0-dev.0.uninitialized'
 
@@ -52,4 +55,13 @@ class VersionConsts {
 
     static final String MAIN_BRANCH_PATTERN_OPTION = "versionBuilder.mainBranchPattern"
     static final String MAIN_BRANCH_PATTERN_ENV_VAR = "VERSION_BUILDER_MAIN_BRANCH_PATTERN"
+
+    static final PropertyLookup versionScheme = new PropertyLookup("VERSION_BUILDER_VERSION_SCHEME", ["versionBuilder.versionScheme", "version.scheme"], VersionScheme.semver)
+    static final PropertyLookup versionCodeScheme = new PropertyLookup("VERSION_BUILDER_VERSION_CODE_SCHEME", "versionBuilder.versionCodeScheme", VersionCodeScheme.none)
+    static final PropertyLookup versionCodeOffset = new PropertyLookup("VERSION_BUILDER_VERSION_CODE_OFFSET", "versionBuilder.versionCodeOffset", 0)
+
+    static final PropertyLookup mainBranchPattern = new PropertyLookup("VERSION_BUILDER_MAIN_BRANCH_PATTERN", "versionBuilder.mainBranchPattern", /(^master$|^develop$)/)
+    static final PropertyLookup releaseBranchPattern = new PropertyLookup("VERSION_BUILDER_RELEASE_BRANCH_PATTERN", "versionBuilder.releaseBranchPattern", /(^release\/.*|^master$)/)
+    static final PropertyLookup stage = new PropertyLookup("VERSION_BUILDER_STAGE", ["versionBuilder.stage", "release.stage"], null)
+    static final PropertyLookup scope = new PropertyLookup("VERSION_BUILDER_SCOPE", ["versionBuilder.scope", "release.scope"], null)
 }
