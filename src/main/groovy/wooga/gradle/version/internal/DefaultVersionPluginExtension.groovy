@@ -22,10 +22,8 @@ import wooga.gradle.version.VersionCodeScheme
 import wooga.gradle.version.VersionScheme
 import wooga.gradle.version.internal.release.base.DefaultVersionStrategy
 import wooga.gradle.version.internal.release.base.ReleaseVersion
-import wooga.gradle.version.internal.release.base.TagStrategy
 import wooga.gradle.version.internal.release.base.VersionStrategy
 import wooga.gradle.version.internal.release.semver.ChangeScope
-import org.ajoberstar.grgit.Grgit
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.provider.Property
@@ -47,144 +45,9 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
     protected final Property<VersionStrategy> defaultStrategy
 
     final Provider<List<VersionStrategy>> versionStrategies
-    final Property<VersionScheme> versionScheme
-    final Property<VersionCodeScheme> versionCodeScheme
-    final Property<Integer> versionCodeOffset
-    final Provider<ChangeScope> scope
-    final Provider<String> stage
-    final Property<Grgit> git
-    final TagStrategy tagStrategy = new TagStrategy()
-    final Provider<ReleaseVersion> version
-    final Provider<Integer> versionCode
-    final Property<String> releaseBranchPattern
-    final Property<String> mainBranchPattern
-
-    @Override
-    void versionScheme(VersionScheme value) {
-        setVersionScheme(value)
-    }
-
-    @Override
-    void versionScheme(Provider<VersionScheme> value) {
-        setVersionScheme(value)
-    }
-
-    @Override
-    void setVersionScheme(VersionScheme value) {
-        versionScheme.set(value)
-    }
-
-    @Override
-    void setVersionScheme(Provider<VersionScheme> value) {
-        versionScheme.set(value)
-    }
-
-    @Override
-    void versionScheme(String value) {
-        setVersionScheme(value)
-    }
-
-    @Override
-    void setVersionScheme(String value) {
-        versionScheme.set(VersionScheme.valueOf(value.trim()))
-    }
-
-    @Override
-    void versionCodeScheme(VersionCodeScheme value) {
-        setVersionCodeScheme(value)
-    }
-
-    @Override
-    void versionCodeScheme(Provider<VersionCodeScheme> value) {
-        setVersionCodeScheme(value)
-    }
-
-    @Override
-    void setVersionCodeScheme(VersionCodeScheme value) {
-        versionCodeScheme.set(value)
-    }
-
-    @Override
-    void setVersionCodeScheme(Provider<VersionCodeScheme> value) {
-        versionCodeScheme.set(value)
-    }
-
-    @Override
-    void versionCodeScheme(String value) {
-        setVersionCodeScheme(value)
-    }
-
-    @Override
-    void setVersionCodeScheme(String value) {
-        versionCodeScheme.set(VersionCodeScheme.valueOf(value.trim()))
-    }
-
-    @Override
-    void versionCodeOffset(Integer value) {
-        setVersionCodeOffset(value)
-    }
-
-    @Override
-    void versionCodeOffset(Provider<Integer> value) {
-        setVersionCodeOffset(value)
-    }
-
-    @Override
-    void setVersionCodeOffset(Integer value) {
-        versionCodeOffset.set(value)
-    }
-
-    @Override
-    void setVersionCodeOffset(Provider<Integer> value) {
-        versionCodeOffset.set(value)
-    }
-
-    @Override
-    void releaseBranchPattern(String value) {
-        setReleaseBranchPattern(value)
-    }
-
-    @Override
-    void releaseBranchPattern(Provider<String> value) {
-        setReleaseBranchPattern(value)
-    }
-
-    @Override
-    void setReleaseBranchPattern(String value) {
-        releaseBranchPattern.set(value)
-    }
-
-    @Override
-    void setReleaseBranchPattern(Provider<String> value) {
-        releaseBranchPattern.set(value)
-    }
-
-    @Override
-    void mainBranchPattern(String value) {
-        setMainBranchPattern(value)
-    }
-
-    @Override
-    void mainBranchPattern(Provider<String> value) {
-        setMainBranchPattern(value)
-    }
-
-    @Override
-    void setMainBranchPattern(String value) {
-        mainBranchPattern.set(value)
-    }
-
-    @Override
-    void setMainBranchPattern(Provider<String> value) {
-        mainBranchPattern.set(value)
-    }
 
     DefaultVersionPluginExtension(Project project) {
         this.project = project
-        versionScheme = project.objects.property(VersionScheme)
-        versionCodeScheme = project.objects.property(VersionCodeScheme)
-        versionCodeOffset = project.objects.property(Integer)
-        git = project.objects.property(Grgit)
 
         snapshotStrategy = project.objects.property(VersionStrategy)
         developmentStrategy = project.objects.property(VersionStrategy)
@@ -294,7 +157,7 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
             }
         }.memoize())
 
-        versionCode = versionCodeScheme.map ({ scheme ->
+        versionCode = versionCodeScheme.map({ scheme ->
             def offset = versionCodeOffset.getOrElse(0)
             switch (scheme) {
                 case VersionCodeScheme.semverBasic:
