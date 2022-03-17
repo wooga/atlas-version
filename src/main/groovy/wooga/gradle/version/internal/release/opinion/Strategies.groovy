@@ -19,6 +19,9 @@ import wooga.gradle.version.ReleaseStage
 import wooga.gradle.version.internal.release.semver.ChangeScope
 import wooga.gradle.version.internal.release.semver.SemVerStrategyState
 
+import java.sql.Timestamp
+import java.text.SimpleDateFormat
+
 import static wooga.gradle.version.internal.release.semver.StrategyUtil.*
 
 import java.util.regex.Pattern
@@ -202,6 +205,27 @@ final class Strategies {
          * Sets the pre-release component to the value of {@link SemVerStrategyState#stageFromProp}.
          */
         static final PartialSemVerStrategy STAGE_FIXED = closure { state -> state.copyWith(inferredPreRelease: state.stageFromProp) }
+
+        /**
+         * Sets the pre-release component to the value of {@link SemVerStrategyState#stageFromProp}.
+         */
+        static final PartialSemVerStrategy STAGE_TIMESTAMP = closure { state ->
+            state.copyWith(inferredPreRelease: "${GenerateTimestamp()}")
+        }
+
+        /**
+         * The format of the generated timestamp
+         */
+        static final SimpleDateFormat timestampFormat = new SimpleDateFormat("yyyyMMddHHmm")
+
+        /**
+         * @return Generates a timestamp to be used for versioning
+         */
+        static String GenerateTimestamp() {
+            def timestamp = new Timestamp(System.currentTimeMillis())
+            def result = timestampFormat.format(timestamp)
+            result
+        }
 
         /**
          * If the value of {@link SemVerStrategyState#stageFromProp} has a higher or the same precedence than

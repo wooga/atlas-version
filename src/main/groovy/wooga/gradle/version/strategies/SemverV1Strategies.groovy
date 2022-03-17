@@ -29,7 +29,7 @@ import static wooga.gradle.version.internal.release.semver.StrategyUtil.closure
 import static wooga.gradle.version.internal.release.semver.StrategyUtil.parseIntOrZero
 
 class SemverV1Strategies {
-    private static final scopes = StrategyUtil.one(
+    static final scopes = StrategyUtil.one(
             Strategies.Normal.USE_SCOPE_PROP,
             Strategies.Normal.ENFORCE_GITFLOW_BRANCH_MAJOR_X,
             Strategies.Normal.ENFORCE_BRANCH_MAJOR_X,
@@ -186,13 +186,13 @@ class SemverV1Strategies {
             preReleaseStrategy: StrategyUtil.all(StrategyUtil.closure({state ->
 
                 String branchName = state.currentBranch.name
-                String prefix = "branch"
 
                 if( branchName == "HEAD" && System.getenv("BRANCH_NAME") ) {
                     branchName = System.getenv("BRANCH_NAME")
                 }
 
                 if( branchName != "master") {
+                    String prefix = "branch"
                     branchName = "$prefix${branchName.capitalize()}"
                 }
 
