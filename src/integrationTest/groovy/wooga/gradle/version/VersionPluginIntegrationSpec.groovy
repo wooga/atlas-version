@@ -18,6 +18,7 @@ package wooga.gradle.version
 
 import com.wooga.gradle.PlatformUtils
 import com.wooga.gradle.test.PropertyLocation
+import com.wooga.gradle.test.PropertyQueryTaskWriter
 import wooga.gradle.version.internal.release.semver.ChangeScope
 import spock.lang.Unroll
 
@@ -229,5 +230,48 @@ class VersionPluginIntegrationSpec extends VersionIntegrationSpec {
         methodInvocation = isProperty ? "${method} = ${value}" : "${method}(${value})"
         fetchMethod = method.startsWith("ext") ? "project.${property}" : "project.${property}.get()"
     }
+
+    @Unroll
+    def "can deduce release stage #expected from #stage with version scheme #versionScheme"() {
+        given: "a task to print appCenter properties"
+        buildFile << """
+            versionBuilder {
+                versionScheme = ${wrapValueBasedOnType(versionScheme, String)}
+            }
+        """
+        // If the stage is set
+        if (stage != _) {
+            buildFile << """
+            versionBuilder {
+                stage = ${wrapValueBasedOnType(stage, String)}
+            }
+        """
+        }
+
+        when: ""
+        def query = new PropertyQueryTaskWriter("${VersionPlugin.EXTENSION_NAME}.releaseStage")
+        query.write(buildFile)
+        def result = runTasksSuccessfully(query.taskName)
+
+        then:
+        query.matches(result, expected)
+
+        where:
+        stage      | versionScheme | expected
+        "pancakes" | "semver2"     | ReleaseStage.Unknown
+        _          | "semver2"     | ReleaseStage.Development
+        "dev"      | "semver2"     | ReleaseStage.Development
+        "snapshot" | "semver2"     | ReleaseStage.Snapshot
+        "rc"       | "semver2"     | ReleaseStage.Prerelease
+        "final"    | "semver2"     | ReleaseStage.Final
+
+        "pancakes" | "semver"      | ReleaseStage.Unknown
+        _          | "semver"      | ReleaseStage.Development
+        "dev"      | "semver"      | ReleaseStage.Development
+        "snapshot" | "semver"      | ReleaseStage.Snapshot
+        "rc"       | "semver"      | ReleaseStage.Prerelease
+        "final"    | "semver"      | ReleaseStage.Final
+    }
+
 
 }

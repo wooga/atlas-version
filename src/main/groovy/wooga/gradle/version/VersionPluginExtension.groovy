@@ -26,6 +26,8 @@ import wooga.gradle.version.internal.release.semver.ChangeScope
 import org.ajoberstar.grgit.Grgit
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
+import wooga.gradle.version.internal.release.semver.SemVerStrategy
+import wooga.gradle.version.internal.release.semver.SemVerStrategyState
 import wooga.gradle.version.strategies.SemverV2Strategies
 
 trait VersionPluginExtension implements BaseSpec {
@@ -216,7 +218,11 @@ trait VersionPluginExtension implements BaseSpec {
     Provider<String> stage = objects.property(String)
 
     void setStage(Provider<String> value) {
-        stage = value
+        stage.set(value)
+    }
+
+    void setStage(String value) {
+        stage.set(value)
     }
 
     /**
@@ -301,23 +307,18 @@ trait VersionPluginExtension implements BaseSpec {
     }
 
     final Provider<ReleaseStage> releaseStage = providers.provider({
-        if (isDevelopment.get()) {
+        if (isDevelopment.getOrElse(false)) {
             return ReleaseStage.Development
-        } else if (isSnapshot.get()) {
+        } else if (isSnapshot.getOrElse(false)) {
             return ReleaseStage.Snapshot
-        } else if (isPrerelease.get()) {
+        } else if (isPrerelease.getOrElse(false)) {
             return ReleaseStage.Prerelease
-        } else if (isFinal.get()) {
+        } else if (isFinal.getOrElse(false)) {
             return ReleaseStage.Final
         }
-        return ReleaseStage.Unknown
+        ReleaseStage.Unknown
     })
+
+    final ReleaseStage defaultReleaseStage
 }
 
-enum ReleaseStage {
-    Development,
-    Snapshot,
-    Prerelease,
-    Final,
-    Unknown
-}

@@ -18,6 +18,7 @@
 
 package wooga.gradle.version.internal
 
+import org.gradle.api.Transformer
 import wooga.gradle.version.ReleaseStage
 import wooga.gradle.version.VersionCodeScheme
 import wooga.gradle.version.VersionScheme
@@ -111,6 +112,7 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
             }
         }))
 
+        // TODO: Make this a convention
         defaultStrategy.set(developmentStrategy)
 
         versionStrategies = project.provider({
@@ -180,20 +182,30 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
             }
         }.memoize())
 
-        // TODO: Test these providers are resolved correctly
-        // Set up providers to evaluate the release stage of a project,
-        // which  can be used by client projects
-        isDevelopment = developmentStrategy.map({
-            it.stages.contains(this.stage.get())
-        })
-        isSnapshot = snapshotStrategy.map({
-            it.stages.contains(this.stage.get())
-        })
-        isPrerelease = preReleaseStrategy.map({
-            it.stages.contains(this.stage.get())
-        })
-        isFinal = finalStrategy.map({
-            it.stages.contains(this.stage.get())
-        })
+        // It's development if the development strategy contains the set `stage` OR
+        // if the default strategy's release stage is development
+        isDevelopment = mapStrategy(developmentStrategy, ReleaseStage.Development)
+        isSnapshot = mapStrategy(snapshotStrategy, ReleaseStage.Snapshot)
+        isPrerelease = mapStrategy(preReleaseStrategy, ReleaseStage.Prerelease)
+        isFinal = mapStrategy(finalStrategy, ReleaseStage.Final)
+    }
+
+    // TODO: Possible refactor
+    Provider<Boolean> mapStrategy(Provider<VersionStrategy> strategy, ReleaseStage releaseStage) {
+
+        def evaluateStrategyStage = new Transformer<Boolean, VersionStrategy>() {
+            @Override
+            Boolean transform(VersionStrategy versionStrategy) {
+                if (stage.present) {
+                    return versionStrategy.stages.contains(stage.get())
+                }
+                null
+            }
+        }
+
+        strategy.map(evaluateStrategyStage)
+            .orElse(defaultStrategy.map({
+                it.releaseStage == releaseStage
+            }))
     }
 }
