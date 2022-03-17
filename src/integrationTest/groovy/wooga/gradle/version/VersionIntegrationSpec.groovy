@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Wooga GmbH
+ * Copyright 2019-2022 Wooga GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,19 +12,13 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 package wooga.gradle.version
 
-import org.junit.Rule
-import groovy.json.StringEscapeUtils
-import nebula.test.functional.ExecutionResult
-import org.junit.contrib.java.lang.system.EnvironmentVariables
-import org.junit.contrib.java.lang.system.ProvideSystemProperty
+import com.wooga.gradle.test.IntegrationSpec
 
-class IntegrationSpec extends com.wooga.gradle.test.IntegrationSpec {
-
+class VersionIntegrationSpec extends IntegrationSpec {
 
     def setup() {
         def gradleVersion = System.getenv("GRADLE_VERSION")
@@ -34,73 +28,33 @@ class IntegrationSpec extends com.wooga.gradle.test.IntegrationSpec {
         }
     }
 
-    String wrapValueBasedOnType(Object rawValue, String type) {
-        def value
-        def rawValueEscaped = String.isInstance(rawValue) ? "'${rawValue}'" : rawValue
-        def subtypeMatches = type =~ /(?<mainType>\w+)<(?<subType>[\w<>]+)>/
-        def subType = (subtypeMatches.matches()) ? subtypeMatches.group("subType") : null
-        type = (subtypeMatches.matches()) ? subtypeMatches.group("mainType") : type
+    static wrapValueFallback = { Object rawValue, String type, Closure<String> fallback ->
         switch (type) {
             case "VersionScheme":
                 if(VersionScheme.isInstance(rawValue)) {
-                    value = "wooga.gradle.version.VersionScheme.${rawValue.toString()}"
+                    return "wooga.gradle.version.VersionScheme.${rawValue.toString()}"
                 } else {
-                    value = "wooga.gradle.version.VersionScheme.valueOf('${rawValue.toString()}')"
+                    return "wooga.gradle.version.VersionScheme.valueOf('${rawValue.toString()}')"
                 }
                 break
             case "VersionCodeScheme":
                 if(VersionCodeScheme.isInstance(rawValue)) {
-                    value = "wooga.gradle.version.VersionCodeScheme.${rawValue.toString()}"
+                    return "wooga.gradle.version.VersionCodeScheme.${rawValue.toString()}"
                 } else {
-                    value = "wooga.gradle.version.VersionCodeScheme.valueOf('${rawValue.toString()}')"
+                    return "wooga.gradle.version.VersionCodeScheme.valueOf('${rawValue.toString()}')"
                 }
-                break
-            case "Closure":
-                if (subType) {
-                    value = "{${wrapValueBasedOnType(rawValue, subType)}}"
-                } else {
-                    value = "{$rawValueEscaped}"
-                }
-                break
-            case "Callable":
-                value = "new java.util.concurrent.Callable<${rawValue.class.typeName}>() {@Override ${rawValue.class.typeName} call() throws Exception { $rawValueEscaped }}"
-                break
-            case "Object":
-                value = "new Object() {@Override String toString() { ${rawValueEscaped}.toString() }}"
-                break
-            case "Provider":
-                switch (subType) {
-                    case "RegularFile":
-                        value = "project.layout.file(${wrapValueBasedOnType(rawValue, "Provider<File>")})"
-                        break
-                    default:
-                        value = "project.provider(${wrapValueBasedOnType(rawValue, "Closure<${subType}>")})"
-                        break
-                }
-                break
-            case "String":
-                value = "$rawValueEscaped"
                 break
             case "Grgit":
                 if(rawValue == _) {
-                    value = "org.ajoberstar.grgit.Grgit.init()"
+                    return "org.ajoberstar.grgit.Grgit.init()"
                 }
                 break
-            case "String[]":
-                value = "'{${rawValue.collect { '"' + it + '"' }.join(",")}}'.split(',')"
-                break
-            case "File":
-                value = "new File('${escapedPath(rawValue.toString())}')"
-                break
-            case "String...":
-                value = "${rawValue.collect { '"' + it + '"' }.join(", ")}"
-                break
-            case "List":
-                value = "[${rawValue.collect { '"' + it + '"' }.join(", ")}]"
-                break
             default:
-                value = rawValue
+                return rawValue.toString()
         }
-        value
+    }
+
+    String wrapValueBasedOnType(Object rawValue, String type) {
+        wrapValueBasedOnType(rawValue, type, wrapValueFallback)
     }
 }

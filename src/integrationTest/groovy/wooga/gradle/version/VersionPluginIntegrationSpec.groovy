@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 Wooga GmbH
+ * Copyright 2018-2022 Wooga GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,37 +12,20 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- *
  */
 
 package wooga.gradle.version
 
+import com.wooga.gradle.PlatformUtils
+import com.wooga.gradle.test.PropertyLocation
 import wooga.gradle.version.internal.release.semver.ChangeScope
 import spock.lang.Unroll
 
-class VersionPluginIntegrationSpec extends IntegrationSpec {
+class VersionPluginIntegrationSpec extends VersionIntegrationSpec {
     def setup() {
         buildFile << """
             ${applyPlugin(VersionPlugin)}
         """.stripIndent()
-    }
-
-    enum PropertyLocation {
-        none, script, property, env
-
-        String reason() {
-            switch (this) {
-                case script:
-                    return "value is provided in script"
-                case property:
-                    return "value is provided in props"
-                case env:
-                    return "value is set in env"
-                default:
-                    return "no value was configured"
-            }
-        }
     }
 
     String envNameFromProperty(String property) {
@@ -64,7 +47,7 @@ class VersionPluginIntegrationSpec extends IntegrationSpec {
         and: "a gradle.properties"
         def propertiesFile = createFile("gradle.properties")
 
-        def escapedValue = (value instanceof String) ? escapedPath(value) : value
+        def escapedValue = (value instanceof String) ? PlatformUtils.escapedPath(value) : value
 
         switch (location) {
             case PropertyLocation.script:
@@ -73,7 +56,7 @@ class VersionPluginIntegrationSpec extends IntegrationSpec {
             case PropertyLocation.property:
                 propertiesFile << "${extensionName}.${property} = ${escapedValue}"
                 break
-            case PropertyLocation.env:
+            case PropertyLocation.environment:
                 environmentVariables.set(envNameFromProperty(property), "${value}")
                 break
             default:
@@ -82,7 +65,7 @@ class VersionPluginIntegrationSpec extends IntegrationSpec {
 
         and: "the test value with replace placeholders"
         if (testValue instanceof String) {
-            testValue = testValue.replaceAll("#projectDir#", escapedPath(projectDir.path))
+            testValue = testValue.replaceAll("#projectDir#", PlatformUtils.escapedPath(projectDir.path))
         }
 
         when: ""
@@ -93,15 +76,15 @@ class VersionPluginIntegrationSpec extends IntegrationSpec {
 
         where:
         property               | value               | expectedValue                       | location
-        "scope"                | "major"             | ChangeScope.MAJOR                   | PropertyLocation.env
-        "scope"                | "MAJOR"             | ChangeScope.MAJOR                   | PropertyLocation.env
-        "scope"                | "Major"             | ChangeScope.MAJOR                   | PropertyLocation.env
-        "scope"                | "minor"             | ChangeScope.MINOR                   | PropertyLocation.env
-        "scope"                | "MINOR"             | ChangeScope.MINOR                   | PropertyLocation.env
-        "scope"                | "Minor"             | ChangeScope.MINOR                   | PropertyLocation.env
-        "scope"                | "patch"             | ChangeScope.PATCH                   | PropertyLocation.env
-        "scope"                | "PATCH"             | ChangeScope.PATCH                   | PropertyLocation.env
-        "scope"                | "Patch"             | ChangeScope.PATCH                   | PropertyLocation.env
+        "scope"                | "major"             | ChangeScope.MAJOR                   | PropertyLocation.environment
+        "scope"                | "MAJOR"             | ChangeScope.MAJOR                   | PropertyLocation.environment
+        "scope"                | "Major"             | ChangeScope.MAJOR                   | PropertyLocation.environment
+        "scope"                | "minor"             | ChangeScope.MINOR                   | PropertyLocation.environment
+        "scope"                | "MINOR"             | ChangeScope.MINOR                   | PropertyLocation.environment
+        "scope"                | "Minor"             | ChangeScope.MINOR                   | PropertyLocation.environment
+        "scope"                | "patch"             | ChangeScope.PATCH                   | PropertyLocation.environment
+        "scope"                | "PATCH"             | ChangeScope.PATCH                   | PropertyLocation.environment
+        "scope"                | "Patch"             | ChangeScope.PATCH                   | PropertyLocation.environment
         "scope"                | "major"             | ChangeScope.MAJOR                   | PropertyLocation.property
         "scope"                | "MAJOR"             | ChangeScope.MAJOR                   | PropertyLocation.property
         "scope"                | "Major"             | ChangeScope.MAJOR                   | PropertyLocation.property
@@ -112,28 +95,28 @@ class VersionPluginIntegrationSpec extends IntegrationSpec {
         "scope"                | "PATCH"             | ChangeScope.PATCH                   | PropertyLocation.property
         "scope"                | "Patch"             | ChangeScope.PATCH                   | PropertyLocation.property
         "scope"                | "null"              | _                                   | PropertyLocation.none
-        "stage"                | "snapshot"          | _                                   | PropertyLocation.env
+        "stage"                | "snapshot"          | _                                   | PropertyLocation.environment
         "stage"                | "final"             | _                                   | PropertyLocation.property
         "stage"                | "null"              | _                                   | PropertyLocation.none
-        "versionScheme"        | "semver2"           | VersionScheme.semver2               | PropertyLocation.env
-        "versionScheme"        | "semver"            | VersionScheme.semver                | PropertyLocation.env
+        "versionScheme"        | "semver2"           | VersionScheme.semver2               | PropertyLocation.environment
+        "versionScheme"        | "semver"            | VersionScheme.semver                | PropertyLocation.environment
         "versionScheme"        | "semver2"           | VersionScheme.semver2               | PropertyLocation.property
         "versionScheme"        | "semver"            | VersionScheme.semver                | PropertyLocation.property
-        "versionCodeScheme"    | "releaseCountBasic" | VersionCodeScheme.releaseCountBasic | PropertyLocation.env
-        "versionCodeScheme"    | "releaseCount"      | VersionCodeScheme.releaseCount      | PropertyLocation.env
-        "versionCodeScheme"    | "semver"            | VersionCodeScheme.semver            | PropertyLocation.env
-        "versionCodeScheme"    | "none"              | VersionCodeScheme.none              | PropertyLocation.env
+        "versionCodeScheme"    | "releaseCountBasic" | VersionCodeScheme.releaseCountBasic | PropertyLocation.environment
+        "versionCodeScheme"    | "releaseCount"      | VersionCodeScheme.releaseCount      | PropertyLocation.environment
+        "versionCodeScheme"    | "semver"            | VersionCodeScheme.semver            | PropertyLocation.environment
+        "versionCodeScheme"    | "none"              | VersionCodeScheme.none              | PropertyLocation.environment
         "versionCodeScheme"    | "releaseCountBasic" | VersionCodeScheme.releaseCountBasic | PropertyLocation.property
         "versionCodeScheme"    | "releaseCount"      | VersionCodeScheme.releaseCount      | PropertyLocation.property
         "versionCodeScheme"    | "semver"            | VersionCodeScheme.semver            | PropertyLocation.property
         "versionCodeScheme"    | "none"              | VersionCodeScheme.none              | PropertyLocation.property
-        "versionCodeOffset"    | 100                 | _                                   | PropertyLocation.env
+        "versionCodeOffset"    | 100                 | _                                   | PropertyLocation.environment
         "versionCodeOffset"    | 200                 | _                                   | PropertyLocation.property
         "releaseBranchPattern" | /^m.*/              | _                                   | PropertyLocation.property
-        "releaseBranchPattern" | /(some|value)/      | _                                   | PropertyLocation.env
+        "releaseBranchPattern" | /(some|value)/      | _                                   | PropertyLocation.environment
         "releaseBranchPattern" | '/.*/'              | /.*/                                | PropertyLocation.script
         "mainBranchPattern"    | /^m.*/              | _                                   | PropertyLocation.property
-        "mainBranchPattern"    | /(some|value)/      | _                                   | PropertyLocation.env
+        "mainBranchPattern"    | /(some|value)/      | _                                   | PropertyLocation.environment
         "mainBranchPattern"    | '/.*/'              | /.*/                                | PropertyLocation.script
 
         extensionName = "versionBuilder"
@@ -158,7 +141,7 @@ class VersionPluginIntegrationSpec extends IntegrationSpec {
 
         and: "the test value with replace placeholders"
         if (value instanceof String) {
-            value = value.replaceAll("#projectDir#", escapedPath(projectDir.path))
+            value = value.replaceAll("#projectDir#", PlatformUtils.escapedPath(projectDir.path))
         }
 
         when: ""
