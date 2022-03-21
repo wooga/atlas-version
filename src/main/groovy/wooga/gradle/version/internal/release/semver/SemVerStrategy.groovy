@@ -19,6 +19,7 @@ import groovy.transform.Immutable
 import groovy.transform.PackageScope
 
 import com.github.zafarkhaja.semver.Version
+import wooga.gradle.version.ReleaseStage
 import wooga.gradle.version.internal.release.base.MarkerTagStrategy
 import wooga.gradle.version.internal.release.base.ReleaseVersion
 import wooga.gradle.version.internal.release.base.DefaultVersionStrategy
@@ -55,6 +56,8 @@ final class SemVerStrategy implements DefaultVersionStrategy {
      * Whether or not this strategy can be used if the repo has uncommited changes.
      */
     boolean allowDirtyRepo
+
+    ReleaseStage releaseStage
 
     /**
      * The strategy used to infer the normal component of the version. There is no enforcement that

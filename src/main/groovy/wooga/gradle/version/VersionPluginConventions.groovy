@@ -25,37 +25,6 @@ class VersionPluginConventions {
     static final String GIT_ROOT_PROPERTY = "git.root"
     static final String UNINITIALIZED_VERSION = '0.1.0-dev.0.uninitialized'
 
-    static final String DEFAULT_MAIN_BRANCH_PATTERN = /(^master$|^develop$)/
-    static final String DEFAULT_RELEASE_BRANCH_PATTERN = /(^release\/.*|^master$)/
-
-    static final VersionScheme VERSION_SCHEME_DEFAULT = VersionScheme.semver
-    static final VersionCodeScheme VERSION_CODE_SCHEME_DEFAULT = VersionCodeScheme.none
-
-    static final String LEGACY_VERSION_SCHEME_OPTION = "version.scheme"
-    static final String LEGACY_VERSION_SCOPE_OPTION = "release.scope"
-    static final String LEGACY_VERSION_STAGE_OPTION = "release.stage"
-
-    static final String VERSION_SCHEME_OPTION = "versionBuilder.versionScheme"
-    static final String VERSION_SCHEME_ENV_VAR = "VERSION_BUILDER_VERSION_SCHEME"
-
-    static final String VERSION_CODE_SCHEME_OPTION = "versionBuilder.versionCodeScheme"
-    static final String VERSION_CODE_SCHEME_ENV_VAR = "VERSION_BUILDER_VERSION_CODE_SCHEME"
-
-    static final String VERSION_CODE_OFFSET_OPTION = "versionBuilder.versionCodeOffset"
-    static final String VERSION_CODE_OFFSET_ENV_VAR = "VERSION_BUILDER_VERSION_CODE_OFFSET"
-
-    static final String VERSION_SCOPE_OPTION = "versionBuilder.scope"
-    static final String VERSION_SCOPE_ENV_VAR = "VERSION_BUILDER_SCOPE"
-
-    static final String VERSION_STAGE_OPTION = "versionBuilder.stage"
-    static final String VERSION_STAGE_ENV_VAR = "VERSION_BUILDER_STAGE"
-
-    static final String RELEASE_BRANCH_PATTERN_OPTION = "versionBuilder.releaseBranchPattern"
-    static final String RELEASE_BRANCH_PATTERN_ENV_VAR = "VERSION_BUILDER_RELEASE_BRANCH_PATTERN"
-
-    static final String MAIN_BRANCH_PATTERN_OPTION = "versionBuilder.mainBranchPattern"
-    static final String MAIN_BRANCH_PATTERN_ENV_VAR = "VERSION_BUILDER_MAIN_BRANCH_PATTERN"
-
     static final PropertyLookup versionScheme = new PropertyLookup("VERSION_BUILDER_VERSION_SCHEME", ["versionBuilder.versionScheme", "version.scheme"], VersionScheme.semver)
     static final PropertyLookup versionCodeScheme = new PropertyLookup("VERSION_BUILDER_VERSION_CODE_SCHEME", "versionBuilder.versionCodeScheme", VersionCodeScheme.none)
     static final PropertyLookup versionCodeOffset = new PropertyLookup("VERSION_BUILDER_VERSION_CODE_OFFSET", "versionBuilder.versionCodeOffset", 0)

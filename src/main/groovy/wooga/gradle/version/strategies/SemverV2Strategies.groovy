@@ -17,7 +17,7 @@
 
 package wooga.gradle.version.strategies
 
-
+import wooga.gradle.version.ReleaseStage
 import wooga.gradle.version.internal.release.opinion.Strategies
 import wooga.gradle.version.internal.release.opinion.Strategies.BuildMetadata
 import wooga.gradle.version.internal.release.semver.ChangeScope
@@ -94,7 +94,8 @@ final class SemverV2Strategies {
             preReleaseStrategy: Strategies.PreRelease.NONE,
             buildMetadataStrategy: BuildMetadata.NONE,
             createTag: true,
-            enforcePrecedence: true
+            enforcePrecedence: true,
+            releaseStage: ReleaseStage.Unknown
     )
 
     /**
@@ -113,8 +114,8 @@ final class SemverV2Strategies {
      */
     static final SemVerStrategy FINAL = DEFAULT.copyWith(
             name: 'production',
-
-            stages: ['final','production'] as SortedSet
+            stages: ['final','production'] as SortedSet,
+            releaseStage: ReleaseStage.Final
     )
 
     /**
@@ -156,7 +157,8 @@ final class SemverV2Strategies {
     static final SemVerStrategy PRE_RELEASE = DEFAULT.copyWith(
             name: 'pre-release',
             stages: ['rc', 'staging'] as SortedSet,
-            preReleaseStrategy: all(Strategies.PreRelease.STAGE_FIXED, Strategies.PreRelease.COUNT_INCREMENTED)
+            preReleaseStrategy: all(Strategies.PreRelease.STAGE_FIXED, Strategies.PreRelease.COUNT_INCREMENTED),
+            releaseStage: ReleaseStage.Prerelease
     )
 
     /**
@@ -180,7 +182,8 @@ final class SemverV2Strategies {
      */
     static final SemVerStrategy DEVELOPMENT = Strategies.DEVELOPMENT.copyWith(
             normalStrategy: scopes,
-            buildMetadataStrategy: NetflixOssStrategies.BuildMetadata.DEVELOPMENT_METADATA_STRATEGY)
+            buildMetadataStrategy: NetflixOssStrategies.BuildMetadata.DEVELOPMENT_METADATA_STRATEGY
+    )
 
     /**
      * Returns a version strategy to be used for {@code snapshot} builds.
@@ -215,6 +218,7 @@ final class SemverV2Strategies {
             stages: ['ci', 'snapshot', 'SNAPSHOT'] as SortedSet,
             createTag: false,
             preReleaseStrategy: all(PreRelease.STAGE_BRANCH_NAME, Strategies.PreRelease.COUNT_COMMITS_SINCE_ANY),
-            enforcePrecedence: false
+            enforcePrecedence: false,
+            releaseStage: ReleaseStage.Snapshot
     )
 }

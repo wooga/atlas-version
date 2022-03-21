@@ -18,6 +18,7 @@ package wooga.gradle.version.internal.release.base
 import org.ajoberstar.grgit.Grgit
 
 import org.gradle.api.Project
+import wooga.gradle.version.ReleaseStage
 
 /**
  * Strategy to infer a version from the project's and Git repository's state.
@@ -48,4 +49,14 @@ interface VersionStrategy {
      * @return the inferred version
      */
     ReleaseVersion infer(Project project, Grgit grgit)
+
+    /**
+     * The stages supported by this strategy.
+     */
+    SortedSet<String> getStages()
+
+    /**
+     * @return The release stage by this strategy
+     */
+    ReleaseStage getReleaseStage()
 }

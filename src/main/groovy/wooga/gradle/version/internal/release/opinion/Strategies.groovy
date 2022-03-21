@@ -15,6 +15,7 @@
  */
 package wooga.gradle.version.internal.release.opinion
 
+import wooga.gradle.version.ReleaseStage
 import wooga.gradle.version.internal.release.semver.ChangeScope
 import wooga.gradle.version.internal.release.semver.SemVerStrategyState
 
@@ -180,7 +181,7 @@ final class Strategies {
 
         static final PartialSemVerStrategy USE_MARKER_TAG = closure { SemVerStrategyState state ->
             def markerVersion = state.nearestCiMarker
-            if(state.currentBranch.name.matches(state.releaseBranchPattern)) {
+            if (state.currentBranch.name.matches(state.releaseBranchPattern)) {
                 markerVersion = state.nearestReleaseMarker
             }
             state = state.copyWith(inferredNormal: markerVersion.normal)
@@ -200,7 +201,7 @@ final class Strategies {
         /**
          * Sets the pre-release component to the value of {@link SemVerStrategyState#stageFromProp}.
          */
-        static final PartialSemVerStrategy STAGE_FIXED = closure { state -> state.copyWith(inferredPreRelease: state.stageFromProp)}
+        static final PartialSemVerStrategy STAGE_FIXED = closure { state -> state.copyWith(inferredPreRelease: state.stageFromProp) }
 
         /**
          * If the value of {@link SemVerStrategyState#stageFromProp} has a higher or the same precedence than
@@ -265,7 +266,7 @@ final class Strategies {
 
         static final PartialSemVerStrategy COUNT_COMMITS_SINCE_MARKER = closure { SemVerStrategyState state ->
             def markerVersion = state.nearestCiMarker
-            if(state.currentBranch.name.matches(state.releaseBranchPattern)) {
+            if (state.currentBranch.name.matches(state.releaseBranchPattern)) {
                 markerVersion = state.nearestReleaseMarker
             }
 
@@ -310,7 +311,8 @@ final class Strategies {
         preReleaseStrategy: PreRelease.NONE,
         buildMetadataStrategy: BuildMetadata.NONE,
         createTag: true,
-        enforcePrecedence: true
+        enforcePrecedence: true,
+        releaseStage: ReleaseStage.Unknown
     )
 
     /**
@@ -324,7 +326,8 @@ final class Strategies {
         allowDirtyRepo: true,
         preReleaseStrategy: PreRelease.STAGE_FIXED,
         createTag: false,
-        enforcePrecedence: false
+        enforcePrecedence: false,
+        releaseStage: ReleaseStage.Snapshot
     )
 
     /**
@@ -342,7 +345,8 @@ final class Strategies {
         allowDirtyRepo: true,
         preReleaseStrategy: all(PreRelease.STAGE_FLOAT, PreRelease.COUNT_COMMITS_SINCE_ANY, PreRelease.SHOW_UNCOMMITTED),
         buildMetadataStrategy: BuildMetadata.COMMIT_ABBREVIATED_ID,
-        createTag: false
+        createTag: false,
+        releaseStage: ReleaseStage.Development
     )
 
     /**
@@ -356,7 +360,8 @@ final class Strategies {
     static final SemVerStrategy PRE_RELEASE = DEFAULT.copyWith(
         name: 'pre-release',
         stages: ['milestone', 'rc'] as SortedSet,
-        preReleaseStrategy: all(PreRelease.STAGE_FIXED, PreRelease.COUNT_INCREMENTED)
+        preReleaseStrategy: all(PreRelease.STAGE_FIXED, PreRelease.COUNT_INCREMENTED),
+        releaseStage: ReleaseStage.Prerelease
     )
 
     /**
@@ -369,7 +374,8 @@ final class Strategies {
      */
     static final SemVerStrategy PRE_RELEASE_ALPHA_BETA = PRE_RELEASE.copyWith(
         name: 'pre-release',
-        stages: ['alpha', 'beta', 'rc'] as SortedSet
+        stages: ['alpha', 'beta', 'rc'] as SortedSet,
+        releaseStage: ReleaseStage.Prerelease
     )
 
     /**
@@ -379,6 +385,7 @@ final class Strategies {
      */
     static final SemVerStrategy FINAL = DEFAULT.copyWith(
         name: 'final',
-        stages: ['final'] as SortedSet
+        stages: ['final'] as SortedSet,
+        releaseStage: ReleaseStage.Final
     )
 }

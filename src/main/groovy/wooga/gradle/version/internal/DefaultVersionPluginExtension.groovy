@@ -18,6 +18,8 @@
 
 package wooga.gradle.version.internal
 
+import org.gradle.api.Transformer
+import wooga.gradle.version.ReleaseStage
 import wooga.gradle.version.VersionCodeScheme
 import wooga.gradle.version.VersionScheme
 import wooga.gradle.version.internal.release.base.DefaultVersionStrategy
@@ -43,6 +45,7 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
     protected final Property<VersionStrategy> preReleaseStrategy
     protected final Property<VersionStrategy> finalStrategy
     protected final Property<VersionStrategy> defaultStrategy
+
 
     final Provider<List<VersionStrategy>> versionStrategies
 
@@ -109,6 +112,7 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
             }
         }))
 
+        // TODO: Make this a convention
         defaultStrategy.set(developmentStrategy)
 
         versionStrategies = project.provider({
@@ -177,5 +181,31 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
                     0
             }
         }.memoize())
+
+        // It's development if the development strategy contains the set `stage` OR
+        // if the default strategy's release stage is development
+        isDevelopment = mapStrategy(developmentStrategy, ReleaseStage.Development)
+        isSnapshot = mapStrategy(snapshotStrategy, ReleaseStage.Snapshot)
+        isPrerelease = mapStrategy(preReleaseStrategy, ReleaseStage.Prerelease)
+        isFinal = mapStrategy(finalStrategy, ReleaseStage.Final)
+    }
+
+    // TODO: Possible refactor
+    Provider<Boolean> mapStrategy(Provider<VersionStrategy> strategy, ReleaseStage releaseStage) {
+
+        def evaluateStrategyStage = new Transformer<Boolean, VersionStrategy>() {
+            @Override
+            Boolean transform(VersionStrategy versionStrategy) {
+                if (stage.present) {
+                    return versionStrategy.stages.contains(stage.get())
+                }
+                null
+            }
+        }
+
+        strategy.map(evaluateStrategyStage)
+            .orElse(defaultStrategy.map({
+                it.releaseStage == releaseStage
+            }))
     }
 }
