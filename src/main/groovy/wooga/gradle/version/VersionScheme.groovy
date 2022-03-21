@@ -19,7 +19,7 @@
 package wooga.gradle.version
 
 enum VersionScheme {
-    semver, semver2, staticMarker
+    semver, semver2, staticMarker, wdk
 }
 
 

@@ -35,6 +35,7 @@ import wooga.gradle.version.VersionPluginExtension
 import wooga.gradle.version.strategies.SemverV1Strategies
 import wooga.gradle.version.strategies.SemverV2Strategies
 import wooga.gradle.version.strategies.StaticMarkerStrategies
+import wooga.gradle.version.strategies.WdkStrategies
 
 class DefaultVersionPluginExtension implements VersionPluginExtension {
 
@@ -42,6 +43,7 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
 
     protected final Property<VersionStrategy> snapshotStrategy
     protected final Property<VersionStrategy> developmentStrategy
+    protected final Property<VersionStrategy> preflightStrategy
     protected final Property<VersionStrategy> preReleaseStrategy
     protected final Property<VersionStrategy> finalStrategy
     protected final Property<VersionStrategy> defaultStrategy
@@ -52,11 +54,14 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
     DefaultVersionPluginExtension(Project project) {
         this.project = project
 
-        snapshotStrategy = project.objects.property(VersionStrategy)
         developmentStrategy = project.objects.property(VersionStrategy)
+        snapshotStrategy = project.objects.property(VersionStrategy)
+        preflightStrategy = project.objects.property(VersionStrategy)
         preReleaseStrategy = project.objects.property(VersionStrategy)
         finalStrategy = project.objects.property(VersionStrategy)
+
         defaultStrategy = project.objects.property(VersionStrategy)
+
         releaseBranchPattern = project.objects.property(String)
         mainBranchPattern = project.objects.property(String)
 
@@ -67,6 +72,9 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
                     break;
                 case VersionScheme.staticMarker:
                     StaticMarkerStrategies.SNAPSHOT
+                    break
+                case VersionScheme.wdk:
+                    WdkStrategies.SNAPSHOT
                     break
                 default:
                     SemverV1Strategies.SNAPSHOT
@@ -81,8 +89,21 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
                 case VersionScheme.staticMarker:
                     StaticMarkerStrategies.DEVELOPMENT
                     break
+                case VersionScheme.wdk:
+                    WdkStrategies.DEVELOPMENT
+                    break
                 default:
                     SemverV1Strategies.DEVELOPMENT
+            }
+        }))
+
+        preflightStrategy.set(versionScheme.map({ scheme ->
+            switch (scheme) {
+                case VersionScheme.wdk:
+                    WdkStrategies.PRE
+                    break
+                default:
+                    null
             }
         }))
 
@@ -93,6 +114,9 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
                     break;
                 case VersionScheme.staticMarker:
                     StaticMarkerStrategies.PRE_RELEASE
+                    break
+                case VersionScheme.wdk:
+                    WdkStrategies.PRE_RELEASE
                     break
                 default:
                     SemverV1Strategies.PRE_RELEASE
@@ -107,6 +131,9 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
                 case VersionScheme.staticMarker:
                     StaticMarkerStrategies.FINAL
                     break
+                case VersionScheme.wdk:
+                    WdkStrategies.FINAL
+                    break
                 default:
                     SemverV1Strategies.FINAL
             }
@@ -115,9 +142,15 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
         // TODO: Make this a convention
         defaultStrategy.set(developmentStrategy)
 
+        // Map all the strategies
         versionStrategies = project.provider({
-            [snapshotStrategy.getOrNull(), developmentStrategy.getOrNull(),
-             preReleaseStrategy.getOrNull(), finalStrategy.getOrNull()].findAll { it != null }
+            [
+                developmentStrategy,
+                snapshotStrategy,
+                preflightStrategy,
+                preReleaseStrategy,
+                finalStrategy
+            ].findAll { it.present }.collect({ it.get() })
         })
 
         scope = VersionPluginConventions.scope.getStringValueProvider(project).map({

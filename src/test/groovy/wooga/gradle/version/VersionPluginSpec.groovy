@@ -23,6 +23,7 @@ import org.gradle.cache.internal.VersionStrategy
 import spock.lang.Ignore
 import spock.lang.Unroll
 import wooga.gradle.version.internal.ToStringProvider
+import wooga.gradle.version.internal.release.opinion.Strategies
 
 class VersionPluginSpec extends ProjectSpec {
 
@@ -266,6 +267,155 @@ class VersionPluginSpec extends ProjectSpec {
 
         _               | 1        | "final"    | _       | "1.x"           | "1.0.1"
         _               | 3        | "final"    | _       | "1.0.x"         | "1.0.1"
+
+        nearestNormal = '1.0.0'
+        nearestAnyTitle = (nearestAny == _) ? "unset" : nearestAny
+        scopeTitle = (scope == _) ? "unset" : scope
+    }
+
+    @Unroll('verify inferred wdk version from stage: #stage, nearestNormal: #nearestNormal, nearestAny: #nearestAnyTitle, scope: #scopeTitle,  branch: #branchName to be #expectedVersion')
+    def "uses custom wdk strategies"() {
+
+        given: "a project with specified release stage and scope"
+
+        project.ext.set('version.scheme', 'wdk')
+        project.ext.set('release.stage', stage)
+        if (scope != _) {
+            project.ext.set('release.scope', scope)
+        }
+
+        and: "a history"
+
+        if (branchName != "master") {
+            git.checkout(branch: "$branchName", startPoint: 'master', createBranch: true)
+        }
+
+        5.times {
+            git.commit(message: 'feature commit')
+        }
+
+        // . . . . .
+        // . . . . .* . . .*
+        //      (1.0.0)   (1.0.1-pre00003)
+
+        // . . . . .* . . .* . . .*
+        //      (1.0.0)    (1.0.1-rc00001)  (1.0.1-pre00003)
+
+        git.tag.add(name: "v$nearestNormal")
+
+        distance.times {
+            git.commit(message: 'fix commit')
+        }
+
+        if (nearestAny != _) {
+            git.tag.add(name: "v$nearestAny")
+            distance.times {
+                git.commit(message: 'fix commit')
+            }
+        }
+
+        if (expectedVersion.contains("#TIMESTAMP")) {
+            expectedVersion = expectedVersion.replace("#TIMESTAMP", Strategies.PreRelease.GenerateTimestamp())
+        }
+
+        when:
+        project.plugins.apply(PLUGIN_NAME)
+
+        then:
+        project.version.toString() == expectedVersion
+
+        where:
+        nearestAny       | distance | stage      | scope   | branchName      | expectedVersion
+        _ | 1 | "snapshot" | _       | "master"        | "1.0.1-master00001"
+        _ | 2 | "snapshot" | "major" | "master"        | "2.0.0-master00002"
+        _ | 3 | "snapshot" | "minor" | "master"        | "1.1.0-master00003"
+        _ | 4 | "snapshot" | "patch" | "master"        | "1.0.1-master00004"
+
+        _ | 1 | "snapshot" | _       | "develop"       | "1.0.1-branchDevelop00001"
+        _ | 2 | "snapshot" | "major" | "develop"       | "2.0.0-branchDevelop00002"
+        _ | 3 | "snapshot" | "minor" | "develop"       | "1.1.0-branchDevelop00003"
+        _ | 4 | "snapshot" | "patch" | "develop"       | "1.0.1-branchDevelop00004"
+
+        _ | 1 | "snapshot" | _       | "feature/check" | "1.0.1-branchFeatureCheck00001"
+        _ | 2 | "snapshot" | _       | "hotfix/check"  | "1.0.1-branchHotfixCheck00002"
+        _ | 3 | "snapshot" | _       | "fix/check"     | "1.0.1-branchFixCheck00003"
+        _ | 4 | "snapshot" | _       | "feature-check" | "1.0.1-branchFeatureCheck00004"
+        _ | 5 | "snapshot" | _       | "hotfix-check"  | "1.0.1-branchHotfixCheck00005"
+        _ | 6 | "snapshot" | _       | "fix-check"     | "1.0.1-branchFixCheck00006"
+        _ | 7 | "snapshot" | _       | "PR-22"         | "1.0.1-branchPRTwoTwo00007"
+
+        _ | 1 | "snapshot" | _       | "release/1.x"   | "1.0.1-branchReleaseOneDotx00001"
+        _ | 2 | "snapshot" | _       | "release-1.x"   | "1.0.1-branchReleaseOneDotx00002"
+        _ | 3 | "snapshot" | _       | "release/1.0.x" | "1.0.1-branchReleaseOneDotZeroDotx00003"
+        _ | 4 | "snapshot" | _       | "release-1.0.x" | "1.0.1-branchReleaseOneDotZeroDotx00004"
+
+        _ | 2 | "snapshot" | _       | "1.x"           | "1.0.1-branchOneDotx00002"
+        _ | 4 | "snapshot" | _       | "1.0.x"         | "1.0.1-branchOneDotZeroDotx00004"
+
+        // Pre uses timestamp
+        _                | 1        | "pre"      | _       | "master"        | "1.0.1-pre#TIMESTAMP"
+        _                | 2        | "pre"      | "major" | "master"        | "2.0.0-pre#TIMESTAMP"
+        _                | 3        | "pre"      | "minor" | "master"        | "1.1.0-pre#TIMESTAMP"
+        _                | 4        | "pre"      | "patch" | "master"        | "1.0.1-pre#TIMESTAMP"
+
+        '1.1.0-pre00001' | 1        | "pre"      | _       | "master"        | "1.1.0-pre#TIMESTAMP"
+        '1.1.0-pre00002' | 1        | "pre"      | _       | "master"        | "1.1.0-pre#TIMESTAMP"
+
+        _                | 1        | "pre"      | _       | "release/1.x"   | "1.0.1-pre#TIMESTAMP"
+        _                | 2        | "pre"      | _       | "release-1.x"   | "1.0.1-pre#TIMESTAMP"
+        _                | 3        | "pre"      | _       | "release/1.0.x" | "1.0.1-pre#TIMESTAMP"
+        _                | 4        | "pre"      | _       | "release-1.0.x" | "1.0.1-pre#TIMESTAMP"
+
+        _                | 1        | "pre"      | _       | "1.x"           | "1.0.1-pre#TIMESTAMP"
+        _                | 3        | "pre"      | _       | "1.0.x"         | "1.0.1-pre#TIMESTAMP"
+
+        "1.1.0-pre00001" | 1        | "pre"      | _       | "release/1.x"   | "1.1.0-pre#TIMESTAMP"
+        "1.1.0-pre00001" | 2        | "pre"      | _       | "release-1.x"   | "1.1.0-pre#TIMESTAMP"
+        "1.0.1-pre00001" | 3        | "pre"      | _       | "release/1.0.x" | "1.0.1-pre#TIMESTAMP"
+        "1.0.1-pre00001" | 4        | "pre"      | _       | "release-1.0.x" | "1.0.1-pre#TIMESTAMP"
+
+        "1.1.0-pre00001" | 1        | "pre"      | _       | "1.x"           | "1.1.0-pre#TIMESTAMP"
+        "1.0.1-pre00001" | 3        | "pre"      | _       | "1.0.x"         | "1.0.1-pre#TIMESTAMP"
+
+        _                | 4        | "pre"      | _       | "1.0.x"         | "1.0.1-pre#TIMESTAMP"
+
+        _                | 1        | "rc"       | _       | "master"        | "1.0.1-rc00001"
+        _                | 2        | "rc"       | "major" | "master"        | "2.0.0-rc00001"
+        _                | 3        | "rc"       | "minor" | "master"        | "1.1.0-rc00001"
+        _                | 4        | "rc"       | "patch" | "master"        | "1.0.1-rc00001"
+
+        '1.1.0-rc00001'  | 1        | "rc"       | _       | "master"        | "1.1.0-rc00002"
+        '1.1.0-rc00002'  | 1        | "rc"       | _       | "master"        | "1.1.0-rc00003"
+
+        _                | 1        | "rc"       | _       | "release/1.x"   | "1.0.1-rc00001"
+        _                | 2        | "rc"       | _       | "release-1.x"   | "1.0.1-rc00001"
+        _                | 3        | "rc"       | _       | "release/1.0.x" | "1.0.1-rc00001"
+        _                | 4        | "rc"       | _       | "release-1.0.x" | "1.0.1-rc00001"
+
+        _                | 1        | "rc"       | _       | "1.x"           | "1.0.1-rc00001"
+        _                | 3        | "rc"       | _       | "1.0.x"         | "1.0.1-rc00001"
+
+        "1.1.0-rc00001"  | 1        | "rc"       | _       | "release/1.x"   | "1.1.0-rc00002"
+        "1.1.0-rc00001"  | 2        | "rc"       | _       | "release-1.x"   | "1.1.0-rc00002"
+        "1.0.1-rc00001"  | 3        | "rc"       | _       | "release/1.0.x" | "1.0.1-rc00002"
+        "1.0.1-rc00001"  | 4        | "rc"       | _       | "release-1.0.x" | "1.0.1-rc00002"
+
+        "1.1.0-rc00001"  | 1        | "rc"       | _       | "1.x"           | "1.1.0-rc00002"
+        "1.0.1-rc00001"  | 3        | "rc"       | _       | "1.0.x"         | "1.0.1-rc00002"
+
+        _                | 1        | "final"    | _       | "master"        | "1.0.1"
+        _                | 2        | "final"    | "major" | "master"        | "2.0.0"
+        _                | 3        | "final"    | "minor" | "master"        | "1.1.0"
+        _                | 4        | "final"    | "patch" | "master"        | "1.0.1"
+
+        _                | 1        | "final"    | _       | "release/1.x"   | "1.0.1"
+        _                | 1        | "final"    | _       | "release/1.x"   | "1.0.1"
+        _                | 2        | "final"    | _       | "release-1.x"   | "1.0.1"
+        _                | 3        | "final"    | _       | "release/1.0.x" | "1.0.1"
+        _                | 4        | "final"    | _       | "release-1.0.x" | "1.0.1"
+
+        _                | 1        | "final"    | _       | "1.x"           | "1.0.1"
+        _                | 3        | "final"    | _       | "1.0.x"         | "1.0.1"
 
         nearestNormal = '1.0.0'
         nearestAnyTitle = (nearestAny == _) ? "unset" : nearestAny
