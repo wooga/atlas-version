@@ -23,7 +23,7 @@ buildscript {
 }
 
 plugins {
-    id 'net.wooga.plugins' version '2.2.0'
+    id 'net.wooga.plugins' version '2.2.4'
     id 'java-library'
 }
 
