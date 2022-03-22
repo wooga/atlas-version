@@ -81,8 +81,8 @@ final class SemverV2Strategies {
 
                 "${s}.${Integer.parseInt(delimiter).toString()}"
             }
-
-            state.copyWith(inferredPreRelease: branchName)
+            def inferred = state.inferredPreRelease ? "${state.inferredPreRelease}.${branchName}" : "${branchName}"
+            state.copyWith(inferredPreRelease: inferred)
         }
     }
 
