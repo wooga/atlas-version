@@ -100,7 +100,7 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
         preflightStrategy.set(versionScheme.map({ scheme ->
             switch (scheme) {
                 case VersionScheme.wdk:
-                    WdkStrategies.PRE
+                    WdkStrategies.PREFLIGHT
                     break
                 default:
                     null

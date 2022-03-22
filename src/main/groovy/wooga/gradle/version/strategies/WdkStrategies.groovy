@@ -8,10 +8,10 @@ import wooga.gradle.version.internal.release.semver.StrategyUtil
 class WdkStrategies {
     static final SemVerStrategy DEVELOPMENT = SemverV1Strategies.DEVELOPMENT
     static final SemVerStrategy SNAPSHOT = SemverV1Strategies.SNAPSHOT
-    static final SemVerStrategy PRE = SemverV1Strategies.SNAPSHOT.copyWith(
+    static final SemVerStrategy PREFLIGHT = SemverV1Strategies.SNAPSHOT.copyWith(
         releaseStage: ReleaseStage.Preflight,
         // TODO: Must start Between m-r
-        stages: ['pre'] as SortedSet,
+        stages: ['pre', 'preflight'] as SortedSet,
         preReleaseStrategy: StrategyUtil.all(StrategyUtil.closure({ state ->
             def stage = Strategies.PreRelease.STAGE_FIXED.infer(state).inferredPreRelease
             def integration = Strategies.PreRelease.STAGE_TIMESTAMP.infer(state).inferredPreRelease
