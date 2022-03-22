@@ -18,6 +18,7 @@
 
 package wooga.gradle.version.strategies
 
+import wooga.gradle.version.ReleaseStage
 import wooga.gradle.version.internal.release.opinion.Strategies
 import wooga.gradle.version.internal.release.semver.SemVerStrategy
 
@@ -157,5 +158,41 @@ class StaticMarkerStrategies {
             createTag: false,
             preReleaseStrategy: all(SemverV2Strategies.PreRelease.STAGE_BRANCH_NAME, Strategies.PreRelease.COUNT_COMMITS_SINCE_MARKER),
             enforcePrecedence: false
+    )
+
+    /**
+     * Returns a version strategy to be used for {@code snapshot} builds.
+     * <p>
+     * This strategy creates a snapshot version based on <a href="https://semver.org/spec/v2.0.0.html">Semver 2.0.0</a>.
+     * Branch names will be encoded in the pre-release part of the version and combined with the passed stage property.
+     * <p>
+     * Example <i>from master branch</i>:
+     * <pre>
+     * {@code
+     * stage = "adhoc"
+     * releaseScope = "minor"
+     * nearestVersion = "1.3.0"
+     * branch = "master"
+     * distance = 22
+     * inferred = "1.4.0-adhoc.master.22"
+     * }
+     * </pre>
+     * <p>
+     * Example <i>from topic branch</i>:
+     * <pre>
+     * {@code
+     * stage = "preflight"
+     * releaseScope = "minor"
+     * nearestVersion = "1.3.0"
+     * branch = "feature/fix_22"
+     * distance = 34
+     * inferred = "1.4.0-preflight.branch.feature.fix.22.34"
+     * }
+     * </pre>
+     */
+    static final SemVerStrategy PREFLIGHT = SNAPSHOT.copyWith(
+            releaseStage: ReleaseStage.Preflight,
+            stages: ['pre', 'preflight', 'adhoc'] as SortedSet,
+            preReleaseStrategy: all(Strategies.PreRelease.STAGE_FIXED, SemverV2Strategies.PreRelease.STAGE_BRANCH_NAME, Strategies.PreRelease.COUNT_COMMITS_SINCE_MARKER),
     )
 }
