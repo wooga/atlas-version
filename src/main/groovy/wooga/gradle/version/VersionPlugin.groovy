@@ -74,8 +74,13 @@ class VersionPlugin implements Plugin<Project> {
         def extension = project.extensions.create(VersionPluginExtension, EXTENSION_NAME, DefaultVersionPluginExtension, project)
 
         extension.versionScheme.set(VersionPluginConventions.versionScheme.getStringValueProvider(project).map({
-            VersionScheme.valueOf(it.trim())
-            }))
+            def value = it.trim()
+            // Special fallback due to legacy reasons
+            if (value == "semver1"){
+                value = "semver"
+            }
+            VersionScheme.valueOf(value)
+        }))
 
         extension.versionCodeScheme.set(VersionPluginConventions.versionCodeScheme.getStringValueProvider(project).map({
             VersionCodeScheme.valueOf(it.trim())

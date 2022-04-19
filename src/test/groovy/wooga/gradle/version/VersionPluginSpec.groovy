@@ -79,6 +79,28 @@ class VersionPluginSpec extends ProjectSpec {
         'versionBuilder' | VersionPluginExtension
     }
 
+    // This is done due to legacy reasons
+    @Unroll
+    def "Maps version scheme `#from` to `#expected`"() {
+        given:
+        assert !project.plugins.hasPlugin(PLUGIN_NAME)
+
+        and:
+        project.extensions[propertyName] = from
+
+        when:
+        project.plugins.apply(PLUGIN_NAME)
+
+        then:
+        def extension = project.extensions.getByType(VersionPluginExtension)
+        extension.versionScheme.get() == expected
+
+        where:
+        propertyName     | from      | expected
+        "version.scheme" | "semver"  | VersionScheme.semver
+        "version.scheme" | "semver1" | VersionScheme.semver
+    }
+
     @Unroll
     def 'Creates the [#extensionName] extension with type #extensionType when no git repo is in project'() {
         given:
