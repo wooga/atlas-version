@@ -187,11 +187,7 @@ final class SemVerStrategy implements DefaultVersionStrategy {
         if (enforcePrecedence && version < nearestVersion.any) {
             throw new GradleException("Inferred version (${version}) cannot be lower than nearest (${nearestVersion.any}). Required by selected strategy.")
         }
-
-        return new ReleaseVersion(version.toString(), nearestVersion.normal.toString(), createTag)
-    }
-
-    private String getPropertyOrNull(Project project, String name) {
-        return project.hasProperty(name) ? project.property(name) : null
+        def nearestNormal = nearestVersion.normal == NearestVersion.EMPTY? null: nearestVersion.normal
+        return new ReleaseVersion(version.toString(), nearestNormal?.toString(), createTag)
     }
 }
