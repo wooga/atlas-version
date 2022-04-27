@@ -24,6 +24,9 @@ buildscript {
 
 plugins {
     id 'net.wooga.plugins' version '2.2.4'
+    id 'net.wooga.snyk' version '0.10.0'
+    id "net.wooga.snyk-gradle-plugin" version "0.2.0"
+    id "net.wooga.cve-dependency-resolution" version "0.4.0"
     id 'java-library'
 }
 
@@ -51,16 +54,13 @@ github {
 
 dependencies {
     implementation 'com.github.zafarkhaja:java-semver:0.9.0'
-    implementation 'org.ajoberstar.grgit:grgit-core:4.1.1'
+    implementation 'org.ajoberstar.grgit:grgit-core:[4.1.1,5['
     implementation 'com.google.guava:guava:23.0'
-    implementation 'com.wooga.gradle:gradle-commons:(1, 2]'
+    implementation 'com.wooga.gradle:gradle-commons:[1,2['
 
-    testImplementation 'com.wooga.gradle:gradle-commons-test:(1,2]'
-    testImplementation 'com.github.stefanbirkner:system-rules:1.18.0'
+    testImplementation 'com.wooga.gradle:gradle-commons-test:[1,2['
 }
 
-configurations.all {
-    resolutionStrategy {
-        force 'org.codehaus.groovy:groovy-all:2.5.12'
-    }
+cveHandler {
+    configurations("compileClasspath", "runtimeClasspath", "testCompileClasspath", "testRuntimeClasspath", "integrationTestCompileClasspath", "integrationTestRuntimeClasspath")
 }
