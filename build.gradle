@@ -14,16 +14,9 @@
  * limitations under the License.
  *
  */
-buildscript {
-    configurations.all {
-        resolutionStrategy {
-            force 'org.ajoberstar.grgit:grgit-core:4.1.1'
-        }
-    }
-}
 
 plugins {
-    id 'net.wooga.plugins' version '2.2.4'
+    id 'net.wooga.plugins' version '3.1.0'
     id 'net.wooga.snyk' version '0.10.0'
     id "net.wooga.snyk-gradle-plugin" version "0.2.0"
     id "net.wooga.cve-dependency-resolution" version "0.4.0"
@@ -36,17 +29,20 @@ description = 'a slack plugin for Gradle.'
 pluginBundle {
     website = 'https://wooga.github.io/atlas-version/'
     vcsUrl = 'https://github.com/wooga/atlas-version'
-    tags = []
+    tags = ['semver', 'git', 'version', 'versioning']
+}
 
+gradlePlugin {
     plugins {
         version {
             id = 'net.wooga.version'
             displayName = 'Wooga Version plugin'
             description = 'Infer a project\'s version from your Git repository'
-            tags = ['semver', 'git', 'version', 'versioning']
+            implementationClass = 'wooga.gradle.version.VersionPlugin'
         }
     }
 }
+
 
 github {
     repositoryName = "wooga/atlas-version"

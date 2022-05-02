@@ -22,4 +22,4 @@ include 'api'
 include 'services:webservice'
 */
 
-rootProject.name = 'atlas-version'
+rootProject.name = 'version'
