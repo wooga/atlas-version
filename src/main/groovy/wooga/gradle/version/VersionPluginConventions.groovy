@@ -25,6 +25,7 @@ class VersionPluginConventions {
     static final String GIT_ROOT_PROPERTY = "git.root"
     static final String UNINITIALIZED_VERSION = '0.1.0-dev.0.uninitialized'
 
+    static final PropertyLookup version = new PropertyLookup("VERSION_BUILDER_VERSION", "versionBuilder.version", null)
     static final PropertyLookup versionScheme = new PropertyLookup("VERSION_BUILDER_VERSION_SCHEME", ["versionBuilder.versionScheme", "version.scheme"], VersionScheme.semver)
     static final PropertyLookup versionCodeScheme = new PropertyLookup("VERSION_BUILDER_VERSION_CODE_SCHEME", "versionBuilder.versionCodeScheme", VersionCodeScheme.none)
     static final PropertyLookup versionCodeOffset = new PropertyLookup("VERSION_BUILDER_VERSION_CODE_OFFSET", "versionBuilder.versionCodeOffset", 0)

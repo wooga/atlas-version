@@ -19,16 +19,12 @@
 package wooga.gradle.version
 
 import com.wooga.gradle.BaseSpec
-import org.gradle.api.provider.ProviderFactory
-import wooga.gradle.version.internal.release.base.ReleaseVersion
-import wooga.gradle.version.internal.release.base.TagStrategy
-import wooga.gradle.version.internal.release.semver.ChangeScope
 import org.ajoberstar.grgit.Grgit
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
-import wooga.gradle.version.internal.release.semver.SemVerStrategy
-import wooga.gradle.version.internal.release.semver.SemVerStrategyState
-import wooga.gradle.version.strategies.SemverV2Strategies
+import wooga.gradle.version.internal.release.base.ReleaseVersion
+import wooga.gradle.version.internal.release.base.TagStrategy
+import wooga.gradle.version.internal.release.semver.ChangeScope
 
 trait VersionPluginExtension implements BaseSpec {
 
@@ -193,6 +189,10 @@ trait VersionPluginExtension implements BaseSpec {
 
     void setVersion(Provider<ReleaseVersion> value) {
         version = value
+    }
+
+    void setVersion(String value) {
+        version = providers.provider({ new ReleaseVersion(version: value) })
     }
 
     /**

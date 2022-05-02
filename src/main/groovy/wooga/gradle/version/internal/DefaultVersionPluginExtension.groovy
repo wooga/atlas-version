@@ -167,7 +167,9 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
         releaseBranchPattern.set(VersionPluginConventions.releaseBranchPattern.getStringValueProvider(project))
         mainBranchPattern.set(VersionPluginConventions.mainBranchPattern.getStringValueProvider(project))
 
-        version = project.provider({
+        version = VersionPluginConventions.version.getStringValueProvider(project).map({
+            new ReleaseVersion(version:it)
+        }).orElse(project.provider({
             def versionStrategies = versionStrategies.get()
             def defaultStrategy = defaultStrategy.get()
             def git = git.getOrNull()
@@ -195,7 +197,7 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
             } else {
                 new ReleaseVersion(version: VersionPluginConventions.UNINITIALIZED_VERSION)
             }
-        }.memoize())
+        }.memoize()))
 
         versionCode = versionCodeScheme.map({ scheme ->
             def offset = versionCodeOffset.getOrElse(0)
