@@ -75,7 +75,7 @@ class VersionPlugin implements Plugin<Project> {
 
         extension.versionScheme.set(VersionPluginConventions.versionScheme.getStringValueProvider(project).map({
             VersionScheme.valueOf(it.trim())
-            }))
+        }))
 
         extension.versionCodeScheme.set(VersionPluginConventions.versionCodeScheme.getStringValueProvider(project).map({
             VersionCodeScheme.valueOf(it.trim())

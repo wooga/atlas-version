@@ -1007,4 +1007,20 @@ class VersionPluginSpec extends ProjectSpec {
         "with_underscore"   | "1.0.1-branchWithUnderscore00001"
         "with-dash"         | "1.0.1-branchWithDash00001"
     }
+
+    def "can set custom version directly by property in provided extension"() {
+        given:
+        project.plugins.apply(PLUGIN_NAME)
+        def extension = project.extensions.getByType(VersionCodeExtension)
+
+        when:
+        project.ext.set(propertyName, version)
+
+        then:
+        project.property("version").get() == version
+
+        where:
+        propertyName             | version
+        "versionBuilder.version" | "1.2.3"
+    }
 }

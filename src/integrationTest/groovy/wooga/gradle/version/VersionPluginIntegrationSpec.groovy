@@ -17,6 +17,7 @@
 package wooga.gradle.version
 
 import com.wooga.gradle.PlatformUtils
+import com.wooga.gradle.PropertyLookup
 import com.wooga.gradle.test.PropertyLocation
 import com.wooga.gradle.test.PropertyQueryTaskWriter
 import wooga.gradle.version.internal.release.semver.ChangeScope
@@ -273,5 +274,40 @@ class VersionPluginIntegrationSpec extends VersionIntegrationSpec {
         "final"    | "semver"      | ReleaseStage.Final
     }
 
+    @Unroll
+    def "can set custom version directly by #location in provided extension"() {
+
+        given: "the setting of said version"
+        def propertiesFile = createFile("gradle.properties")
+        def escapedValue = (value instanceof String) ? PlatformUtils.escapedPath(value) : value
+        switch (location) {
+            case PropertyLocation.script:
+                buildFile << "project.${property} = ${wrapValueBasedOnType(escapedValue, String)}"
+                break
+            case PropertyLocation.property:
+                propertiesFile << "${extensionName}.${property} = ${escapedValue}"
+                break
+            case PropertyLocation.environment:
+                environmentVariables.set(envNameFromProperty(property), "${value}")
+                break
+            default:
+                break
+        }
+
+        when: ""
+        def query = new PropertyQueryTaskWriter("project.version", "")
+        query.write(buildFile)
+        def result = runTasksSuccessfully(query.taskName)
+
+        then:
+        query.matches(result, value)
+
+        where:
+        property  | value   | location
+        "version" | "1.2.3" | PropertyLocation.script
+        "version" | "1.2.3" | PropertyLocation.property
+        "version" | "1.2.3" | PropertyLocation.environment
+        extensionName = "versionBuilder"
+    }
 
 }
