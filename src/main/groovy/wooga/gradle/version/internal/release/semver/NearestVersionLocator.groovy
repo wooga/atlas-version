@@ -15,7 +15,6 @@
  */
 package wooga.gradle.version.internal.release.semver
 
-import com.github.zafarkhaja.semver.Version
 import wooga.gradle.version.internal.release.base.TagStrategy
 import org.ajoberstar.grgit.Grgit
 import org.eclipse.jgit.lib.ObjectId
@@ -40,7 +39,6 @@ import org.slf4j.LoggerFactory
  */
 class NearestVersionLocator {
     private static final Logger logger = LoggerFactory.getLogger(NearestVersionLocator)
-    private static final Version UNKNOWN = Version.valueOf('0.0.0')
 
     final TagStrategy strategy
 
@@ -107,7 +105,7 @@ class NearestVersionLocator {
             def any = findNearestVersion(walk, head, tags)
 
             logger.debug('Nearest release: {}, nearest any: {}.', normal, any)
-            return new NearestVersion(any.version, normal.version, any.distance, normal.distance)
+            return new NearestVersion([any: any.version, normal: normal.version, distanceFromAny: any.distance, distanceFromNormal: normal.distance])
         } finally {
             walk.close()
         }
@@ -136,7 +134,7 @@ class NearestVersionLocator {
                 distanceCompare == 0 ? versionCompare : distanceCompare
             }
         } else {
-            return [version: UNKNOWN, distance: RevWalkUtils.count(walk, head, null)]
+            return [version: NearestVersion.EMPTY, distance: RevWalkUtils.count(walk, head, null)]
         }
     }
 }

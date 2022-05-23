@@ -26,6 +26,8 @@ import com.github.zafarkhaja.semver.Version
  */
 @Immutable(knownImmutableClasses=[Version])
 class NearestVersion {
+    static final Version EMPTY = Version.valueOf('0.0.0')
+
     /**
      * The nearest version that is tagged.
      */
