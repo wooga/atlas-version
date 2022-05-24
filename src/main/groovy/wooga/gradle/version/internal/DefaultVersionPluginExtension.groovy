@@ -102,6 +102,9 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
                 case VersionScheme.staticMarker:
                     StaticMarkerStrategies.PREFLIGHT
                     break
+                case VersionScheme.semver2:
+                    SemverV2Strategies.PREFLIGHT
+                    break
                 case VersionScheme.wdk:
                     WdkStrategies.PREFLIGHT
                     break

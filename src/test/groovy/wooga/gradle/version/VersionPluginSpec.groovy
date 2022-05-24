@@ -599,6 +599,10 @@ class VersionPluginSpec extends ProjectSpec {
             }
         }
 
+        if (expectedVersion.contains("#TIMESTAMP")) {
+            expectedVersion = expectedVersion.replace("#TIMESTAMP", Strategies.PreRelease.GenerateTimestamp())
+        }
+
         when:
         project.plugins.apply(PLUGIN_NAME)
 
@@ -624,6 +628,33 @@ class VersionPluginSpec extends ProjectSpec {
         _                 | 5        | "ci"         | _       | "hotfix-check"             | "1.0.1-branch.hotfix.check.5"
         _                 | 6        | "ci"         | _       | "fix-check"                | "1.1.0-branch.fix.check.6"
         _                 | 7        | "ci"         | _       | "PR-22"                    | "1.1.0-branch.pr.22.7"
+
+        // TODO: Add test cases for preflight
+        _                 | 1        | "pre"        | _       | "master"                   | "1.0.1-pre.#TIMESTAMP"
+        _                 | 2        | "pre"        | "major" | "master"                   | "2.0.0-pre.#TIMESTAMP"
+        _                 | 3        | "pre"        | "minor" | "master"                   | "1.1.0-pre.#TIMESTAMP"
+        _                 | 4        | "pre"        | "patch" | "master"                   | "1.0.1-pre.#TIMESTAMP"
+
+        '1.1.0-pre00001'  | 1        | "pre"        | _       | "master"                   | "1.1.0-pre.#TIMESTAMP"
+        '1.1.0-pre00002'  | 1        | "pre"        | _       | "master"                   | "1.1.0-pre.#TIMESTAMP"
+
+        _                 | 1        | "pre"        | _       | "release/1.x"              | "1.0.1-pre.#TIMESTAMP"
+        _                 | 2        | "pre"        | _       | "release-1.x"              | "1.0.1-pre.#TIMESTAMP"
+        _                 | 3        | "pre"        | _       | "release/1.0.x"            | "1.0.1-pre.#TIMESTAMP"
+        _                 | 4        | "pre"        | _       | "release-1.0.x"            | "1.0.1-pre.#TIMESTAMP"
+
+        _                 | 1        | "pre"        | _       | "1.x"                      | "1.0.1-pre.#TIMESTAMP"
+        _                 | 3        | "pre"        | _       | "1.0.x"                    | "1.0.1-pre.#TIMESTAMP"
+
+        "1.1.0-pre00001"  | 1        | "pre"        | _       | "release/1.x"              | "1.1.0-pre.#TIMESTAMP"
+        "1.1.0-pre00001"  | 2        | "pre"        | _       | "release-1.x"              | "1.1.0-pre.#TIMESTAMP"
+        "1.0.1-pre00001"  | 3        | "pre"        | _       | "release/1.0.x"            | "1.0.1-pre.#TIMESTAMP"
+        "1.0.1-pre00001"  | 4        | "pre"        | _       | "release-1.0.x"            | "1.0.1-pre.#TIMESTAMP"
+
+        "1.1.0-pre00001"  | 1        | "pre"        | _       | "1.x"                      | "1.1.0-pre.#TIMESTAMP"
+        "1.0.1-pre00001"  | 3        | "pre"        | _       | "1.0.x"                    | "1.0.1-pre.#TIMESTAMP"
+
+        _                 | 4        | "pre"        | _       | "1.0.x"                    | "1.0.1-pre.#TIMESTAMP"
 
         _                 | 1        | "ci"         | _       | "release/1.x"              | "1.1.0-branch.release.1.x.1"
         _                 | 2        | "ci"         | _       | "release-1.x"              | "1.1.0-branch.release.1.x.2"
