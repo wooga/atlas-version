@@ -19,6 +19,8 @@ import org.ajoberstar.grgit.Grgit
 
 import org.gradle.api.Project
 import wooga.gradle.version.ReleaseStage
+import wooga.gradle.version.VersionPluginExtension
+import wooga.gradle.version.internal.release.semver.VersionInferenceParameters
 
 /**
  * Strategy to infer a version from the project's and Git repository's state.
@@ -43,12 +45,28 @@ interface VersionStrategy {
     boolean selector(Project project, Grgit grgit)
 
     /**
-     * Infers the project version from the repository.
+     * Determines if the strategy should be used to infer the project's version.
+     * A return of {@code false} does not mean that the strategy cannot be used
+     * as the default.
      * @param project the project the version should be inferred for
      * @param grgit the repository the version should be inferred from
+     * @return {@code true} if the strategy should be used to infer the version
+     */
+    boolean selector(String stage, Grgit grgit)
+
+    /**
+     * Infers the project version from the repository.
+     * @param extension VersionPluginExtension configured with project data for the inference
      * @return the inferred version
      */
-    ReleaseVersion infer(Project project, Grgit grgit)
+    ReleaseVersion infer(VersionPluginExtension extension)
+
+    /**
+     * Infers the project version from given inference parameters.
+     * @param strategyState containing data for new version inference
+     * @return the inferred version
+     */
+    ReleaseVersion infer(VersionInferenceParameters inferenceParams)
 
     /**
      * The stages supported by this strategy.

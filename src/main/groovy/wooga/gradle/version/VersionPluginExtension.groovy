@@ -22,34 +22,37 @@ import com.wooga.gradle.BaseSpec
 import org.ajoberstar.grgit.Grgit
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
+import wooga.gradle.version.internal.release.base.DefaultVersionStrategy
 import wooga.gradle.version.internal.release.base.ReleaseVersion
 import wooga.gradle.version.internal.release.base.TagStrategy
+import wooga.gradle.version.internal.release.base.VersionStrategy
 import wooga.gradle.version.internal.release.semver.ChangeScope
+import wooga.gradle.version.internal.release.semver.VersionInferenceParameters
 
 trait VersionPluginExtension implements BaseSpec {
 
     /**
      * @return The version scheme being used by the plugin (such as SemVer2)
      */
-    Property<VersionScheme> getVersionScheme() {
+    Property<IVersionScheme> getVersionScheme() {
         versionScheme
     }
 
-    private final Property<VersionScheme> versionScheme = objects.property(VersionScheme)
+    private final Property<IVersionScheme> versionScheme = objects.property(IVersionScheme)
 
-    void versionScheme(VersionScheme value) {
+    void versionScheme(IVersionScheme value) {
         setVersionScheme(value)
     }
 
-    void versionScheme(Provider<VersionScheme> value) {
+    void versionScheme(Provider<IVersionScheme> value) {
         setVersionScheme(value)
     }
 
-    void setVersionScheme(VersionScheme value) {
+    void setVersionScheme(IVersionScheme value) {
         versionScheme.set(value)
     }
 
-    void setVersionScheme(Provider<VersionScheme> value) {
+    void setVersionScheme(Provider<IVersionScheme> value) {
         versionScheme.set(value)
     }
 
@@ -319,6 +322,55 @@ trait VersionPluginExtension implements BaseSpec {
         ReleaseStage.Unknown
     })
 
-    final ReleaseStage defaultReleaseStage
-}
+    /**
+     * Infers the next version for this project based on extension information and underlying git repository tags.
+     * @param scheme - version scheme that this project is following
+     * @param stageProvider - provider with the stage desired for the next version
+     * @param scopeProvider - provider with the ChangeScope desired for the next version
+     * @return Provider<ReleaseVersion> containing the inferred version,
+     * @throws org.gradle.api.internal.provider.MissingValueException if there is no configured git repository in this extension.
+     * or empty if none of the scheme strategies can be applied to the arguments.
+     */
+    Provider<ReleaseVersion> inferVersion(IVersionScheme scheme, Provider<String> stageProvider = this.stage,
+                                          Provider<ChangeScope> scopeProvider = this.scope) {
+        def strategyProvider = pickStrategy(scheme, stageProvider)
+        strategyProvider.map { strategy ->
+            def inferParams = VersionInferenceParameters.fromExtension(this).with {
+                it.stage = stageProvider.orNull
+                it.scope = scopeProvider.orNull
+                return it
+            }
+            return strategy.infer(inferParams)
+        }
+    }
 
+    private Provider<VersionStrategy> pickStrategy(IVersionScheme scheme, Provider<String> stageProvider = this.stage) {
+        return pickStrategyBasedOnGit(
+                scheme.strategies,
+                providers.provider { scheme.defaultStrategy } as Provider<VersionStrategy>,
+                stageProvider
+        )
+    }
+
+    private Provider<VersionStrategy> pickStrategyBasedOnGit(List<VersionStrategy> availableStrategies,
+                                                             Provider<VersionStrategy> defaultStrategy,
+                                                             Provider<String> stageProvider) {
+        return providers.provider { ->
+            def git = git.get()
+            def stage = stageProvider.orNull
+            def selectedStrategy = availableStrategies.stream().filter {
+                strategy -> strategy.selector(stage, git)
+            }.findFirst()
+
+            def fallbackStrategy = defaultStrategy.map { defaultStrat ->
+                if (defaultStrat instanceof DefaultVersionStrategy) {
+                    return defaultStrat.defaultSelector(stage, git)
+                } else {
+                    return defaultStrat?.selector(stage, git)
+                }
+            }.flatMap { useDefault -> useDefault ? defaultStrategy : null }
+
+            return selectedStrategy.orElseGet{ fallbackStrategy.orNull }
+        }
+    }
+}

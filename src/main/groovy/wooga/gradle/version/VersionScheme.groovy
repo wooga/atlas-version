@@ -18,8 +18,52 @@
 
 package wooga.gradle.version
 
-enum VersionScheme {
-    semver, semver2, staticMarker, wdk
+import wooga.gradle.version.internal.release.semver.SemVerStrategy
+import wooga.gradle.version.strategies.StaticMarkerStrategies
+import wooga.gradle.version.strategies.opinion.LegacyNuGetStrategies
+import wooga.gradle.version.strategies.opinion.SemverV2WithDefaultStrategies
+import wooga.gradle.version.strategies.opinion.UpmStrategies
+import wooga.gradle.version.strategies.opinion.WdkNuGetStrategies
+
+//TODO: Rename to VersionSchemes when breaking change
+enum VersionScheme implements IVersionScheme {
+    semver(LegacyNuGetStrategies.DEVELOPMENT,
+            LegacyNuGetStrategies.SNAPSHOT,
+            LegacyNuGetStrategies.PRE_RELEASE,
+            LegacyNuGetStrategies.FINAL),
+    semver2(SemverV2WithDefaultStrategies.DEVELOPMENT,
+            SemverV2WithDefaultStrategies.SNAPSHOT,
+            SemverV2WithDefaultStrategies.PRE_RELEASE,
+            SemverV2WithDefaultStrategies.FINAL),
+    staticMarker(StaticMarkerStrategies.DEVELOPMENT,
+            StaticMarkerStrategies.SNAPSHOT,
+            StaticMarkerStrategies.PRE_RELEASE,
+            StaticMarkerStrategies.FINAL, StaticMarkerStrategies.PREFLIGHT),
+    wdk(WdkNuGetStrategies.DEVELOPMENT,
+            WdkNuGetStrategies.SNAPSHOT,
+            WdkNuGetStrategies.PRE_RELEASE,
+            WdkNuGetStrategies.FINAL, WdkNuGetStrategies.PREFLIGHT),
+    upm(UpmStrategies.DEVELOPMENT,
+            UpmStrategies.SNAPSHOT,
+            UpmStrategies.PRE_RELEASE,
+            UpmStrategies.FINAL, UpmStrategies.PREFLIGHT)
+
+    final SemVerStrategy development
+    final SemVerStrategy snapshot
+    final SemVerStrategy preRelease
+    final SemVerStrategy finalStrategy
+
+    final List<SemVerStrategy> strategies
+    final SemVerStrategy defaultStrategy
+
+    VersionScheme(SemVerStrategy development, SemVerStrategy snapshot, SemVerStrategy preRelease, SemVerStrategy finalStrategy, SemVerStrategy... others) {
+        this.development = development
+        this.snapshot = snapshot
+        this.preRelease = preRelease
+        this.finalStrategy = finalStrategy
+        this.defaultStrategy = development
+        this.strategies = [development, snapshot, preRelease, finalStrategy, *others]
+    }
 }
 
 

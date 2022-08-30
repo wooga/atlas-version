@@ -20,7 +20,6 @@ import groovy.transform.PackageScope
 
 import com.github.zafarkhaja.semver.Version
 import wooga.gradle.version.ReleaseStage
-import wooga.gradle.version.internal.release.base.MarkerTagStrategy
 import wooga.gradle.version.internal.release.base.ReleaseVersion
 import wooga.gradle.version.internal.release.base.DefaultVersionStrategy
 import org.ajoberstar.grgit.Grgit
@@ -31,6 +30,8 @@ import org.gradle.api.Project
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import wooga.gradle.version.VersionPluginExtension
+
+import javax.annotation.Nullable
 
 /**
  * Strategy to infer versions that comply with Semantic Versioning.
@@ -99,6 +100,19 @@ final class SemVerStrategy implements DefaultVersionStrategy {
     @Override
     boolean defaultSelector(Project project, Grgit grgit) {
         String stage = project.extensions.getByType(VersionPluginExtension).stage.getOrNull()
+        return defaultSelector(stage, grgit)
+    }
+    /**
+     * Determines whether this strategy can be used to infer the version as a default.
+     * <ul>
+     * <li>Return {@code false}, if the {@code release.stage} is not one listed in the {@code stages} property.</li>
+     * <li>Return {@code false}, if the repository has uncommitted changes and {@code allowDirtyRepo} is {@code false}.</li>
+     * <li>Return {@code true}, otherwise.</li>
+     * </ul>
+     */
+
+    @Override
+    boolean defaultSelector(@Nullable String stage, Grgit grgit) {
         if (stage != null && !stages.contains(stage)) {
             logger.info('Skipping {} default strategy because stage ({}) is not one of: {}', name, stage, stages)
             return false
@@ -112,17 +126,8 @@ final class SemVerStrategy implements DefaultVersionStrategy {
         }
     }
 
-    /**
-     * Determines whether this strategy should be used to infer the version.
-     * <ul>
-     * <li>Return {@code false}, if the {@code release.stage} is not one listed in the {@code stages} property.</li>
-     * <li>Return {@code false}, if the repository has uncommitted changes and {@code allowDirtyRepo} is {@code false}.</li>
-     * <li>Return {@code true}, otherwise.</li>
-     * </ul>
-     */
     @Override
-    boolean selector(Project project, Grgit grgit) {
-        String stage = project.extensions.getByType(VersionPluginExtension).stage.getOrNull()
+    boolean selector(@Nullable String stage, Grgit grgit) {
         if (stage == null || !stages.contains(stage)) {
             logger.info('Skipping {} strategy because stage ({}) is not one of: {}', name, stage, stages)
             return false
@@ -137,55 +142,73 @@ final class SemVerStrategy implements DefaultVersionStrategy {
     }
 
     /**
+     * Determines whether this strategy should be used to infer the version.
+     * <ul>
+     * <li>Return {@code false}, if the {@code release.stage} is not one listed in the {@code stages} property.</li>
+     * <li>Return {@code false}, if the repository has uncommitted changes and {@code allowDirtyRepo} is {@code false}.</li>
+     * <li>Return {@code true}, otherwise.</li>
+     * </ul>
+     */
+    @Override
+    boolean selector(Project project, Grgit grgit) {
+        def extension = project.extensions.getByType(VersionPluginExtension)
+        String stage = extension.stage.getOrNull()
+        return selector(stage, grgit)
+    }
+
+    /**
      * Infers the version to use for this build. Uses the normal, pre-release, and build metadata
      * strategies in order to infer the version. If the {@code release.stage} is not set, uses the
      * first value in the {@code stages} set (i.e. the one with the lowest precedence). After inferring
      * the version precedence will be enforced, if required by this strategy.
      */
+    ReleaseVersion infer(VersionPluginExtension extension) {
+        def params = VersionInferenceParameters.fromExtension(extension)
+        return infer(params)
+        //TODO: move this to the callee in the extension
+//        logger.warn('Inferred project: {}, version: {}', project.name, releaseVersion.version)
+    }
+
+    SemVerStrategyState generateState(VersionInferenceParameters params) {
+        if (!stages.contains(params.stage)) {
+            throw new GradleException("Stage ${params.stage} is not one of ${stages} allowed for strategy ${name}.")
+        }
+        return new SemVerStrategyState(
+                scope: params.scope, //non-nullable
+                stage: params.stage?: stages.first(),
+                currentHead: params.currentHead,
+                currentBranch: params.currentBranch,
+                repoDirty: params.repoDirty,
+                nearestVersion: params.nearestVersion,
+                nearestCiMarker: params.nearestCiMarker,
+                nearestReleaseMarker: params.nearestReleaseMarker,
+                releaseBranchPattern: params.releaseBranchPattern,
+                mainBranchPattern: params.mainBranchPattern
+        )
+    }
+    /**
+     * Infers the version to use for this build. Uses the normal, pre-release, and build metadata
+     * strategies in order to infer the version. If the {@code release.stage} is not set, uses the
+     * first value in the {@code stages} set (i.e. the one with the lowest precedence). After inferring
+     * the version precedence will be enforced, if required by this strategy.
+     *
+     */
     @Override
-    ReleaseVersion infer(Project project, Grgit grgit) {
-        def tagStrategy = project.extensions.getByType(VersionPluginExtension).tagStrategy
-        return doInfer(project, grgit, new NearestVersionLocator(tagStrategy))
+    ReleaseVersion infer(VersionInferenceParameters params) {
+        logger.debug('Located nearest version: {}', params.nearestVersion)
+        return doInfer(generateState(params))
     }
 
     @PackageScope
-    ReleaseVersion doInfer(Project project, Grgit grgit, NearestVersionLocator locator) {
-        ChangeScope scope = project.extensions.getByType(VersionPluginExtension).scope.getOrNull()
-        String stage = project.extensions.getByType(VersionPluginExtension).stage.getOrNull() ?: stages.first()
+    ReleaseVersion doInfer(SemVerStrategyState semVerState) {
+        logger.info('Beginning version inference using {} strategy and input scope ({}) and stage ({})', name, semVerState.scope, semVerState.stage)
+        def finalSemverState = StrategyUtil.all(
+                normalStrategy, preReleaseStrategy, buildMetadataStrategy).infer(semVerState)
+        def version = finalSemverState.toVersion()
 
-        String releaseBranchPattern = project.extensions.getByType(VersionPluginExtension).releaseBranchPattern.get()
-        String mainBranchPattern = project.extensions.getByType(VersionPluginExtension).mainBranchPattern.get()
-
-        if (!stages.contains(stage)) {
-            throw new GradleException("Stage ${stage} is not one of ${stages} allowed for strategy ${name}.")
-        }
-        logger.info('Beginning version inference using {} strategy and input scope ({}) and stage ({})', name, scope, stage)
-
-        NearestVersion nearestVersion = locator.locate(grgit)
-        NearestVersion nearestCiMarker = new NearestVersionLocator(new MarkerTagStrategy("ci-")).locate(grgit)
-        NearestVersion nearestReleaseMarker = new NearestVersionLocator(new MarkerTagStrategy("release-")).locate(grgit)
-        logger.debug('Located nearest version: {}', nearestVersion)
-
-        SemVerStrategyState state = new SemVerStrategyState(
-            scopeFromProp: scope,
-            stageFromProp: stage,
-            currentHead: grgit.head(),
-            currentBranch: grgit.branch.current,
-            repoDirty: !grgit.status().clean,
-            nearestVersion: nearestVersion,
-            nearestCiMarker: nearestCiMarker,
-            nearestReleaseMarker: nearestReleaseMarker,
-            releaseBranchPattern: releaseBranchPattern,
-            mainBranchPattern: mainBranchPattern
-        )
-
-        Version version = StrategyUtil.all(
-            normalStrategy, preReleaseStrategy, buildMetadataStrategy).infer(state).toVersion()
-
-        logger.warn('Inferred project: {}, version: {}', project.name, version)
-
+        def nearestVersion = finalSemverState.nearestVersion
         if (enforcePrecedence && version < nearestVersion.any) {
-            throw new GradleException("Inferred version (${version}) cannot be lower than nearest (${nearestVersion.any}). Required by selected strategy.")
+            throw new GradleException("Inferred version (${version}) cannot be lower than nearest (${nearestVersion.any}). Required by selected strategy '${name}'.")
         }
         def nearestNormal = nearestVersion.normal == NearestVersion.EMPTY? null: nearestVersion.normal
         return new ReleaseVersion(version.toString(), nearestNormal?.toString(), createTag)

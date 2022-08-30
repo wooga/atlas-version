@@ -28,6 +28,10 @@ import wooga.gradle.version.internal.release.semver.StrategyUtil
 import static wooga.gradle.version.internal.release.semver.StrategyUtil.closure
 import static wooga.gradle.version.internal.release.semver.StrategyUtil.parseIntOrZero
 
+/**
+ * Please use LegacyNuGetStrategies instead
+ */
+@Deprecated
 class SemverV1Strategies {
     static final scopes = StrategyUtil.one(
             Strategies.Normal.USE_SCOPE_PROP,
@@ -36,7 +40,8 @@ class SemverV1Strategies {
             Strategies.Normal.ENFORCE_GITFLOW_BRANCH_MAJOR_MINOR_X,
             Strategies.Normal.ENFORCE_BRANCH_MAJOR_MINOR_X,
             Strategies.Normal.USE_NEAREST_ANY,
-            Strategies.Normal.useScope(ChangeScope.PATCH))
+            Strategies.Normal.useScope(ChangeScope.PATCH)
+    )
 
     static final PartialSemVerStrategy COUNT_INCREMENTED = closure { SemVerStrategyState state ->
         def nearest = state.nearestVersion

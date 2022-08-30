@@ -15,7 +15,6 @@
  */
 package wooga.gradle.version.internal.release.semver
 
-import wooga.gradle.version.internal.release.base.TagStrategy
 import org.ajoberstar.grgit.Grgit
 import org.eclipse.jgit.lib.ObjectId
 import org.eclipse.jgit.revwalk.RevCommit
@@ -23,6 +22,7 @@ import org.eclipse.jgit.revwalk.RevWalk
 import org.eclipse.jgit.revwalk.RevWalkUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import wooga.gradle.version.internal.release.base.TagStrategy
 
 /**
  * Locates the nearest {@link org.ajoberstar.grgit.Tag tag}s whose names can be
@@ -40,10 +40,10 @@ import org.slf4j.LoggerFactory
 class NearestVersionLocator {
     private static final Logger logger = LoggerFactory.getLogger(NearestVersionLocator)
 
-    final TagStrategy strategy
+    final Grgit grgit
 
-    NearestVersionLocator(TagStrategy strategy) {
-        this.strategy = strategy
+    NearestVersionLocator(Grgit grgit) {
+        this.grgit = grgit
     }
 
     /**
@@ -78,7 +78,7 @@ class NearestVersionLocator {
      * Defaults to {@code HEAD}.
      * @return the version corresponding to the nearest tag
      */
-    NearestVersion locate(Grgit grgit) {
+    NearestVersion locate(TagStrategy strategy) {
         logger.debug('Locate beginning on branch: {}', grgit.branch.current.fullName)
 
         // Reuse a single walk to make use of caching.
