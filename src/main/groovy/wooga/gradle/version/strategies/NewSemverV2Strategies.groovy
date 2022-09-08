@@ -34,8 +34,6 @@ final class NewSemverV2Strategies {
             Strategies.Normal.USE_NEAREST_ANY
     )
 
-
-
     /**
      * Returns a version strategy to be used for {@code final} builds.
      * <p>

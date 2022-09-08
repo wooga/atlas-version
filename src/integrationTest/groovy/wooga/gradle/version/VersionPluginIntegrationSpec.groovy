@@ -272,6 +272,22 @@ class VersionPluginIntegrationSpec extends VersionIntegrationSpec {
         "snapshot" | "semver"      | ReleaseStage.Snapshot
         "rc"       | "semver"      | ReleaseStage.Prerelease
         "final"    | "semver"      | ReleaseStage.Final
+
+        "pancakes" | "upm"         | ReleaseStage.Unknown
+        _          | "upm"         | ReleaseStage.Development
+        "dev"      | "upm"         | ReleaseStage.Development
+        "snapshot" | "upm"         | ReleaseStage.Snapshot
+        "pre"      | "upm"         | ReleaseStage.Preflight
+        "rc"       | "upm"         | ReleaseStage.Prerelease
+        "final"    | "upm"         | ReleaseStage.Final
+
+        "pancakes" | "wdk"         | ReleaseStage.Unknown
+        _          | "wdk"         | ReleaseStage.Development
+        "dev"      | "wdk"         | ReleaseStage.Development
+        "snapshot" | "wdk"         | ReleaseStage.Snapshot
+        "pre"      | "wdk"         | ReleaseStage.Preflight
+        "rc"       | "wdk"         | ReleaseStage.Prerelease
+        "final"    | "wdk"         | ReleaseStage.Final
     }
 
     @Unroll

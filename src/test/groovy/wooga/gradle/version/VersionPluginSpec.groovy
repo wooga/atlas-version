@@ -182,7 +182,7 @@ class VersionPluginSpec extends ProjectSpec {
             git.checkout(branch: "$branchName", startPoint: 'master', createBranch: true)
         }
 
-        5.times {
+        1.times {
             git.commit(message: 'feature commit')
         }
 
@@ -293,7 +293,7 @@ class VersionPluginSpec extends ProjectSpec {
             git.checkout(branch: "$branchName", startPoint: 'master', createBranch: true)
         }
 
-        5.times {
+        1.times {
             git.commit(message: 'feature commit')
         }
 
@@ -444,7 +444,7 @@ class VersionPluginSpec extends ProjectSpec {
         }
 
         if (nearestNormal != _) {
-            5.times {
+            1.times {
                 git.commit(message: 'feature commit')
             }
             git.tag.add(name: "v$nearestNormal")
@@ -608,7 +608,7 @@ class VersionPluginSpec extends ProjectSpec {
             git.checkout(branch: "$branchName", startPoint: 'master', createBranch: true)
         }
         if (nearestNormal != _) {
-            5.times {
+            1.times {
                 git.commit(message: 'feature commit')
             }
             git.tag.add(name: "v$nearestNormal")
@@ -850,7 +850,7 @@ class VersionPluginSpec extends ProjectSpec {
             git.checkout(branch: "$branchName", startPoint: 'master', createBranch: true)
         }
 
-        5.times {
+        1.times {
             git.commit(message: 'feature commit')
         }
 
@@ -972,7 +972,7 @@ class VersionPluginSpec extends ProjectSpec {
 
 
         if (nearestNormal != _) {
-            5.times {
+            1.times {
                 git.commit(message: 'feature commit')
             }
             git.tag.add(name: "$tagPrefix$nearestNormal")

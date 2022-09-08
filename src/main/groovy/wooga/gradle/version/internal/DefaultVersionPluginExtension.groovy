@@ -19,7 +19,6 @@
 package wooga.gradle.version.internal
 
 import org.ajoberstar.grgit.Grgit
-import wooga.gradle.version.IVersionScheme
 import wooga.gradle.version.ReleaseStage
 import wooga.gradle.version.VersionCodeScheme
 import wooga.gradle.version.internal.release.base.ReleaseVersion
@@ -46,29 +45,29 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
         mainBranchPattern.set(VersionPluginConventions.mainBranchPattern.getStringValueProvider(project))
 
         version = VersionPluginConventions.version.getStringValueProvider(project).map({
-            new ReleaseVersion(version:it)
+            new ReleaseVersion(version: it)
         }).orElse(inferVersionIfGitIsPresent())
-      .orElse(new ReleaseVersion(version: VersionPluginConventions.UNINITIALIZED_VERSION))
+                .orElse(new ReleaseVersion(version: VersionPluginConventions.UNINITIALIZED_VERSION))
 
         versionCode = versionCodeScheme.map({
-            VersionCodeScheme scheme -> scheme.versionCodeFor(this.version.map{it.version}, git, versionCodeOffset.getOrElse(0))
+            VersionCodeScheme scheme -> scheme.versionCodeFor(this.version.map { it.version }, git, versionCodeOffset.getOrElse(0))
         }.memoize())
 
         // It's development if the development strategy contains the set `stage` OR
         // if the default strategy's release stage is development
-        isDevelopment = mapStrategy(versionScheme, ReleaseStage.Development)
-        isSnapshot = mapStrategy(versionScheme, ReleaseStage.Snapshot)
-        isPrerelease = mapStrategy(versionScheme, ReleaseStage.Prerelease)
-        isFinal = mapStrategy(versionScheme, ReleaseStage.Final)
+        isDevelopment = canRunStage(ReleaseStage.Development, stage)
+        isSnapshot = canRunStage(ReleaseStage.Snapshot, stage)
+        isPrerelease = canRunStage(ReleaseStage.Prerelease, stage)
+        isFinal = canRunStage(ReleaseStage.Final, stage)
     }
 
-    Provider<Boolean> mapStrategy(Provider<IVersionScheme> scheme, ReleaseStage releaseStage) {
-        def strategy = scheme.map{ it.strategyFor(releaseStage).orElse(null) }
+    private Provider<Boolean> canRunStage(ReleaseStage releaseStage, Provider<String> stageProvider) {
+        def strategy = versionScheme.map{ it.strategyFor(releaseStage) }
 
         return strategy.flatMap { versionStrategy ->
-            stage.map{ stageVal ->versionStrategy.stages.contains(stageVal) }
+            stageProvider.map{ stage -> versionStrategy.stages.contains(stage) }
         }
-        .orElse(scheme.map({
+        .orElse(versionScheme.map({
             it.defaultStrategy.releaseStage == releaseStage
         }))
     }
@@ -83,6 +82,6 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
             project.logger.warn('Inferred project: {}, version: {}', project.name, version.version)
             return version
         }.memoize())
-        .orElse(new ReleaseVersion(version: VersionPluginConventions.UNINITIALIZED_VERSION)) as Provider<ReleaseVersion>
+                .orElse(new ReleaseVersion(version: VersionPluginConventions.UNINITIALIZED_VERSION)) as Provider<ReleaseVersion>
     }
 }

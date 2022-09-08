@@ -18,6 +18,7 @@
 package wooga.gradle.version.strategies
 
 import wooga.gradle.version.IVersionScheme
+import wooga.gradle.version.ReleaseStage
 import wooga.gradle.version.internal.release.opinion.Strategies
 import wooga.gradle.version.internal.release.semver.*
 import wooga.gradle.version.strategies.partials.NormalPartials
@@ -157,7 +158,8 @@ class NewSemverV1Strategies {
                                     Strategies.PreRelease.countCommitsSinceNormal("", 5)),
             createTag: false,
             allowDirtyRepo: true,
-            enforcePrecedence: false
+            enforcePrecedence: false,
+            releaseStage: ReleaseStage.Snapshot
     )
 
     static final IVersionScheme scheme = new IVersionScheme() {

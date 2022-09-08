@@ -18,6 +18,7 @@
 
 package wooga.gradle.version
 
+import wooga.gradle.version.internal.release.base.VersionStrategy
 import wooga.gradle.version.internal.release.semver.SemVerStrategy
 import wooga.gradle.version.strategies.StaticMarkerStrategies
 import wooga.gradle.version.strategies.opinion.LegacyNuGetStrategies
@@ -48,15 +49,15 @@ enum VersionScheme implements IVersionScheme {
             UpmStrategies.PRE_RELEASE.copyWith(enforcePrecedence: false),
             UpmStrategies.FINAL, UpmStrategies.PREFLIGHT)
 
-    final SemVerStrategy development
-    final SemVerStrategy snapshot
-    final SemVerStrategy preRelease
-    final SemVerStrategy finalStrategy
+    final VersionStrategy development
+    final VersionStrategy snapshot
+    final VersionStrategy preRelease
+    final VersionStrategy finalStrategy
 
-    final List<SemVerStrategy> strategies
-    final SemVerStrategy defaultStrategy
+    final List<VersionStrategy> strategies
+    final VersionStrategy defaultStrategy
 
-    VersionScheme(SemVerStrategy development, SemVerStrategy snapshot, SemVerStrategy preRelease, SemVerStrategy finalStrategy, SemVerStrategy... others) {
+    VersionScheme(VersionStrategy development, VersionStrategy snapshot, VersionStrategy preRelease, VersionStrategy finalStrategy, SemVerStrategy... others) {
         this.development = development
         this.snapshot = snapshot
         this.preRelease = preRelease

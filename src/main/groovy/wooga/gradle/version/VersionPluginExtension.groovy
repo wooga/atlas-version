@@ -307,9 +307,10 @@ trait VersionPluginExtension implements BaseSpec {
      */
     Provider<ReleaseStage> getReleaseStage() {
         releaseStage
+
     }
 
-    final Provider<ReleaseStage> releaseStage = providers.provider({
+    final Provider<ReleaseStage> releaseStage = providers.provider { ->
         if (isDevelopment.getOrElse(false)) {
             return ReleaseStage.Development
         } else if (isSnapshot.getOrElse(false)) {
@@ -318,9 +319,12 @@ trait VersionPluginExtension implements BaseSpec {
             return ReleaseStage.Prerelease
         } else if (isFinal.getOrElse(false)) {
             return ReleaseStage.Final
+        } else {
+            return versionScheme.flatMap{scheme ->
+                stage.map {stageName -> scheme.findStageForStageName(stageName) }
+            }.orNull
         }
-        ReleaseStage.Unknown
-    })
+    }.orElse(ReleaseStage.Unknown)
 
     /**
      * Infers the next version for this project based on extension information and underlying git repository tags.
