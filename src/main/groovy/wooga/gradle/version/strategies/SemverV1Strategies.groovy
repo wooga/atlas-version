@@ -34,7 +34,7 @@ import static wooga.gradle.version.internal.release.semver.StrategyUtil.parseInt
 @Deprecated
 class SemverV1Strategies {
     static final scopes = StrategyUtil.one(
-            Strategies.Normal.USE_SCOPE_PROP,
+            Strategies.Normal.USE_SCOPE_STATE,
             Strategies.Normal.ENFORCE_GITFLOW_BRANCH_MAJOR_X,
             Strategies.Normal.ENFORCE_BRANCH_MAJOR_X,
             Strategies.Normal.ENFORCE_GITFLOW_BRANCH_MAJOR_MINOR_X,

@@ -36,7 +36,7 @@ import static wooga.gradle.version.internal.release.semver.StrategyUtil.*
 final class SemverV2Strategies {
 
     private static final scopes = one(
-            Strategies.Normal.USE_SCOPE_PROP,
+            Strategies.Normal.USE_SCOPE_STATE,
             Normal.matchBranchPatternAndUseScope(~/feature(?:\/|-).+$/, ChangeScope.MINOR),
             Normal.matchBranchPatternAndUseScope(~/hotfix(?:\/|-).+$/, ChangeScope.PATCH),
             Normal.matchBranchPatternAndUseScope(~/fix(?:\/|-).+$/, ChangeScope.MINOR),

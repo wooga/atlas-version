@@ -22,8 +22,7 @@ import wooga.gradle.version.internal.release.semver.SemVerStrategy
 import wooga.gradle.version.internal.release.semver.SemVerStrategyState
 import wooga.gradle.version.internal.release.semver.StrategyUtil
 import org.gradle.api.Project
-import wooga.gradle.version.strategies.operations.BuildMetadataPartials
-import wooga.gradle.version.strategies.operations.NormalPartials
+import wooga.gradle.version.strategies.partials.NormalPartials
 
 import java.util.regex.Pattern
 
@@ -41,26 +40,26 @@ class NetflixOssStrategies {
     static final PartialSemVerStrategy TRAVIS_BRANCH_MAJOR_X = fromTravisPropertyPattern(~/^(\d+)\.x$/)
     @Deprecated
     static final PartialSemVerStrategy TRAVIS_BRANCH_MAJOR_MINOR_X = fromTravisPropertyPattern(~/^(\d+)\.(\d+)\.x$/)
-    static final PartialSemVerStrategy NEAREST_HIGHER_ANY = NormalPartials.NEAREST_HIGHER_ANY
+    static final PartialSemVerStrategy NEAREST_HIGHER_ANY = Strategies.Normal.NEAREST_HIGHER_ANY
     private static final scopes = StrategyUtil.one(
-            Strategies.Normal.USE_SCOPE_PROP,
-            NormalPartials.TRAVIS_BRANCH_MAJOR_X,
-            NormalPartials.TRAVIS_BRANCH_MAJOR_MINOR_X,
+            Strategies.Normal.USE_SCOPE_STATE,
+            TRAVIS_BRANCH_MAJOR_X,
+            TRAVIS_BRANCH_MAJOR_MINOR_X,
             NormalPartials.SCOPE_EMBED_IN_BRANCH,
-            NormalPartials.NEAREST_HIGHER_ANY,
+            NEAREST_HIGHER_ANY,
             Strategies.Normal.useScope(ChangeScope.MINOR)
     )
 
     static final SemVerStrategy SNAPSHOT = Strategies.SNAPSHOT.copyWith(normalStrategy: scopes)
     static final SemVerStrategy DEVELOPMENT = Strategies.DEVELOPMENT.copyWith(
             normalStrategy: scopes,
-            buildMetadataStrategy: BuildMetadataPartials.DEVELOPMENT_METADATA_STRATEGY)
+            buildMetadataStrategy: Strategies.BuildMetadata.COMMIT_ABBREVIATED_ID)
     static final SemVerStrategy PRE_RELEASE = Strategies.PRE_RELEASE.copyWith(normalStrategy: scopes)
     static final SemVerStrategy FINAL = Strategies.FINAL.copyWith(normalStrategy: scopes)
 
     @Deprecated
     static final class BuildMetadata {
-        static final PartialSemVerStrategy DEVELOPMENT_METADATA_STRATEGY = BuildMetadataPartials.DEVELOPMENT_METADATA_STRATEGY
+        static final PartialSemVerStrategy DEVELOPMENT_METADATA_STRATEGY = Strategies.BuildMetadata.COMMIT_ABBREVIATED_ID
     }
 
     static Project project
@@ -102,6 +101,6 @@ class NetflixOssStrategies {
      */
     @Deprecated
     static PartialSemVerStrategy nearestHigherAny() {
-        return closure { state -> NormalPartials.NEAREST_HIGHER_ANY.infer(state) }
+        return closure { state -> Strategies.Normal.NEAREST_HIGHER_ANY.infer(state) }
     }
 }

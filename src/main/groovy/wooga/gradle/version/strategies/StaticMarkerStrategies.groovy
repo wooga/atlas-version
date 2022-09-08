@@ -156,7 +156,8 @@ class StaticMarkerStrategies {
             name: 'snapshot',
             stages: ['ci'] as SortedSet,
             createTag: false,
-            preReleaseStrategy: all(SemverV2Strategies.PreRelease.STAGE_BRANCH_NAME, Strategies.PreRelease.COUNT_COMMITS_SINCE_MARKER),
+            preReleaseStrategy: all(Strategies.PreRelease.WITH_BRANCH_NAME,
+                                    Strategies.PreRelease.COUNT_COMMITS_SINCE_MARKER),
             enforcePrecedence: false
     )
 
@@ -193,6 +194,8 @@ class StaticMarkerStrategies {
     static final SemVerStrategy PREFLIGHT = SNAPSHOT.copyWith(
             releaseStage: ReleaseStage.Preflight,
             stages: ['pre', 'preflight', 'adhoc'] as SortedSet,
-            preReleaseStrategy: all(Strategies.PreRelease.STAGE_FIXED, SemverV2Strategies.PreRelease.STAGE_BRANCH_NAME, Strategies.PreRelease.COUNT_COMMITS_SINCE_MARKER),
+            preReleaseStrategy: all(Strategies.PreRelease.STAGE_FIXED,
+                                    Strategies.PreRelease.WITH_BRANCH_NAME,
+                                    Strategies.PreRelease.COUNT_COMMITS_SINCE_MARKER),
     )
 }

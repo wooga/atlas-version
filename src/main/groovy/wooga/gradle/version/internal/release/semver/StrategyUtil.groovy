@@ -15,6 +15,8 @@
  */
 package wooga.gradle.version.internal.release.semver
 
+import java.util.regex.Pattern
+
 /**
  * Utility class to more easily create {@link PartialSemVerStrategy} instances.
  */
@@ -105,6 +107,33 @@ final class StrategyUtil {
         }
         return [preReleaseVersion]
     }
+
+    /**
+     * Gets the branch name from the BRANCH_NAME environment if the state's current branch is HEAD
+     */
+    static String branchFromEnvIfDetached(final SemVerStrategyState state) {
+        String branchName = state.currentBranch.name
+        if (branchName == "HEAD" && System.getenv("BRANCH_NAME")) {
+            return System.getenv("BRANCH_NAME")
+        }
+        return branchName
+    }
+
+
+    static String numbersAsLiteralNumbers(String str) {
+        return str.replaceAll(/0/, "Zero")
+                .replaceAll(/1/, "One")
+                .replaceAll(/2/, "Two")
+                .replaceAll(/3/, "Three")
+                .replaceAll(/4/, "Four")
+                .replaceAll(/5/, "Five")
+                .replaceAll(/6/, "Six")
+                .replaceAll(/7/, "Seven")
+                .replaceAll(/8/, "Eight")
+                .replaceAll(/9/, "Nine")
+    }
+
+
 
     private static class ClosureBackedPartialSemVerStrategy implements PartialSemVerStrategy {
         private final Closure<SemVerStrategyState> behavior

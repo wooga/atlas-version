@@ -16,6 +16,9 @@ class UpmStrategies {
     static final SemVerStrategy SNAPSHOT = NewSemverV2Strategies.SNAPSHOT.copyWith(
             normalStrategy: chainDefaultScope(NewSemverV2Strategies.SNAPSHOT)
     )
+    /**
+     * WDK-Specific preflight version strategy.
+     */
     static final SemVerStrategy PREFLIGHT = NewSemverV2Strategies.SNAPSHOT.copyWith(
         releaseStage: ReleaseStage.Preflight,
         stages: ['pre', 'preflight'] as SortedSet,
@@ -36,5 +39,4 @@ class UpmStrategies {
                                                            ChangeScope scope = LegacyNuGetStrategies.DEFAULT_SCOPE) {
         return one(base.normalStrategy, Strategies.Normal.useScope(scope))
     }
-
 }

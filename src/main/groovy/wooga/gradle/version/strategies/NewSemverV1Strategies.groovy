@@ -20,16 +20,15 @@ package wooga.gradle.version.strategies
 import wooga.gradle.version.IVersionScheme
 import wooga.gradle.version.internal.release.opinion.Strategies
 import wooga.gradle.version.internal.release.semver.*
-import wooga.gradle.version.strategies.operations.BuildMetadataPartials
-import wooga.gradle.version.strategies.operations.NormalPartials
-import wooga.gradle.version.strategies.operations.PreReleasePartials
+import wooga.gradle.version.strategies.partials.NormalPartials
 
+import static wooga.gradle.version.internal.release.semver.StrategyUtil.all
 import static wooga.gradle.version.internal.release.semver.StrategyUtil.one
 
 class NewSemverV1Strategies {
 
     static final NORMAL_STRATEGY = one(
-            Strategies.Normal.USE_SCOPE_PROP, //USE_STATE_SCOPE
+            Strategies.Normal.USE_SCOPE_STATE,
             NormalPartials.SCOPE_EMBED_IN_BRANCH,
             Strategies.Normal.USE_NEAREST_ANY
     )
@@ -72,7 +71,10 @@ class NewSemverV1Strategies {
      */
     static final SemVerStrategy PRE_RELEASE = Strategies.PRE_RELEASE.copyWith(
             normalStrategy: NORMAL_STRATEGY,
-            preReleaseStrategy: PreReleasePartials.STAGE_WITH_PADDED_COUNT
+            preReleaseStrategy: all (
+                    Strategies.PreRelease.STAGE_FIXED,
+                    Strategies.PreRelease.countIncremented("", 5),
+            )
     )
 
     /**
@@ -112,7 +114,7 @@ class NewSemverV1Strategies {
      */
     static final SemVerStrategy DEVELOPMENT = Strategies.DEVELOPMENT.copyWith(
             normalStrategy: NORMAL_STRATEGY,
-            buildMetadataStrategy: BuildMetadataPartials.DEVELOPMENT_METADATA_STRATEGY
+            buildMetadataStrategy: Strategies.BuildMetadata.COMMIT_ABBREVIATED_ID
     )
 
     /**
@@ -151,7 +153,8 @@ class NewSemverV1Strategies {
             name: 'snapshot',
             stages: ['snapshot','SNAPSHOT'] as SortedSet,
             normalStrategy: NORMAL_STRATEGY,
-            preReleaseStrategy: PreReleasePartials.PAKET_BRANCH_NAME,
+            preReleaseStrategy: all(Strategies.PreRelease.PAKET_BRANCH_NAME,
+                                    Strategies.PreRelease.countCommitsSinceNormal("", 5)),
             createTag: false,
             allowDirtyRepo: true,
             enforcePrecedence: false

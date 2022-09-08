@@ -21,9 +21,7 @@ import wooga.gradle.version.IVersionScheme
 import wooga.gradle.version.ReleaseStage
 import wooga.gradle.version.internal.release.opinion.Strategies
 import wooga.gradle.version.internal.release.semver.SemVerStrategy
-import wooga.gradle.version.strategies.operations.BuildMetadataPartials
-import wooga.gradle.version.strategies.operations.NormalPartials
-import wooga.gradle.version.strategies.operations.PreReleasePartials
+import wooga.gradle.version.strategies.partials.NormalPartials
 
 import static wooga.gradle.version.internal.release.semver.StrategyUtil.*
 
@@ -31,7 +29,7 @@ import static wooga.gradle.version.internal.release.semver.StrategyUtil.*
 final class NewSemverV2Strategies {
 
     static final NORMAL_STRATEGY = one(
-            Strategies.Normal.USE_SCOPE_PROP,
+            Strategies.Normal.USE_SCOPE_STATE,
             NormalPartials.SCOPE_FROM_BRANCH,
             Strategies.Normal.USE_NEAREST_ANY
     )
@@ -125,7 +123,7 @@ final class NewSemverV2Strategies {
      */
     static final SemVerStrategy DEVELOPMENT = Strategies.DEVELOPMENT.copyWith(
             normalStrategy: NORMAL_STRATEGY,
-            buildMetadataStrategy: BuildMetadataPartials.DEVELOPMENT_METADATA_STRATEGY,
+            buildMetadataStrategy: Strategies.BuildMetadata.COMMIT_ABBREVIATED_ID,
     )
 
     /**
@@ -160,7 +158,8 @@ final class NewSemverV2Strategies {
             stages: ['ci', 'snapshot', 'SNAPSHOT'] as SortedSet,
             normalStrategy: NORMAL_STRATEGY,
             allowDirtyRepo: true,
-            preReleaseStrategy: all(PreReleasePartials.V2_STAGE_BRANCH_NAME, Strategies.PreRelease.COUNT_COMMITS_SINCE_ANY),
+            preReleaseStrategy: all(Strategies.PreRelease.WITH_BRANCH_NAME,
+                                    Strategies.PreRelease.COUNT_COMMITS_SINCE_ANY),
     )
 
     static final IVersionScheme scheme = new IVersionScheme() {
