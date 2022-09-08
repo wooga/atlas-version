@@ -55,13 +55,13 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
 
         // It's development if the development strategy contains the set `stage` OR
         // if the default strategy's release stage is development
-        isDevelopment = canRunStage(ReleaseStage.Development, stage)
-        isSnapshot = canRunStage(ReleaseStage.Snapshot, stage)
-        isPrerelease = canRunStage(ReleaseStage.Prerelease, stage)
-        isFinal = canRunStage(ReleaseStage.Final, stage)
+        isDevelopment = canRunStageWithName(ReleaseStage.Development, stage)
+        isSnapshot = canRunStageWithName(ReleaseStage.Snapshot, stage)
+        isPrerelease = canRunStageWithName(ReleaseStage.Prerelease, stage)
+        isFinal = canRunStageWithName(ReleaseStage.Final, stage)
     }
 
-    private Provider<Boolean> canRunStage(ReleaseStage releaseStage, Provider<String> stageProvider) {
+    private Provider<Boolean> canRunStageWithName(ReleaseStage releaseStage, Provider<String> stageProvider) {
         def strategy = versionScheme.map{ it.strategyFor(releaseStage) }
 
         return strategy.flatMap { versionStrategy ->

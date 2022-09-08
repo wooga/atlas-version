@@ -22,6 +22,7 @@ import com.wooga.gradle.BaseSpec
 import org.ajoberstar.grgit.Grgit
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
+import wooga.gradle.version.internal.GitStrategyPicker
 import wooga.gradle.version.internal.release.base.DefaultVersionStrategy
 import wooga.gradle.version.internal.release.base.ReleaseVersion
 import wooga.gradle.version.internal.release.base.TagStrategy
@@ -348,33 +349,11 @@ trait VersionPluginExtension implements BaseSpec {
         }
     }
 
-    private Provider<VersionStrategy> pickStrategy(IVersionScheme scheme, Provider<String> stageProvider = this.stage) {
-        return pickStrategyBasedOnGit(
-                scheme.strategies,
-                providers.provider { scheme.defaultStrategy } as Provider<VersionStrategy>,
-                stageProvider
-        )
-    }
-
-    private Provider<VersionStrategy> pickStrategyBasedOnGit(List<VersionStrategy> availableStrategies,
-                                                             Provider<VersionStrategy> defaultStrategy,
-                                                             Provider<String> stageProvider) {
-        return providers.provider { ->
-            def git = git.get()
-            def stage = stageProvider.orNull
-            def selectedStrategy = availableStrategies.stream().filter {
-                strategy -> strategy.selector(stage, git)
-            }.findFirst()
-
-            def fallbackStrategy = defaultStrategy.map { defaultStrat ->
-                if (defaultStrat instanceof DefaultVersionStrategy) {
-                    return defaultStrat.defaultSelector(stage, git)
-                } else {
-                    return defaultStrat?.selector(stage, git)
-                }
-            }.flatMap { useDefault -> useDefault ? defaultStrategy : null }
-
-            return selectedStrategy.orElseGet{ fallbackStrategy.orNull }
-        }
+    private Provider<VersionStrategy> pickStrategy(IVersionScheme scheme, Provider<String> stageProvider) {
+        return git.map {
+            new GitStrategyPicker(it).pickStrategy(scheme, stageProvider.orNull)
+        }.orElse( providers.provider{
+            throw new IllegalStateException("A git repository must be available in order to a strategy to be selected")
+        })
     }
 }

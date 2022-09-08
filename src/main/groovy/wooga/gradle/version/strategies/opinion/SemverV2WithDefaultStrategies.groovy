@@ -7,8 +7,25 @@ import wooga.gradle.version.internal.release.semver.SemVerStrategy
 import wooga.gradle.version.internal.release.semver.StrategyUtil
 import wooga.gradle.version.strategies.NewSemverV2Strategies
 
+/**
+ * SemverV2 strategies that uses MINOR as a fallback in case a change scope is not provided.
+ */
 class SemverV2WithDefaultStrategies {
 
+    /**
+     * Returns a version strategy to be used for {@code final} builds.
+     * <p>
+     * This strategy infers the release version by checking the nearest release.
+     * <p>
+     * Example:
+     * <pre>
+     * {@code
+     * releaseScope = "minor"
+     * nearestVersion = "1.3.0"
+     * inferred = "1.4.0"
+     * }
+     * </pre>
+     */
      static final SemVerStrategy FINAL = NewSemverV2Strategies.FINAL.copyWith(
             normalStrategy: chainDefaultScope(NewSemverV2Strategies.FINAL)
     )

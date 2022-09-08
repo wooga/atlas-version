@@ -27,6 +27,11 @@ import wooga.gradle.version.strategies.opinion.UpmStrategies
 import wooga.gradle.version.strategies.opinion.WdkNuGetStrategies
 
 //TODO: Rename to VersionSchemes when breaking change
+/**
+ * Version schemes available for use with this plugin.
+ * Each scheme consists of at least 4 strategies (development, snapshot, pre-release and final)
+ * plus additional strategies if so desired. Check IVersionScheme for more details.
+ */
 enum VersionScheme implements IVersionScheme {
     semver(LegacyNuGetStrategies.DEVELOPMENT,
             LegacyNuGetStrategies.SNAPSHOT,
@@ -36,17 +41,27 @@ enum VersionScheme implements IVersionScheme {
             SemverV2WithDefaultStrategies.SNAPSHOT,
             SemverV2WithDefaultStrategies.PRE_RELEASE,
             SemverV2WithDefaultStrategies.FINAL),
+    /**
+     * Strategies for versions generated based on a static marker. Based on Semver v2.
+     */
     staticMarker(StaticMarkerStrategies.DEVELOPMENT,
             StaticMarkerStrategies.SNAPSHOT,
             StaticMarkerStrategies.PRE_RELEASE,
             StaticMarkerStrategies.FINAL, StaticMarkerStrategies.PREFLIGHT),
+    /**
+     * Schema for Paket/Nuget WDK projects. See WdkNuGetStrategies for more details.
+     */
     wdk(WdkNuGetStrategies.DEVELOPMENT,
             WdkNuGetStrategies.SNAPSHOT,
             WdkNuGetStrategies.PRE_RELEASE,
             WdkNuGetStrategies.FINAL, WdkNuGetStrategies.PREFLIGHT),
+    /**
+     * Schema for UPM-based unity3d projects. See UpmStrategies for more details.
+     * IMPORTANT: please note that the pre-release strategy for this schema does not enforces order between versions.
+     */
     upm(UpmStrategies.DEVELOPMENT,
             UpmStrategies.SNAPSHOT,
-            UpmStrategies.PRE_RELEASE.copyWith(enforcePrecedence: false),
+            UpmStrategies.PRE_RELEASE.copyWith(enforcePrecedence: false), //this is supposed to be temporary
             UpmStrategies.FINAL, UpmStrategies.PREFLIGHT)
 
     final VersionStrategy development

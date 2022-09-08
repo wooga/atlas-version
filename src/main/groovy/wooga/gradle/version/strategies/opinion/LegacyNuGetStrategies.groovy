@@ -9,7 +9,8 @@ import wooga.gradle.version.internal.release.semver.StrategyUtil
 import wooga.gradle.version.strategies.NewSemverV1Strategies
 
 /**
- * NuGet/Paket compatible strategies. Uses NewSemverV1Strategies as basis.
+ * NuGet/Paket compatible strategies. Uses NewSemverV1Strategies as basis,
+ * plus using PATCH as a fallback if no change scope is provided.
  */
 class LegacyNuGetStrategies {
 

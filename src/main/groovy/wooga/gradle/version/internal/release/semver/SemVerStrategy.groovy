@@ -102,6 +102,7 @@ final class SemVerStrategy implements DefaultVersionStrategy {
         String stage = project.extensions.getByType(VersionPluginExtension).stage.getOrNull()
         return defaultSelector(stage, grgit)
     }
+
     /**
      * Determines whether this strategy can be used to infer the version as a default.
      * <ul>
@@ -110,7 +111,6 @@ final class SemVerStrategy implements DefaultVersionStrategy {
      * <li>Return {@code true}, otherwise.</li>
      * </ul>
      */
-
     @Override
     boolean defaultSelector(@Nullable String stage, Grgit grgit) {
         if (stage != null && !stages.contains(stage)) {
@@ -125,7 +125,14 @@ final class SemVerStrategy implements DefaultVersionStrategy {
             return true
         }
     }
-
+    /**
+     * Determines whether this strategy can be used to infer the version.
+     * <ul>
+     * <li>Return {@code false}, if the {@code release.stage} is not one listed in the {@code stages} property.</li>
+     * <li>Return {@code false}, if the repository has uncommitted changes and {@code allowDirtyRepo} is {@code false}.</li>
+     * <li>Return {@code true}, otherwise.</li>
+     * </ul>
+     */
     @Override
     boolean selector(@Nullable String stage, Grgit grgit) {
         if (stage == null || !stages.contains(stage)) {
@@ -165,27 +172,9 @@ final class SemVerStrategy implements DefaultVersionStrategy {
     ReleaseVersion infer(VersionPluginExtension extension) {
         def params = VersionInferenceParameters.fromExtension(extension)
         return infer(params)
-        //TODO: move this to the callee in the extension
-//        logger.warn('Inferred project: {}, version: {}', project.name, releaseVersion.version)
     }
 
-    SemVerStrategyState generateState(VersionInferenceParameters params) {
-        if (!stages.contains(params.stage)) {
-            throw new GradleException("Stage ${params.stage} is not one of ${stages} allowed for strategy ${name}.")
-        }
-        return new SemVerStrategyState(
-                scope: params.scope, //non-nullable
-                stage: params.stage?: stages.first(),
-                currentHead: params.currentHead,
-                currentBranch: params.currentBranch,
-                repoDirty: params.repoDirty,
-                nearestVersion: params.nearestVersion,
-                nearestCiMarker: params.nearestCiMarker,
-                nearestReleaseMarker: params.nearestReleaseMarker,
-                releaseBranchPattern: params.releaseBranchPattern,
-                mainBranchPattern: params.mainBranchPattern
-        )
-    }
+
     /**
      * Infers the version to use for this build. Uses the normal, pre-release, and build metadata
      * strategies in order to infer the version. If the {@code release.stage} is not set, uses the
@@ -212,5 +201,29 @@ final class SemVerStrategy implements DefaultVersionStrategy {
         }
         def nearestNormal = nearestVersion.normal == NearestVersion.EMPTY? null: nearestVersion.normal
         return new ReleaseVersion(version.toString(), nearestNormal?.toString(), createTag)
+    }
+
+    /**
+     * Validates inference parameters and generate a valid SemVerStrategyState to be used in the version generation process.
+     * @param params - VersionInferenceParameters object containing the parameters for version inference.
+     * @return valid SemverStrategyState
+     * @throws org.gradle.api.GradleException if stage is not one of the allowed states for this strategy.
+     */
+    private SemVerStrategyState generateState(VersionInferenceParameters params) {
+        if (!stages.contains(params.stage)) {
+            throw new GradleException("Stage ${params.stage} is not one of ${stages} allowed for strategy ${name}.")
+        }
+        return new SemVerStrategyState(
+                scope: params.scope,
+                stage: params.stage?: stages.first(),
+                currentHead: params.currentHead,
+                currentBranch: params.currentBranch,
+                repoDirty: params.repoDirty,
+                nearestVersion: params.nearestVersion,
+                nearestCiMarker: params.nearestCiMarker,
+                nearestReleaseMarker: params.nearestReleaseMarker,
+                releaseBranchPattern: params.releaseBranchPattern,
+                mainBranchPattern: params.mainBranchPattern
+        )
     }
 }

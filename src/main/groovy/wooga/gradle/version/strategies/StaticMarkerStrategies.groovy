@@ -122,7 +122,7 @@ class StaticMarkerStrategies {
      */
     static final SemVerStrategy DEVELOPMENT = Strategies.DEVELOPMENT.copyWith(
             normalStrategy: scopes,
-            buildMetadataStrategy: NetflixOssStrategies.BuildMetadata.DEVELOPMENT_METADATA_STRATEGY)
+            buildMetadataStrategy: Strategies.BuildMetadata.COMMIT_ABBREVIATED_ID)
 
     /**
      * Returns a version strategy to be used for {@code snapshot} builds.
