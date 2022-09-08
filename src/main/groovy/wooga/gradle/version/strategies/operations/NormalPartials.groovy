@@ -5,7 +5,6 @@ import wooga.gradle.version.internal.release.opinion.Strategies
 import wooga.gradle.version.internal.release.semver.ChangeScope
 import wooga.gradle.version.internal.release.semver.PartialSemVerStrategy
 import wooga.gradle.version.internal.release.semver.SemVerStrategyState
-import wooga.gradle.version.strategies.NetflixOssStrategies
 
 import java.util.regex.Pattern
 
@@ -31,11 +30,6 @@ class NormalPartials {
             SCOPE_GITFLOW_BRANCH_TYPE,
             SCOPE_EMBED_IN_BRANCH
     )
-
-    @Deprecated
-    static final PartialSemVerStrategy TRAVIS_BRANCH_MAJOR_X = fromBranchProperty(~/^(\d+)\.x$/)
-    @Deprecated
-    static final PartialSemVerStrategy TRAVIS_BRANCH_MAJOR_MINOR_X = fromBranchProperty(~/^(\d+)\.(\d+)\.x$/)
 
     /**
      * If the nearest any is higher from the nearest normal, sets the
@@ -67,15 +61,5 @@ class NormalPartials {
         }
     }
 
-    static PartialSemVerStrategy fromBranchProperty(Project project = NetflixOssStrategies.project,
-                                                    String branchProperty = NetflixOssStrategies.TRAVIS_BRANCH_PROP,
-                                                    Pattern pattern) {
-        return closure { SemVerStrategyState state ->
-            if (project.hasProperty(branchProperty)) {
-                def branch = project.property(branchProperty).toString()
-                return Strategies.Normal.fromMatchingBranchName(branch, pattern).infer(state)
-            }
-            return state
-        }
-    }
+
 }

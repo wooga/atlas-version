@@ -19,6 +19,7 @@ import wooga.gradle.version.internal.release.opinion.Strategies
 import wooga.gradle.version.internal.release.semver.ChangeScope
 import wooga.gradle.version.internal.release.semver.PartialSemVerStrategy
 import wooga.gradle.version.internal.release.semver.SemVerStrategy
+import wooga.gradle.version.internal.release.semver.SemVerStrategyState
 import wooga.gradle.version.internal.release.semver.StrategyUtil
 import org.gradle.api.Project
 import wooga.gradle.version.strategies.operations.BuildMetadataPartials
@@ -26,9 +27,20 @@ import wooga.gradle.version.strategies.operations.NormalPartials
 
 import java.util.regex.Pattern
 
+import static wooga.gradle.version.internal.release.semver.StrategyUtil.closure
+
+/**
+ *
+ * WARNING: This class have known issues. If you want this to work, please set NetflixOssStrategies.project with your current project.
+ * This class is deprecated and will be removed in the next major release.
+ */
+@Deprecated
 class NetflixOssStrategies {
-    static final PartialSemVerStrategy TRAVIS_BRANCH_MAJOR_X = NormalPartials.TRAVIS_BRANCH_MAJOR_X
-    static final PartialSemVerStrategy TRAVIS_BRANCH_MAJOR_MINOR_X = NormalPartials.TRAVIS_BRANCH_MAJOR_MINOR_X
+
+    @Deprecated
+    static final PartialSemVerStrategy TRAVIS_BRANCH_MAJOR_X = fromTravisPropertyPattern(~/^(\d+)\.x$/)
+    @Deprecated
+    static final PartialSemVerStrategy TRAVIS_BRANCH_MAJOR_MINOR_X = fromTravisPropertyPattern(~/^(\d+)\.(\d+)\.x$/)
     static final PartialSemVerStrategy NEAREST_HIGHER_ANY = NormalPartials.NEAREST_HIGHER_ANY
     private static final scopes = StrategyUtil.one(
             Strategies.Normal.USE_SCOPE_PROP,
@@ -56,9 +68,25 @@ class NetflixOssStrategies {
     @Deprecated
     static final String TRAVIS_BRANCH_PROP = 'release.travisBranch'
 
+
+    /**
+     * Infers a normal increment based on the branch. Only here to give support for NetflixOssStrategies, will be removed on next major.
+     * This is deprecated, please use Strategies.Normal.fromMatchingBranchName or Strategies.Normal.fromBranchPattern
+     * @param project
+     * @param branchProperty
+     * @param pattern
+     * @return
+     */
     @Deprecated
     static PartialSemVerStrategy fromTravisPropertyPattern(Pattern pattern) {
-        return NormalPartials.fromBranchProperty(project, TRAVIS_BRANCH_PROP, pattern)
+        def branchProperty = TRAVIS_BRANCH_PROP
+        return closure { SemVerStrategyState state ->
+            if (project.hasProperty(branchProperty)) {
+                def branch = project.property(branchProperty).toString()
+                return Strategies.Normal.fromMatchingBranchName(branch, pattern).infer(state)
+            }
+            return state
+        }
     }
 
     /**
@@ -74,6 +102,6 @@ class NetflixOssStrategies {
      */
     @Deprecated
     static PartialSemVerStrategy nearestHigherAny() {
-        return StrategyUtil.closure { state -> NormalPartials.NEAREST_HIGHER_ANY.infer(state) }
+        return closure { state -> NormalPartials.NEAREST_HIGHER_ANY.infer(state) }
     }
 }

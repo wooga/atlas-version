@@ -26,14 +26,7 @@ class UpmStrategies {
         ),
     )
     static final SemVerStrategy PRE_RELEASE = NewSemverV2Strategies.PRE_RELEASE.copyWith(
-            normalStrategy: chainDefaultScope(NewSemverV2Strategies.PRE_RELEASE),
-//            preReleaseStrategy: all(,
-//            closure { SemVerStrategyState state ->
-//                def nearest = state.nearestVersion
-//                NewSemverV2Strategies.PRE_RELEASE.preReleaseStrategy
-//                nearest.any.preReleaseVersion
-//                return state
-//            }
+            normalStrategy: chainDefaultScope(NewSemverV2Strategies.PRE_RELEASE)
     )
     static final SemVerStrategy FINAL = NewSemverV2Strategies.FINAL.copyWith(
             normalStrategy: chainDefaultScope(NewSemverV2Strategies.FINAL)

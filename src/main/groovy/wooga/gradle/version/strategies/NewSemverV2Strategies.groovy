@@ -21,6 +21,7 @@ import wooga.gradle.version.IVersionScheme
 import wooga.gradle.version.ReleaseStage
 import wooga.gradle.version.internal.release.opinion.Strategies
 import wooga.gradle.version.internal.release.semver.SemVerStrategy
+import wooga.gradle.version.strategies.operations.BuildMetadataPartials
 import wooga.gradle.version.strategies.operations.NormalPartials
 import wooga.gradle.version.strategies.operations.PreReleasePartials
 
@@ -124,7 +125,7 @@ final class NewSemverV2Strategies {
      */
     static final SemVerStrategy DEVELOPMENT = Strategies.DEVELOPMENT.copyWith(
             normalStrategy: NORMAL_STRATEGY,
-            buildMetadataStrategy: NetflixOssStrategies.BuildMetadata.DEVELOPMENT_METADATA_STRATEGY,
+            buildMetadataStrategy: BuildMetadataPartials.DEVELOPMENT_METADATA_STRATEGY,
     )
 
     /**

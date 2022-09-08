@@ -57,6 +57,10 @@ class NewSemverV2StrategySpec extends ProjectSpec {
         if (expectedVersion?.contains("#TIMESTAMP")) {
             expectedVersion = expectedVersion.replace("#TIMESTAMP", Strategies.PreRelease.GenerateTimestamp())
         }
+        if (expectedVersion?.contains("#COMMITHASH")) {
+            expectedVersion = expectedVersion.replace("#COMMITHASH", git.head().abbreviatedId)
+        }
+
 
         when:
         project.plugins.apply(PLUGIN_NAME)
@@ -230,6 +234,23 @@ class NewSemverV2StrategySpec extends ProjectSpec {
 
         '1.0.0'       | "1.0.1-rc.1"      | 1        | "rc"         | _       | "1.x"                      | "1.0.1-rc.2"
         '1.0.0'       | "1.0.1-rc.1"      | 3        | "rc"         | _       | "1.0.x"                    | "1.0.1-rc.2"
+
+        '1.0.0'       | _                 | 2        | "dev"        | "major" | "master"                   | "2.0.0-dev.2+#COMMITHASH"
+        '1.0.0'       | _                 | 3        | "dev"        | "minor" | "master"                   | "1.1.0-dev.3+#COMMITHASH"
+        '1.0.0'       | _                 | 4        | "dev"        | "patch" | "master"                   | "1.0.1-dev.4+#COMMITHASH"
+
+        '0.0.1'       | _                 | 1        | "dev"        | _       | "release/1.x"              | "1.0.0-dev.1+#COMMITHASH"
+        '1.0.0'       | _                 | 1        | "dev"        | "patch" | "release/1.x"              | "1.0.1-dev.1+#COMMITHASH"
+        '1.0.0'       | _                 | 2        | "dev"        | "patch" | "release-1.x"              | "1.0.1-dev.2+#COMMITHASH"
+        '1.0.0'       | _                 | 3        | "dev"        | _       | "release/1.1.x"            | "1.1.0-dev.3+#COMMITHASH"
+        '1.0.0'       | _                 | 3        | "dev"        | "patch" | "release/1.0.x"            | "1.0.1-dev.3+#COMMITHASH"
+        '1.0.0'       | _                 | 4        | "dev"        | _       | "release-1.1.x"            | "1.1.0-dev.4+#COMMITHASH"
+        '1.0.0'       | _                 | 4        | "dev"        | "patch" | "release-1.0.x"            | "1.0.1-dev.4+#COMMITHASH"
+
+        '0.0.1'       | _                 | 1        | "dev"        | _       | "1.x"                      | "1.0.0-dev.1+#COMMITHASH"
+        '1.0.0'       | _                 | 2        | "dev"        | "patch" | "1.x"                      | "1.0.1-dev.2+#COMMITHASH"
+        '1.0.0'       | _                 | 3        | "dev"        | _       | "1.1.x"                    | "1.1.0-dev.3+#COMMITHASH"
+        '1.0.0'       | _                 | 3        | "dev"        | "patch" | "1.0.x"                    | "1.0.1-dev.3+#COMMITHASH"
 
         '1.0.0'       | _                 | 2        | "production" | "major" | "develop"                  | "2.0.0"
         '1.0.0'       | _                 | 3        | "production" | "minor" | "develop"                  | "1.1.0"

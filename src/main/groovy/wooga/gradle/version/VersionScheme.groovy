@@ -45,7 +45,7 @@ enum VersionScheme implements IVersionScheme {
             WdkNuGetStrategies.FINAL, WdkNuGetStrategies.PREFLIGHT),
     upm(UpmStrategies.DEVELOPMENT,
             UpmStrategies.SNAPSHOT,
-            UpmStrategies.PRE_RELEASE,
+            UpmStrategies.PRE_RELEASE.copyWith(enforcePrecedence: false),
             UpmStrategies.FINAL, UpmStrategies.PREFLIGHT)
 
     final SemVerStrategy development
