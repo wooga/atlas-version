@@ -55,13 +55,6 @@ interface VersionStrategy {
     boolean selector(String stage, Grgit grgit)
 
     /**
-     * Infers the project version from the repository.
-     * @param extension VersionPluginExtension configured with project data for the inference
-     * @return the inferred version
-     */
-    ReleaseVersion infer(VersionPluginExtension extension)
-
-    /**
      * Infers the project version from given inference parameters.
      * @param strategyState containing data for new version inference
      * @return the inferred version

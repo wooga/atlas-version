@@ -18,7 +18,6 @@ package wooga.gradle.version.internal.release.semver
 import groovy.transform.Immutable
 import groovy.transform.PackageScope
 
-import com.github.zafarkhaja.semver.Version
 import wooga.gradle.version.ReleaseStage
 import wooga.gradle.version.internal.release.base.ReleaseVersion
 import wooga.gradle.version.internal.release.base.DefaultVersionStrategy
@@ -162,18 +161,6 @@ final class SemVerStrategy implements DefaultVersionStrategy {
         String stage = extension.stage.getOrNull()
         return selector(stage, grgit)
     }
-
-    /**
-     * Infers the version to use for this build. Uses the normal, pre-release, and build metadata
-     * strategies in order to infer the version. If the {@code release.stage} is not set, uses the
-     * first value in the {@code stages} set (i.e. the one with the lowest precedence). After inferring
-     * the version precedence will be enforced, if required by this strategy.
-     */
-    ReleaseVersion infer(VersionPluginExtension extension) {
-        def params = VersionInferenceParameters.fromExtension(extension)
-        return infer(params)
-    }
-
 
     /**
      * Infers the version to use for this build. Uses the normal, pre-release, and build metadata

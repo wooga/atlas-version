@@ -23,7 +23,6 @@ import org.ajoberstar.grgit.Grgit
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import wooga.gradle.version.internal.GitStrategyPicker
-import wooga.gradle.version.internal.release.base.DefaultVersionStrategy
 import wooga.gradle.version.internal.release.base.ReleaseVersion
 import wooga.gradle.version.internal.release.base.TagStrategy
 import wooga.gradle.version.internal.release.base.VersionStrategy
