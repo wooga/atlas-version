@@ -97,20 +97,6 @@ final class SemVerStrategy implements DefaultVersionStrategy {
      * </ul>
      */
     @Override
-    boolean defaultSelector(Project project, Grgit grgit) {
-        String stage = project.extensions.getByType(VersionPluginExtension).stage.getOrNull()
-        return defaultSelector(stage, grgit)
-    }
-
-    /**
-     * Determines whether this strategy can be used to infer the version as a default.
-     * <ul>
-     * <li>Return {@code false}, if the {@code release.stage} is not one listed in the {@code stages} property.</li>
-     * <li>Return {@code false}, if the repository has uncommitted changes and {@code allowDirtyRepo} is {@code false}.</li>
-     * <li>Return {@code true}, otherwise.</li>
-     * </ul>
-     */
-    @Override
     boolean defaultSelector(@Nullable String stage, Grgit grgit) {
         if (stage != null && !stages.contains(stage)) {
             logger.info('Skipping {} default strategy because stage ({}) is not one of: {}', name, stage, stages)
@@ -148,21 +134,6 @@ final class SemVerStrategy implements DefaultVersionStrategy {
     }
 
     /**
-     * Determines whether this strategy should be used to infer the version.
-     * <ul>
-     * <li>Return {@code false}, if the {@code release.stage} is not one listed in the {@code stages} property.</li>
-     * <li>Return {@code false}, if the repository has uncommitted changes and {@code allowDirtyRepo} is {@code false}.</li>
-     * <li>Return {@code true}, otherwise.</li>
-     * </ul>
-     */
-    @Override
-    boolean selector(Project project, Grgit grgit) {
-        def extension = project.extensions.getByType(VersionPluginExtension)
-        String stage = extension.stage.getOrNull()
-        return selector(stage, grgit)
-    }
-
-    /**
      * Infers the version to use for this build. Uses the normal, pre-release, and build metadata
      * strategies in order to infer the version. If the {@code release.stage} is not set, uses the
      * first value in the {@code stages} set (i.e. the one with the lowest precedence). After inferring
@@ -197,7 +168,7 @@ final class SemVerStrategy implements DefaultVersionStrategy {
      * @throws org.gradle.api.GradleException if stage is not one of the allowed states for this strategy.
      */
     private SemVerStrategyState generateState(VersionInferenceParameters params) {
-        if (!stages.contains(params.stage)) {
+        if (params.stage && !stages.contains(params.stage)) {
             throw new GradleException("Stage ${params.stage} is not one of ${stages} allowed for strategy ${name}.")
         }
         return new SemVerStrategyState(

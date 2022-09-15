@@ -42,16 +42,6 @@ interface VersionStrategy {
      * @param grgit the repository the version should be inferred from
      * @return {@code true} if the strategy should be used to infer the version
      */
-    boolean selector(Project project, Grgit grgit)
-
-    /**
-     * Determines if the strategy should be used to infer the project's version.
-     * A return of {@code false} does not mean that the strategy cannot be used
-     * as the default.
-     * @param project the project the version should be inferred for
-     * @param grgit the repository the version should be inferred from
-     * @return {@code true} if the strategy should be used to infer the version
-     */
     boolean selector(String stage, Grgit grgit)
 
     /**
