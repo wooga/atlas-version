@@ -18,14 +18,58 @@
 
 package wooga.gradle.version.internal
 
-import com.sun.org.apache.xpath.internal.operations.Bool
 import org.ajoberstar.grgit.Grgit
 import org.eclipse.jgit.lib.ObjectId
 import org.eclipse.jgit.revwalk.RevCommit
 import org.eclipse.jgit.revwalk.RevWalk
+import org.gradle.api.provider.Provider
+import wooga.gradle.version.VersionCodeScheme
 import wooga.gradle.version.internal.release.base.TagStrategy
 
 class VersionCode {
+
+    enum Schemes {
+        none(VersionCodeScheme.none, { -> 0}),
+        semverBasic(VersionCodeScheme.semverBasic, {
+            String version, int offset -> generateSemverVersionCode(version) + offset
+        }),
+        semver(VersionCodeScheme.semver, {
+            String version, int offset -> generateSemverVersionCode(version, true) + offset
+        }),
+        releaseCountBasic(VersionCodeScheme.releaseCountBasic, {
+            Grgit git, int offset -> generateBuildNumberVersionCode(git, false, offset)
+        }),
+        releaseCount(VersionCodeScheme.releaseCount, {
+            Grgit git, int offset -> generateBuildNumberVersionCode(git, true, offset)
+        })
+
+        private final VersionCodeScheme external
+        private final Closure<Integer> generator
+
+        static Schemes fromExternal(VersionCodeScheme external) {
+            return values().find { it.external == external}
+        }
+
+        Schemes(VersionCodeScheme external, Closure<Integer> generator) {
+            this.external = external
+            this.generator = generator
+        }
+
+        int versionCodeFor(Provider<String> versionProvider, Provider<Grgit> gitProvider, int offset) {
+            if(generator.parameterTypes.length == 0) {
+                return this.generator.call()
+            }
+            if(generator.parameterTypes[0] == String) {
+                def version = versionProvider.get()
+                return this.generator.call(version, offset)
+            } else {
+                def git = gitProvider.get()
+                return this.generator.call(git, offset)
+            }
+        }
+    }
+
+
     /**
      * Returns a version code base on the given semver version.
      *

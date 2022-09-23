@@ -1,14 +1,6 @@
 package wooga.gradle.version;
 
-import org.ajoberstar.grgit.Grgit;
-import org.gradle.api.provider.Provider;
-import wooga.gradle.version.internal.release.base.DefaultVersionStrategy;
-import wooga.gradle.version.internal.release.base.ReleaseVersion;
 import wooga.gradle.version.internal.release.base.VersionStrategy;
-import wooga.gradle.version.internal.release.semver.ChangeScope;
-import wooga.gradle.version.internal.release.semver.VersionInferenceParameters;
-
-import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;

@@ -21,6 +21,7 @@ package wooga.gradle.version.internal
 import org.ajoberstar.grgit.Grgit
 import wooga.gradle.version.ReleaseStage
 import wooga.gradle.version.VersionCodeScheme
+import wooga.gradle.version.VersionScheme
 import wooga.gradle.version.internal.release.base.ReleaseVersion
 import wooga.gradle.version.internal.release.semver.ChangeScope
 import org.gradle.api.GradleException
@@ -50,7 +51,9 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
                 .orElse(new ReleaseVersion(version: VersionPluginConventions.UNINITIALIZED_VERSION))
 
         versionCode = versionCodeScheme.map({
-            VersionCodeScheme scheme -> scheme.versionCodeFor(this.version.map { it.version }, git, versionCodeOffset.getOrElse(0))
+            VersionCodeScheme scheme -> VersionCode.Schemes
+                    .fromExternal(scheme)
+                    .versionCodeFor(this.version.map { it.version }, git, versionCodeOffset.getOrElse(0))
         }.memoize())
 
         // It's development if the development strategy contains the set `stage` OR
