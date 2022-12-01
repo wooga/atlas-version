@@ -39,6 +39,7 @@ class VersionPluginSpec extends ProjectSpec {
         git = Grgit.init(dir: projectDir)
         git.add(patterns: ['.gitignore'])
         git.commit(message: 'initial commit')
+//        git.tag.add(name: 'v0.0.1')
     }
 
     @Ignore
@@ -971,7 +972,7 @@ class VersionPluginSpec extends ProjectSpec {
         }
 
 
-        if (nearestNormal != _) {
+        if(nearestNormal != _) {
             5.times {
                 git.commit(message: 'feature commit')
             }

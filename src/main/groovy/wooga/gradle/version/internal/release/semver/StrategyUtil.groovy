@@ -74,38 +74,6 @@ final class StrategyUtil {
         }
     }
 
-    static String incrementsPreRelease(final SemVerStrategyState state, String separator = ".", int countPadding = 0) {
-        def nearest = state.nearestVersion
-        def currentPreIdents = state.inferredPreRelease ? splitsPrerelease(state.inferredPreRelease) as List : []
-        if (nearest.any == nearest.normal || nearest.any.normalVersion != state.inferredNormal) {
-            currentPreIdents << '1'.padLeft(countPadding, "0")
-        } else {
-            def nearestPreIdents = splitsPrerelease(nearest.any.preReleaseVersion)
-            if (nearestPreIdents.size() <= currentPreIdents.size()) {
-                currentPreIdents << '1'.padLeft(countPadding, "0")
-            } else if (currentPreIdents == nearestPreIdents[0..(currentPreIdents.size() - 1)]) {
-                def count = parseIntOrZero(nearestPreIdents[currentPreIdents.size()])
-                currentPreIdents << Integer.toString(count + 1).padLeft(countPadding, "0")
-            } else {
-                currentPreIdents << '1'.padLeft(countPadding, "0")
-            }
-        }
-        return currentPreIdents.join(separator)
-    }
-
-    static def splitsPrerelease(String preReleaseVersion) {
-        def withDot = preReleaseVersion =~ (~$/^(\w+)\.(\d+)$$/$)
-        if(withDot.matches()) {
-            return [withDot.group(1), withDot.group(2)]
-        }
-
-        def withoutDot = preReleaseVersion =~ (~$/^(\D+)(\d+)$$/$)
-        if(withoutDot.matches()) {
-            return [withoutDot.group(1), withoutDot.group(2)]
-        }
-        return [preReleaseVersion]
-    }
-
     private static class ClosureBackedPartialSemVerStrategy implements PartialSemVerStrategy {
         private final Closure<SemVerStrategyState> behavior
 

@@ -18,7 +18,6 @@ package wooga.gradle.version.internal.release.semver
 import groovy.transform.Immutable
 import groovy.transform.PackageScope
 
-import com.github.zafarkhaja.semver.Version
 import wooga.gradle.version.ReleaseStage
 import wooga.gradle.version.internal.release.base.ReleaseVersion
 import wooga.gradle.version.internal.release.base.DefaultVersionStrategy
@@ -98,20 +97,6 @@ final class SemVerStrategy implements DefaultVersionStrategy {
      * </ul>
      */
     @Override
-    boolean defaultSelector(Project project, Grgit grgit) {
-        String stage = project.extensions.getByType(VersionPluginExtension).stage.getOrNull()
-        return defaultSelector(stage, grgit)
-    }
-    /**
-     * Determines whether this strategy can be used to infer the version as a default.
-     * <ul>
-     * <li>Return {@code false}, if the {@code release.stage} is not one listed in the {@code stages} property.</li>
-     * <li>Return {@code false}, if the repository has uncommitted changes and {@code allowDirtyRepo} is {@code false}.</li>
-     * <li>Return {@code true}, otherwise.</li>
-     * </ul>
-     */
-
-    @Override
     boolean defaultSelector(@Nullable String stage, Grgit grgit) {
         if (stage != null && !stages.contains(stage)) {
             logger.info('Skipping {} default strategy because stage ({}) is not one of: {}', name, stage, stages)
@@ -125,7 +110,14 @@ final class SemVerStrategy implements DefaultVersionStrategy {
             return true
         }
     }
-
+    /**
+     * Determines whether this strategy can be used to infer the version.
+     * <ul>
+     * <li>Return {@code false}, if the {@code release.stage} is not one listed in the {@code stages} property.</li>
+     * <li>Return {@code false}, if the repository has uncommitted changes and {@code allowDirtyRepo} is {@code false}.</li>
+     * <li>Return {@code true}, otherwise.</li>
+     * </ul>
+     */
     @Override
     boolean selector(@Nullable String stage, Grgit grgit) {
         if (stage == null || !stages.contains(stage)) {
@@ -142,51 +134,6 @@ final class SemVerStrategy implements DefaultVersionStrategy {
     }
 
     /**
-     * Determines whether this strategy should be used to infer the version.
-     * <ul>
-     * <li>Return {@code false}, if the {@code release.stage} is not one listed in the {@code stages} property.</li>
-     * <li>Return {@code false}, if the repository has uncommitted changes and {@code allowDirtyRepo} is {@code false}.</li>
-     * <li>Return {@code true}, otherwise.</li>
-     * </ul>
-     */
-    @Override
-    boolean selector(Project project, Grgit grgit) {
-        def extension = project.extensions.getByType(VersionPluginExtension)
-        String stage = extension.stage.getOrNull()
-        return selector(stage, grgit)
-    }
-
-    /**
-     * Infers the version to use for this build. Uses the normal, pre-release, and build metadata
-     * strategies in order to infer the version. If the {@code release.stage} is not set, uses the
-     * first value in the {@code stages} set (i.e. the one with the lowest precedence). After inferring
-     * the version precedence will be enforced, if required by this strategy.
-     */
-    ReleaseVersion infer(VersionPluginExtension extension) {
-        def params = VersionInferenceParameters.fromExtension(extension)
-        return infer(params)
-        //TODO: move this to the callee in the extension
-//        logger.warn('Inferred project: {}, version: {}', project.name, releaseVersion.version)
-    }
-
-    SemVerStrategyState generateState(VersionInferenceParameters params) {
-        if (!stages.contains(params.stage)) {
-            throw new GradleException("Stage ${params.stage} is not one of ${stages} allowed for strategy ${name}.")
-        }
-        return new SemVerStrategyState(
-                scope: params.scope, //non-nullable
-                stage: params.stage?: stages.first(),
-                currentHead: params.currentHead,
-                currentBranch: params.currentBranch,
-                repoDirty: params.repoDirty,
-                nearestVersion: params.nearestVersion,
-                nearestCiMarker: params.nearestCiMarker,
-                nearestReleaseMarker: params.nearestReleaseMarker,
-                releaseBranchPattern: params.releaseBranchPattern,
-                mainBranchPattern: params.mainBranchPattern
-        )
-    }
-    /**
      * Infers the version to use for this build. Uses the normal, pre-release, and build metadata
      * strategies in order to infer the version. If the {@code release.stage} is not set, uses the
      * first value in the {@code stages} set (i.e. the one with the lowest precedence). After inferring
@@ -201,7 +148,7 @@ final class SemVerStrategy implements DefaultVersionStrategy {
 
     @PackageScope
     ReleaseVersion doInfer(SemVerStrategyState semVerState) {
-        logger.info('Beginning version inference using {} strategy and input scope ({}) and stage ({})', name, semVerState.scope, semVerState.stage)
+        logger.info('Beginning version inference using {} strategy and input scope ({}) and stage ({})', name, semVerState.scopeFromProp, semVerState.stageFromProp)
         def finalSemverState = StrategyUtil.all(
                 normalStrategy, preReleaseStrategy, buildMetadataStrategy).infer(semVerState)
         def version = finalSemverState.toVersion()
@@ -212,5 +159,29 @@ final class SemVerStrategy implements DefaultVersionStrategy {
         }
         def nearestNormal = nearestVersion.normal == NearestVersion.EMPTY? null: nearestVersion.normal
         return new ReleaseVersion(version.toString(), nearestNormal?.toString(), createTag)
+    }
+
+    /**
+     * Validates inference parameters and generate a valid SemVerStrategyState to be used in the version generation process.
+     * @param params - VersionInferenceParameters object containing the parameters for version inference.
+     * @return valid SemverStrategyState
+     * @throws org.gradle.api.GradleException if stage is not one of the allowed states for this strategy.
+     */
+    private SemVerStrategyState generateState(VersionInferenceParameters params) {
+        if (params.stage && !stages.contains(params.stage)) {
+            throw new GradleException("Stage ${params.stage} is not one of ${stages} allowed for strategy ${name}.")
+        }
+        return new SemVerStrategyState(
+                scopeFromProp: params.scope,
+                stageFromProp: params.stage?: stages.first(),
+                currentHead: params.currentHead,
+                currentBranch: params.currentBranch,
+                repoDirty: params.repoDirty,
+                nearestVersion: params.nearestVersion,
+                nearestCiMarker: params.nearestCiMarker,
+                nearestReleaseMarker: params.nearestReleaseMarker,
+                releaseBranchPattern: params.releaseBranchPattern,
+                mainBranchPattern: params.mainBranchPattern
+        )
     }
 }

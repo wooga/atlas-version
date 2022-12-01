@@ -29,7 +29,6 @@ import java.util.regex.Pattern
 
 import static wooga.gradle.version.internal.release.semver.StrategyUtil.*
 
-@Deprecated
 final class SemverV2Strategies {
 
     private static final scopes = one(

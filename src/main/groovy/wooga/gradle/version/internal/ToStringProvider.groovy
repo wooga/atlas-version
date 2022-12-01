@@ -23,25 +23,24 @@ import org.gradle.api.provider.Provider
 
 class ToStringProvider <T> extends AbstractMinimalProvider<T> {
 
-    private final AbstractMinimalProvider<T> inner;
+    private final Provider<T> inner;
 
     ToStringProvider(Provider<T> provider) {
-        this.inner = provider as AbstractMinimalProvider<T>
+        this.inner = provider
     }
 
     @Override
     protected Value<? extends T> calculateOwnValue(ValueConsumer valueConsumer) {
-        return inner.calculateOwnValue(valueConsumer)
+        return Value.ofNullable(inner.getOrNull())
     }
 
     @Override
     String toString() {
-        def value = getOrNull()
-        return value? value.toString() : "null"
+        return getOrNull().toString()
     }
 
     @Override
     Class<T> getType() {
-        return inner.getType()
+        return null
     }
 }

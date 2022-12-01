@@ -17,7 +17,7 @@
 
 package wooga.gradle.version.strategies
 
-
+import wooga.gradle.version.ReleaseStage
 import wooga.gradle.version.internal.release.opinion.Strategies
 import wooga.gradle.version.internal.release.semver.ChangeScope
 import wooga.gradle.version.internal.release.semver.PartialSemVerStrategy
@@ -28,10 +28,6 @@ import wooga.gradle.version.internal.release.semver.StrategyUtil
 import static wooga.gradle.version.internal.release.semver.StrategyUtil.closure
 import static wooga.gradle.version.internal.release.semver.StrategyUtil.parseIntOrZero
 
-/**
- * Please use LegacyNuGetStrategies instead
- */
-@Deprecated
 class SemverV1Strategies {
     static final scopes = StrategyUtil.one(
             Strategies.Normal.USE_SCOPE_PROP,
@@ -40,8 +36,7 @@ class SemverV1Strategies {
             Strategies.Normal.ENFORCE_GITFLOW_BRANCH_MAJOR_MINOR_X,
             Strategies.Normal.ENFORCE_BRANCH_MAJOR_MINOR_X,
             Strategies.Normal.USE_NEAREST_ANY,
-            Strategies.Normal.useScope(ChangeScope.PATCH)
-    )
+            Strategies.Normal.useScope(ChangeScope.PATCH))
 
     static final PartialSemVerStrategy COUNT_INCREMENTED = closure { SemVerStrategyState state ->
         def nearest = state.nearestVersion
@@ -103,6 +98,7 @@ class SemverV1Strategies {
      */
     static final SemVerStrategy PRE_RELEASE = Strategies.PRE_RELEASE.copyWith(
             normalStrategy: scopes,
+            releaseStage: ReleaseStage.Prerelease,
             preReleaseStrategy: StrategyUtil.all(closure({ state ->
                 state = Strategies.PreRelease.STAGE_FIXED.infer(state)
                 def stage = state.inferredPreRelease
@@ -187,6 +183,7 @@ class SemverV1Strategies {
     static final SemVerStrategy SNAPSHOT = Strategies.PRE_RELEASE.copyWith(
             name: 'snapshot',
             stages: ['snapshot','SNAPSHOT'] as SortedSet,
+            releaseStage: ReleaseStage.Snapshot,
             normalStrategy: scopes,
             preReleaseStrategy: StrategyUtil.all(StrategyUtil.closure({state ->
 
