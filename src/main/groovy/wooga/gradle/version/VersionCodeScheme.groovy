@@ -18,6 +18,27 @@
 
 package wooga.gradle.version
 
+import org.ajoberstar.grgit.Grgit
+import wooga.gradle.version.internal.VersionCode
+
 enum VersionCodeScheme {
-    none, semver, semverBasic, releaseCountBasic, releaseCount
+    none({ -> 0}),
+    semverBasic({
+        String version, int offset -> VersionCode.generateSemverVersionCode(version) + offset
+    }),
+    semver({
+        String version, int offset -> VersionCode.generateSemverVersionCode(version, true) + offset
+    }),
+    releaseCountBasic({
+        Grgit git, int offset -> VersionCode.generateBuildNumberVersionCode(git, false, offset)
+    }),
+    releaseCount({
+        Grgit git, int offset -> VersionCode.generateBuildNumberVersionCode(git, true, offset)
+    })
+
+    final Closure<Integer> generate
+
+    VersionCodeScheme(Closure generate) {
+        this.generate = generate
+    }
 }

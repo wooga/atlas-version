@@ -17,7 +17,7 @@
 
 package wooga.gradle.version.strategies
 
-
+import wooga.gradle.version.ReleaseStage
 import wooga.gradle.version.internal.release.opinion.Strategies
 import wooga.gradle.version.internal.release.semver.ChangeScope
 import wooga.gradle.version.internal.release.semver.PartialSemVerStrategy
@@ -98,6 +98,7 @@ class SemverV1Strategies {
      */
     static final SemVerStrategy PRE_RELEASE = Strategies.PRE_RELEASE.copyWith(
             normalStrategy: scopes,
+            releaseStage: ReleaseStage.Prerelease,
             preReleaseStrategy: StrategyUtil.all(closure({ state ->
                 state = Strategies.PreRelease.STAGE_FIXED.infer(state)
                 def stage = state.inferredPreRelease
@@ -182,6 +183,7 @@ class SemverV1Strategies {
     static final SemVerStrategy SNAPSHOT = Strategies.PRE_RELEASE.copyWith(
             name: 'snapshot',
             stages: ['snapshot','SNAPSHOT'] as SortedSet,
+            releaseStage: ReleaseStage.Snapshot,
             normalStrategy: scopes,
             preReleaseStrategy: StrategyUtil.all(StrategyUtil.closure({state ->
 

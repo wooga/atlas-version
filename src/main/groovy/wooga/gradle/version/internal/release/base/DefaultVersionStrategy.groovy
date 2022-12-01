@@ -27,6 +27,7 @@ import org.gradle.api.Project
  * @see wooga.gradle.version.internal.release.opinion.Strategies
  */
 interface DefaultVersionStrategy extends VersionStrategy {
+
     /**
      * Determines if the strategy can be used as a default strategy for inferring
      * the project's version. A return of {@code false} does not mean that the
@@ -35,5 +36,5 @@ interface DefaultVersionStrategy extends VersionStrategy {
      * @param grgit the repository the version should be inferred from
      * @return {@code true} if the strategy can be used to infer the version
      */
-    boolean defaultSelector(Project project, Grgit grgit)
+    boolean defaultSelector(String stage, Grgit grgit)
 }

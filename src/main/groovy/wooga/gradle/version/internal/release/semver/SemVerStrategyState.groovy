@@ -22,7 +22,7 @@ import com.github.zafarkhaja.semver.Version
 
 import org.ajoberstar.grgit.Branch
 import org.ajoberstar.grgit.Commit
-import org.ajoberstar.grgit.Tag
+import org.gradle.api.GradleException
 
 /**
  * Working state used by {@link PartialSemVerStrategy}.
@@ -46,10 +46,13 @@ final class SemVerStrategyState {
     String mainBranchPattern
 
     Version toVersion() {
+        if(!this.inferredNormal) {
+            throw new IllegalStateException("Generated version have empty 'normal' version section")
+        }
         return new Version.Builder().with {
             normalVersion = inferredNormal
             preReleaseVersion = inferredPreRelease
-            buildMetadata =inferredBuildMetadata
+            buildMetadata = inferredBuildMetadata
             build()
         }
     }
