@@ -30,6 +30,7 @@ import org.gradle.api.GradleException
 @Immutable(copyWith=true, knownImmutableClasses=[Commit, Branch])
 @ToString(includeNames=true)
 final class SemVerStrategyState {
+
     ChangeScope scopeFromProp
     String stageFromProp
     Commit currentHead

@@ -60,13 +60,10 @@ class VersionPlugin implements Plugin<Project> {
         }
         finally {
             def sharedVersion = new ToStringProvider(extension.version.map({ it.version }))
-            project.allprojects(new Action<Project>() {
-                @Override
-                void execute(Project prj) {
-                    prj.setVersion(sharedVersion)
-                    prj.extensions.create(VersionCodeExtension, "versionCode", DefaultVersionCodeExtension.class, prj, extension.versionCode)
-                }
-            })
+            project.allprojects{ Project prj ->
+                prj.setVersion(sharedVersion)
+                prj.extensions.create(VersionCodeExtension, "versionCode", DefaultVersionCodeExtension.class, prj, extension.versionCode)
+            }
         }
     }
 
@@ -86,7 +83,6 @@ class VersionPlugin implements Plugin<Project> {
             def rawValue = VersionPluginConventions.versionCodeOffset.getValue(project)
             Integer.parseInt(rawValue.toString())
         }))
-
         extension
     }
 }

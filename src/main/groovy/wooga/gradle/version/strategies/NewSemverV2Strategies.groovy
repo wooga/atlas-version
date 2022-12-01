@@ -1,18 +1,17 @@
 /*
- * Copyright 2018-2020 Wooga GmbH
+ * Copyright 2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *        http://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  *
  */
 
@@ -21,23 +20,17 @@ package wooga.gradle.version.strategies
 import wooga.gradle.version.ReleaseStage
 import wooga.gradle.version.internal.release.opinion.Strategies
 import wooga.gradle.version.internal.release.semver.SemVerStrategy
+import wooga.gradle.version.strategies.partials.NormalPartials
 
-import static wooga.gradle.version.internal.release.semver.StrategyUtil.all
-import static wooga.gradle.version.internal.release.semver.StrategyUtil.one
+import static wooga.gradle.version.internal.release.semver.StrategyUtil.*
 
-class StaticMarkerStrategies {
 
-    private static final scopes = one(Strategies.Normal.USE_MARKER_TAG)
+final class NewSemverV2Strategies {
 
-    static final SemVerStrategy DEFAULT = new SemVerStrategy(
-            name: '',
-            stages: [] as SortedSet,
-            allowDirtyRepo: true,
-            normalStrategy: scopes,
-            preReleaseStrategy: Strategies.PreRelease.NONE,
-            buildMetadataStrategy: Strategies.BuildMetadata.NONE,
-            createTag: true,
-            enforcePrecedence: true
+    static final NORMAL_STRATEGY = one(
+            Strategies.Normal.USE_SCOPE_STATE,
+            NormalPartials.SCOPE_FROM_BRANCH,
+            Strategies.Normal.USE_NEAREST_ANY
     )
 
     /**
@@ -54,11 +47,13 @@ class StaticMarkerStrategies {
      * }
      * </pre>
      */
-    static final SemVerStrategy FINAL = DEFAULT.copyWith(
+    static final SemVerStrategy FINAL = Strategies.FINAL.copyWith(
             name: 'production',
-            stages: ['production'] as SortedSet
+            allowDirtyRepo: true,
+            normalStrategy: NORMAL_STRATEGY,
+            stages: ['final','production'] as SortedSet,
+            releaseStage: ReleaseStage.Final
     )
-
     /**
      * Returns a version strategy to be used for {@code pre-release}/{@code candidate} builds.
      * <p>
@@ -95,10 +90,13 @@ class StaticMarkerStrategies {
      * }
      * </pre>
      */
-    static final SemVerStrategy PRE_RELEASE = DEFAULT.copyWith(
+    static final SemVerStrategy PRE_RELEASE = Strategies.PRE_RELEASE.copyWith(
             name: 'pre-release',
-            stages: ['staging'] as SortedSet,
-            preReleaseStrategy: all(Strategies.PreRelease.STAGE_FIXED, Strategies.PreRelease.COUNT_INCREMENTED)
+            normalStrategy: NORMAL_STRATEGY,
+            stages: ['rc', 'staging'] as SortedSet,
+            preReleaseStrategy: all(Strategies.PreRelease.STAGE_FIXED, Strategies.PreRelease.COUNT_INCREMENTED),
+            releaseStage: ReleaseStage.Prerelease,
+            allowDirtyRepo: true,
     )
 
     /**
@@ -121,8 +119,9 @@ class StaticMarkerStrategies {
      * </pre>
      */
     static final SemVerStrategy DEVELOPMENT = Strategies.DEVELOPMENT.copyWith(
-            normalStrategy: scopes,
-            buildMetadataStrategy: Strategies.BuildMetadata.COMMIT_ABBREVIATED_ID)
+            normalStrategy: NORMAL_STRATEGY,
+            buildMetadataStrategy: Strategies.BuildMetadata.COMMIT_ABBREVIATED_ID,
+    )
 
     /**
      * Returns a version strategy to be used for {@code snapshot} builds.
@@ -152,48 +151,11 @@ class StaticMarkerStrategies {
      * }
      * </pre>
      */
-    static final SemVerStrategy SNAPSHOT = DEFAULT.copyWith(
-            name: 'snapshot',
-            stages: ['ci'] as SortedSet,
-            createTag: false,
+    static final SemVerStrategy SNAPSHOT = Strategies.SNAPSHOT.copyWith(
+            stages: ['ci', 'snapshot', 'SNAPSHOT'] as SortedSet,
+            normalStrategy: NORMAL_STRATEGY,
+            allowDirtyRepo: true,
             preReleaseStrategy: all(Strategies.PreRelease.WITH_BRANCH_NAME,
-                                    Strategies.PreRelease.COUNT_COMMITS_SINCE_MARKER),
-            enforcePrecedence: false
-    )
-
-    /**
-     * Returns a version strategy to be used for {@code snapshot} builds.
-     * <p>
-     * This strategy creates a snapshot version based on <a href="https://semver.org/spec/v2.0.0.html">Semver 2.0.0</a>.
-     * Branch names will be encoded in the pre-release part of the version and combined with the passed stage property.
-     * <p>
-     * Example <i>from master branch</i>:
-     * <pre>
-     * {@code
-     * stage = "adhoc"
-     * releaseScope = "minor"
-     * nearestVersion = "1.3.0"
-     * branch = "master"
-     * distance = 22
-     * inferred = "1.4.0-adhoc.master.22"
-     * }
-     * </pre>
-     * <p>
-     * Example <i>from topic branch</i>:
-     * <pre>
-     * {@code
-     * stage = "preflight"
-     * releaseScope = "minor"
-     * nearestVersion = "1.3.0"
-     * branch = "feature/fix_22"
-     * distance = 34
-     * inferred = "1.4.0-preflight.branch.feature.fix.22.34"
-     * }
-     * </pre>
-     */
-    static final SemVerStrategy PREFLIGHT = SNAPSHOT.copyWith(
-            releaseStage: ReleaseStage.Preflight,
-            stages: ['pre', 'preflight', 'adhoc'] as SortedSet,
-            preReleaseStrategy: all(Strategies.PreRelease.STAGE_FIXED, SemverV2Strategies.PreRelease.STAGE_BRANCH_NAME, Strategies.PreRelease.COUNT_COMMITS_SINCE_MARKER),
+                                    Strategies.PreRelease.COUNT_COMMITS_SINCE_ANY),
     )
 }
