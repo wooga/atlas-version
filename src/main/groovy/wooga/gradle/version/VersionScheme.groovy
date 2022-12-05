@@ -20,10 +20,10 @@ package wooga.gradle.version
 
 import wooga.gradle.version.internal.release.base.VersionStrategy
 import wooga.gradle.version.internal.release.semver.SemVerStrategy
-import wooga.gradle.version.strategies.SemverV1Strategies
-import wooga.gradle.version.strategies.SemverV2Strategies
 import wooga.gradle.version.strategies.StaticMarkerStrategies
 import wooga.gradle.version.strategies.WdkStrategies
+import wooga.gradle.version.strategies.opinion.LegacyNuGetStrategies
+import wooga.gradle.version.strategies.opinion.SemverV2WithDefaultStrategies
 
 //TODO: Rename to VersionSchemes when breaking change
 /**
@@ -32,14 +32,14 @@ import wooga.gradle.version.strategies.WdkStrategies
  * plus additional strategies if so desired. Check IVersionScheme for more details.
  */
 enum VersionScheme implements IVersionScheme {
-    semver(SemverV1Strategies.DEVELOPMENT,
-            SemverV1Strategies.SNAPSHOT,
-            SemverV1Strategies.PRE_RELEASE,
-            SemverV1Strategies.FINAL),
-    semver2(SemverV2Strategies.DEVELOPMENT,
-            SemverV2Strategies.SNAPSHOT,
-            SemverV2Strategies.PRE_RELEASE,
-            SemverV2Strategies.FINAL),
+    semver(LegacyNuGetStrategies.DEVELOPMENT,
+            LegacyNuGetStrategies.SNAPSHOT,
+            LegacyNuGetStrategies.PRE_RELEASE,
+            LegacyNuGetStrategies.FINAL),
+    semver2(SemverV2WithDefaultStrategies.DEVELOPMENT,
+            SemverV2WithDefaultStrategies.SNAPSHOT,
+            SemverV2WithDefaultStrategies.PRE_RELEASE,
+            SemverV2WithDefaultStrategies.FINAL),
     /**
      * Strategies for versions generated based on a static marker. Based on Semver v2.
      */

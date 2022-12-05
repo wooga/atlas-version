@@ -18,6 +18,7 @@ package wooga.gradle.version.internal.release.opinion
 import wooga.gradle.version.ReleaseStage
 import wooga.gradle.version.internal.release.semver.ChangeScope
 import wooga.gradle.version.internal.release.semver.SemVerStrategyState
+import wooga.gradle.version.internal.release.semver.StrategyUtil
 
 import java.sql.Timestamp
 import java.text.SimpleDateFormat
@@ -45,10 +46,14 @@ final class Strategies {
      */
     static final class Normal {
         /**
+         * Do not modify the pre-release component.
+         */
+        static final PartialSemVerStrategy NONE = closure { state -> state }
+        /**
          * Increments the nearest normal version using the scope specified
          * in the {@link SemVerStrategyState#scopeFromProp}.
          */
-        static final PartialSemVerStrategy USE_SCOPE_PROP = closure { state ->
+        static final PartialSemVerStrategy USE_SCOPE_STATE = closure { state ->
             return incrementNormalFromScope(state, state.scopeFromProp)
         }
 
@@ -66,6 +71,26 @@ final class Strategies {
         static final PartialSemVerStrategy USE_NEAREST_ANY = closure { state ->
             def nearest = state.nearestVersion
             if (nearest.any == nearest.normal) {
+                return state
+            } else {
+                return state.copyWith(inferredNormal: nearest.any.normalVersion)
+            }
+        }
+
+        /**
+         * If the nearest any is higher from the nearest normal, sets the
+         * normal component to the nearest any's normal component. Otherwise
+         * do nothing.
+         *
+         * <p>
+         * For example, if the nearest any is {@code 1.2.3-alpha.1} and the
+         * nearest normal is {@code 1.2.2}, this will infer the normal
+         * component as {@code 1.2.3}.
+         * </p>
+         */
+        static final PartialSemVerStrategy NEAREST_HIGHER_ANY = closure { state ->
+            def nearest = state.nearestVersion
+            if (nearest.any.lessThanOrEqualTo(nearest.normal)) {
                 return state
             } else {
                 return state.copyWith(inferredNormal: nearest.any.normalVersion)
@@ -144,12 +169,31 @@ final class Strategies {
          * </ul>
          */
         static PartialSemVerStrategy fromBranchPattern(Pattern pattern) {
-            return closure { state ->
-                def m = state.currentBranch.name =~ pattern
+            return closure { SemVerStrategyState state ->
+                return fromMatchingBranchName(state.currentBranch.name, pattern).infer(state)
+            }
+        }
+
+        /**
+         * Uses the specified pattern to enforce that versions inferred on this branch
+         * comply. Patterns should have 1 or 2 capturing groups representing the
+         * major and, optionally, the minor component of the version.
+         *
+         * <ul>
+         *   <li>If the current branch doesn't match the pattern do nothing.</li>
+         *   <li>If only the major is specified in the branch name, and the nearest normal complies with that major, do nothing.</li>
+         *   <li>If the patch component can be incremented and still comply with the branch, do so.</li>
+         *   <li>If the minor component can be incremented to comply with the branch, do so.</li>
+         *   <li>If the major component can be incremented to comply with the branch, do so.</li>
+         *   <li>Otherwise fail, because the version can't comply with the branch.</li>
+         * </ul>
+         */
+        static PartialSemVerStrategy fromMatchingBranchName(String branchName, Pattern pattern) {
+            return closure { SemVerStrategyState state ->
+                def m = branchName =~ pattern
                 if (m) {
                     def major = m.groupCount() >= 1 ? parseIntOrZero(m[0][1]) : -1
                     def minor = m.groupCount() >= 2 ? parseIntOrZero(m[0][2]) : -1
-
                     def normal = state.nearestVersion.normal
                     def majorDiff = major - normal.majorVersion
                     def minorDiff = minor - normal.minorVersion
@@ -167,7 +211,7 @@ final class Strategies {
                         // only major specified in branch name and already matches
                         return state
                     } else {
-                        throw new GradleException("Invalid branch (${state.currentBranch.name}) for nearest normal (${normal}).")
+                        throw new GradleException("Invalid branch (${branchName}) for nearest normal (${state.nearestVersion.normal}).", e)
                     }
                 } else {
                     return state
@@ -175,6 +219,21 @@ final class Strategies {
             }
         }
 
+        /**
+         * Uses given scope if state's branch name matches pattern
+         * @param pattern - Pattern to match with state's branch name
+         * @param scope - Scope to be used in strategy if pattern matches
+         * @return PartialSemVerStrategy that executes the operation described above
+         */
+        static PartialSemVerStrategy scopeIfBranchMatchesPattern(Pattern pattern, ChangeScope scope) {
+            return closure { SemVerStrategyState state ->
+                def m = state.currentBranch.name =~ pattern
+                if (m.matches()) {
+                    return useScope(scope).infer(state)
+                }
+                return state
+            }
+        }
         /**
          * Always use the scope provided to increment the normal component.
          */
@@ -207,10 +266,14 @@ final class Strategies {
         static final PartialSemVerStrategy STAGE_FIXED = closure { state -> state.copyWith(inferredPreRelease: state.stageFromProp) }
 
         /**
-         * Sets the pre-release component to the value of {@link SemVerStrategyState#stageFromProp}.
+         * Appends a timestamp in the format yyyyMMddHHmm to the pre-release component
+         * @param separator - join component between the pre-release component and the timestamp.
+         * @return partial strategy function appendint timestamp to the pre-release component.
          */
-        static final PartialSemVerStrategy STAGE_TIMESTAMP = closure { state ->
-            state.copyWith(inferredPreRelease: "${GenerateTimestamp()}")
+        static PartialSemVerStrategy withTimestamp(String separator = ".") {
+            closure { SemVerStrategyState state ->
+                state.copyWith(inferredPreRelease: "${state.inferredPreRelease}${separator}${GenerateTimestamp()}")
+            }
         }
 
         /**
@@ -244,27 +307,73 @@ final class Strategies {
         }
 
         /**
+         * Appends a branch name to the pre-release component.
+         * @param separator - string used to join prerelease and branch strings defaults to Dot(.)
+         * @param branchTransform - potential transformations to branch name, defaults to identity
+         * @return
+         */
+        static PartialSemVerStrategy withBranchName(String separator = ".",
+                                                    Closure<String> branchTransform = {it -> it}) {
+            closure { SemVerStrategyState state ->
+                String branchName = branchFromEnvIfDetached(state)
+                branchName = branchTransform(~state.mainBranchPattern, branchName)
+
+                def inferred = state.inferredPreRelease ?
+                        "${state.inferredPreRelease}${separator}${branchName}" :
+                        "${branchName}"
+                state.copyWith(inferredPreRelease: inferred)
+            }
+        }
+
+        static final PartialSemVerStrategy WITH_BRANCH_NAME = withBranchName(".") {
+            Pattern mainBranchPattern, String branchName ->
+                branchName = branchName.matches(mainBranchPattern)? branchName : "branch.${branchName.toLowerCase()}"
+                //Split at branch delimiter /-_+ and replace with .
+                branchName = branchName.replaceAll(/((\/|-|_|\.)+)([\w])/) { _, __, ___, firstAfter -> ".${firstAfter}" }
+                //Remove all hanging /-_+
+                branchName = branchName.replaceAll(/[-\/_\+]+$/, "")
+                //parse all digits and replace with unpadded value e.g. 001 -> 1
+                branchName = branchName.replaceAll(/([\w\.])([0-9]+)/) { all, s, delimiter ->
+                    "${s == "."? "" : s}.${Integer.parseInt(delimiter).toString()}"
+                }
+                return branchName
+        }
+
+        /**
+         * Appends the pre-release component to a string compatible with semver v1
+         * pre-release processing on all of Paket, Nuget and JFrog/Artifactory.
+         *
+         * Numbers are only allowed at the end of the string, so numbers not belonging to the count element are expressed in verbose textual form.
+         * Also, only [A-Za-z0-9] is permitted in the the pre-release component as well, so any '.' is replaced by the 'Dot' string.
+         */
+        static final PartialSemVerStrategy PAKET_BRANCH_NAME = withBranchName("") {
+            Pattern mainBranchPattern, String branchName ->
+                branchName = branchName == "master"? branchName : "branch${branchName.capitalize()}"
+
+                branchName = branchName.replaceAll(/(\/|-|_)([\w])/) { _, __, firstAfter -> "${firstAfter.capitalize()}" }
+                        .replaceAll(/\./, "Dot")
+                return numbersAsLiteralNumbers(branchName)
+        }
+
+        /**
          * If the nearest any's pre-release component starts with the so far inferred pre-release component,
          * increment the count of the nearest any and append it to the so far inferred pre-release
          * component. Otherwise append 1 to the so far inferred pre-release component.
          */
-        static final PartialSemVerStrategy COUNT_INCREMENTED = closure { state ->
-            def nearest = state.nearestVersion
-            def currentPreIdents = state.inferredPreRelease ? state.inferredPreRelease.split('\\.') as List : []
-            if (nearest.any == nearest.normal || nearest.any.normalVersion != state.inferredNormal) {
-                currentPreIdents << '1'
-            } else {
-                def nearestPreIdents = nearest.any.preReleaseVersion.split('\\.')
-                if (nearestPreIdents.size() <= currentPreIdents.size()) {
-                    currentPreIdents << '1'
-                } else if (currentPreIdents == nearestPreIdents[0..(currentPreIdents.size() - 1)]) {
-                    def count = parseIntOrZero(nearestPreIdents[currentPreIdents.size()])
-                    currentPreIdents << Integer.toString(count + 1)
-                } else {
-                    currentPreIdents << '1'
-                }
+        static final PartialSemVerStrategy COUNT_INCREMENTED = countIncremented()
+
+        /**
+         * If the nearest any's pre-release component starts with the so far inferred pre-release component,
+         * increment the count of the nearest any and append it to the so far inferred pre-release
+         * component. Otherwise append 1 to the so far inferred pre-release component.
+         * @param separator - string to join the string and count pre-release together. Defaults to dot (.)
+         * @param countPadding - padding for the count pre-release. For instance ['rc', '1'] with a padding of 3 turns into ['rc', '001']. Defaults to zero.
+         * @return PartialSemVerStrategy that executes the described operation.
+         */
+        static final PartialSemVerStrategy countIncremented(String separator = ".", int countPadding = 0) {
+            closure { SemVerStrategyState state ->
+                state.copyWith(inferredPreRelease: incrementsPreRelease(state, separator, countPadding))
             }
-            return state.copyWith(inferredPreRelease: currentPreIdents.join('.'))
         }
 
         /**
@@ -288,6 +397,9 @@ final class Strategies {
             }
         }
 
+        /**
+         * Appends the commit count since the nearest CI marker to the pre-release compnent using a dot(.).
+         */
         static final PartialSemVerStrategy COUNT_COMMITS_SINCE_MARKER = closure { SemVerStrategyState state ->
             def markerVersion = state.nearestCiMarker
             if (state.currentBranch.name.matches(state.releaseBranchPattern)) {
@@ -297,6 +409,20 @@ final class Strategies {
             def count = markerVersion.distanceFromAny
             def inferred = state.inferredPreRelease ? "${state.inferredPreRelease}.${count}" : "${count}"
             return state.copyWith(inferredPreRelease: inferred)
+        }
+
+        /**
+         * Appends the commit count since the nearest normal version
+         * @param separator - join component between the pre-release component and the count.
+         * @param paddingCount - with hom many zeros to pad the generate count.
+         * @return PartialSemverStrategy executing the operation described above.
+         */
+        static final PartialSemVerStrategy countCommitsSinceNormal(String separator = ".", int paddingCount = 0) {
+            return closure { SemVerStrategyState state ->
+                def buildSinceAny = state.nearestVersion.distanceFromNormal
+                def padded = "$buildSinceAny".padLeft(paddingCount, '0')
+                return state.copyWith(inferredPreRelease: [state.inferredPreRelease, padded].join(separator))
+            }
         }
     }
 
@@ -331,7 +457,7 @@ final class Strategies {
         name: '',
         stages: [] as SortedSet,
         allowDirtyRepo: false,
-        normalStrategy: one(Normal.USE_SCOPE_PROP, Normal.USE_NEAREST_ANY, Normal.useScope(ChangeScope.PATCH)),
+        normalStrategy: one(Normal.USE_SCOPE_STATE, Normal.USE_NEAREST_ANY, Normal.useScope(ChangeScope.PATCH)),
         preReleaseStrategy: PreRelease.NONE,
         buildMetadataStrategy: BuildMetadata.NONE,
         createTag: true,
