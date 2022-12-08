@@ -101,10 +101,6 @@ class VersionPluginSpec extends ProjectSpec {
         'versionBuilder' | VersionPluginExtension
     }
 
-    def findStrategyByName(List<VersionStrategy> strategies, name) {
-        strategies.find { it.name == name }
-    }
-
     @Unroll('verify wooga packages version strategy for #tagVersion, #scope and #stage')
     def "uses custom wooga semver strategies"() {
 

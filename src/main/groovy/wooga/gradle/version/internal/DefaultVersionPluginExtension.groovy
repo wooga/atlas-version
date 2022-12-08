@@ -36,9 +36,9 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
     DefaultVersionPluginExtension(Project project) {
         this.project = project
 
-        scope = VersionPluginConventions.scope.getStringValueProvider(project).map {
-            ChangeScope.valueOf(it.toUpperCase())
-        }
+        scope = VersionPluginConventions.scope.getStringValueProvider(project)
+        .map {it?.trim()?.empty? null: it }
+        .map {ChangeScope.valueOf(it.toUpperCase()) }
 
         stage = VersionPluginConventions.stage.getStringValueProvider(project)
         releaseBranchPattern.set(VersionPluginConventions.releaseBranchPattern.getStringValueProvider(project))
