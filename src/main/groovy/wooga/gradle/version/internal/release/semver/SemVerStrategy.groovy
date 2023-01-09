@@ -17,28 +17,21 @@ package wooga.gradle.version.internal.release.semver
 
 import groovy.transform.Immutable
 import groovy.transform.PackageScope
-
-import wooga.gradle.version.ReleaseStage
-import wooga.gradle.version.internal.release.base.ReleaseVersion
-import wooga.gradle.version.internal.release.base.DefaultVersionStrategy
 import org.ajoberstar.grgit.Grgit
-
+import org.ajoberstar.grgit.Status
 import org.gradle.api.GradleException
-import org.gradle.api.Project
-
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import wooga.gradle.version.VersionPluginExtension
+import wooga.gradle.version.ReleaseStage
+import wooga.gradle.version.internal.release.base.DefaultVersionStrategy
+import wooga.gradle.version.internal.release.base.ReleaseVersion
 
 import javax.annotation.Nullable
-
 /**
  * Strategy to infer versions that comply with Semantic Versioning.
- * @see PartialSemVerStrategy
- * @see SemVerStrategyState
- * @see <a href="https://github.com/ajoberstar/gradle-git/wiki/SemVer%20Support">Wiki Doc</a>
+ * @see PartialSemVerStrategy* @see SemVerStrategyState* @see <ahref="https://github.com/ajoberstar/gradle-git/wiki/SemVer%20Support" > Wiki Doc</a>
  */
-@Immutable(copyWith=true, knownImmutableClasses=[PartialSemVerStrategy])
+@Immutable(copyWith = true, knownImmutableClasses = [PartialSemVerStrategy])
 final class SemVerStrategy implements DefaultVersionStrategy {
     private static final Logger logger = LoggerFactory.getLogger(SemVerStrategy)
 
@@ -101,12 +94,16 @@ final class SemVerStrategy implements DefaultVersionStrategy {
         if (stage != null && !stages.contains(stage)) {
             logger.info('Skipping {} default strategy because stage ({}) is not one of: {}', name, stage, stages)
             return false
-        } else if (!allowDirtyRepo && !grgit.status().clean) {
+        }
+        // TODO: Refactor branch statement with below?
+        def status = grgit.status()
+        if (!allowDirtyRepo && !status.clean) {
             logger.info('Skipping {} default strategy because repo is dirty.', name)
+            logger.info(composeRepositoryStatus(status))
             return false
         } else {
-            String status = grgit.status().clean ? 'clean' : 'dirty'
-            logger.info('Using {} default strategy because repo is {} and no stage defined', name, status)
+            String statusString = status.clean ? 'clean' : 'dirty'
+            logger.info('Using {} default strategy because repo is {} and no stage defined', name, statusString)
             return true
         }
     }
@@ -123,14 +120,37 @@ final class SemVerStrategy implements DefaultVersionStrategy {
         if (stage == null || !stages.contains(stage)) {
             logger.info('Skipping {} strategy because stage ({}) is not one of: {}', name, stage, stages)
             return false
-        } else if (!allowDirtyRepo && !grgit.status().clean) {
-            logger.info('Skipping {} strategy because repo is dirty.', name)
+        }
+        def status = grgit.status()
+         if (!allowDirtyRepo && !status.clean) {
+            logger.info('Skipping {} strategy because repo is dirty...', name)
+            logger.info(composeRepositoryStatus(status))
             return false
         } else {
-            String status = grgit.status().clean ? 'clean' : 'dirty'
-            logger.info('Using {} strategy because repo is {} and stage ({}) is one of: {}', name, status, stage, stages)
+            String statusString = status.clean ? 'clean' : 'dirty'
+            logger.info('Using {} strategy because repo is {} and stage ({}) is one of: {}', name, statusString, stage, stages)
             return true
         }
+    }
+
+    /**
+     * Composes a string detailing the current repository staged/unstaged files
+     */
+    static String composeRepositoryStatus(Status status) {
+        StringBuilder str = new StringBuilder()
+
+        Closure printChangeSet = { label, changeSet ->
+            str.append("\n> ${label}\n")
+            str.append(changeSet.added.collect({ "[ADDED] ${it}" }).join("\n"))
+            str.append(changeSet.modified.collect({ "[MODIFIED] ${it}" }).join("\n"))
+            str.append(changeSet.removed.collect({ "[REMOVED] ${it}" }).join("\n"))
+        }
+
+        str.append("Repository Status:")
+        printChangeSet("Staged", status.staged)
+        printChangeSet("Unstaged", status.unstaged)
+
+        str.toString()
     }
 
     /**
@@ -150,14 +170,14 @@ final class SemVerStrategy implements DefaultVersionStrategy {
     ReleaseVersion doInfer(SemVerStrategyState semVerState) {
         logger.info('Beginning version inference using {} strategy and input scope ({}) and stage ({})', name, semVerState.scopeFromProp, semVerState.stageFromProp)
         def finalSemverState = StrategyUtil.all(
-                normalStrategy, preReleaseStrategy, buildMetadataStrategy).infer(semVerState)
+            normalStrategy, preReleaseStrategy, buildMetadataStrategy).infer(semVerState)
         def version = finalSemverState.toVersion()
 
         def nearestVersion = finalSemverState.nearestVersion
         if (enforcePrecedence && version < nearestVersion.any) {
             throw new GradleException("Inferred version (${version}) cannot be lower than nearest (${nearestVersion.any}). Required by selected strategy '${name}'.")
         }
-        def nearestNormal = nearestVersion.normal == NearestVersion.EMPTY? null: nearestVersion.normal
+        def nearestNormal = nearestVersion.normal == NearestVersion.EMPTY ? null : nearestVersion.normal
         return new ReleaseVersion(version.toString(), nearestNormal?.toString(), createTag)
     }
 
@@ -172,16 +192,16 @@ final class SemVerStrategy implements DefaultVersionStrategy {
             throw new GradleException("Stage ${params.stage} is not one of ${stages} allowed for strategy ${name}.")
         }
         return new SemVerStrategyState(
-                scopeFromProp: params.scope,
-                stageFromProp: params.stage?: stages.first(),
-                currentHead: params.currentHead,
-                currentBranch: params.currentBranch,
-                repoDirty: params.repoDirty,
-                nearestVersion: params.nearestVersion,
-                nearestCiMarker: params.nearestCiMarker,
-                nearestReleaseMarker: params.nearestReleaseMarker,
-                releaseBranchPattern: params.releaseBranchPattern,
-                mainBranchPattern: params.mainBranchPattern
+            scopeFromProp: params.scope,
+            stageFromProp: params.stage ?: stages.first(),
+            currentHead: params.currentHead,
+            currentBranch: params.currentBranch,
+            repoDirty: params.repoDirty,
+            nearestVersion: params.nearestVersion,
+            nearestCiMarker: params.nearestCiMarker,
+            nearestReleaseMarker: params.nearestReleaseMarker,
+            releaseBranchPattern: params.releaseBranchPattern,
+            mainBranchPattern: params.mainBranchPattern
         )
     }
 }
