@@ -20,8 +20,8 @@ package wooga.gradle.version
 
 import org.ajoberstar.grgit.Grgit
 import wooga.gradle.version.internal.VersionCode
-import wooga.gradle.version.internal.release.base.BasicTagStrategy
 import wooga.gradle.version.internal.release.git.GitVersionRepository
+import wooga.gradle.version.internal.release.git.PrefixTagStrategy
 
 enum VersionCodeScheme {
     none({ -> 0}),
@@ -33,17 +33,17 @@ enum VersionCodeScheme {
     }),
     releaseCountBasic({ Grgit git, int offset ->
         //Tag strategy here hardcoded for backwards compatibility
-        def versionRepo = GitVersionRepository.fromTagStrategy(git, new BasicTagStrategy(false))
+        def versionRepo = GitVersionRepository.fromTagStrategy(git, new PrefixTagStrategy("v", false))
          VersionCode.generateBuildNumberVersionCode(versionRepo, false, offset)
     }),
     releaseCount({ Grgit git, int offset ->
             //Tag strategy here hardcoded for backwards compatibility
-            def versionRepo = GitVersionRepository.fromTagStrategy(git, new BasicTagStrategy(false))
+            def versionRepo = GitVersionRepository.fromTagStrategy(git, new PrefixTagStrategy("v", false))
             VersionCode.generateBuildNumberVersionCode(versionRepo, true, offset)
     })
 
     @Deprecated
-    //Generator function still here for backwards compatibility reasons. Remove on next major
+    //TODO 3.x: remove this generate parameter
     final Closure<Integer> generate
 
     VersionCodeScheme(Closure generate) {

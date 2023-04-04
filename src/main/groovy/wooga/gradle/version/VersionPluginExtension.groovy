@@ -24,10 +24,9 @@ import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import wooga.gradle.version.internal.GitStrategyPicker
 import wooga.gradle.version.internal.release.base.ReleaseVersion
-import wooga.gradle.version.internal.release.base.BasicTagStrategy
-import wooga.gradle.version.internal.release.base.TagStrategy
 import wooga.gradle.version.internal.release.base.VersionStrategy
 import wooga.gradle.version.internal.release.git.GitVersionRepository
+import wooga.gradle.version.internal.release.git.PrefixTagStrategy
 import wooga.gradle.version.internal.release.semver.ChangeScope
 import wooga.gradle.version.internal.release.semver.VersionInferenceParameters
 
@@ -243,14 +242,19 @@ trait VersionPluginExtension implements BaseSpec {
         scope = value
     }
 
+
     /**
-     * @return Used during nearest version inference
+     * @return Prefix to be used when storing versions. Useful to distinguish projects in a same repository
      */
-    TagStrategy getTagStrategy() {
-        tagStrategy
+    Property<String> prefix = objects.property(String)
+
+    void setPrefix(String prefix) {
+        this.prefix.set(prefix)
     }
 
-    TagStrategy tagStrategy = new BasicTagStrategy(true)
+    void setPrefix(Provider<String> prefix) {
+        this.prefix.set(prefix)
+    }
 
     /**
      * @return Whether this is a development build
@@ -311,9 +315,9 @@ trait VersionPluginExtension implements BaseSpec {
         releaseStage
     }
 
-    Provider<GitVersionRepository> baseVersionRepo = git.mapOnce {
-        Grgit it -> GitVersionRepository.fromTagStrategy(it, tagStrategy)
-    } as Provider<GitVersionRepository>
+    Provider<GitVersionRepository> versionRepo = git.map {
+        Grgit it -> GitVersionRepository.fromTagStrategy(it, new PrefixTagStrategy(prefix.get(), true))
+    }
 
     final Provider<ReleaseStage> releaseStage = providers.provider { ->
         if (isDevelopment.getOrElse(false)) {

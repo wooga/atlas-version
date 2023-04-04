@@ -3,17 +3,12 @@ package wooga.gradle.version.internal.release.git
 import org.ajoberstar.grgit.Commit
 import org.ajoberstar.grgit.Grgit
 import org.ajoberstar.grgit.Tag
-import wooga.gradle.version.internal.release.base.MarkerTagStrategy
-import wooga.gradle.version.internal.release.base.TagStrategy
 import wooga.gradle.version.internal.release.semver.NearestVersion
-
-import java.util.stream.Stream
-import java.util.stream.StreamSupport
 
 class GitVersionRepository implements Closeable {
 
     static GitVersionRepository fromTagPrefix(Grgit grgit, String prefix) {
-        return fromTagStrategy(grgit, new MarkerTagStrategy(prefix))
+        return fromTagStrategy(grgit, new PrefixTagStrategy(prefix, false))
     }
 
     static GitVersionRepository fromTagStrategy(Grgit grgit, TagStrategy strategy) {

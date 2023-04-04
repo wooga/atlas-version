@@ -16,31 +16,34 @@
  *
  */
 
-package wooga.gradle.version.internal.release.base
+package wooga.gradle.version.internal.release.git
 
 import com.github.zafarkhaja.semver.ParseException
 import com.github.zafarkhaja.semver.Version
 import org.ajoberstar.grgit.Tag
+import org.apache.commons.lang3.StringUtils
 
-class MarkerTagStrategy implements TagStrategy {
+class PrefixTagStrategy implements TagStrategy {
 
-    private final String prefix
+    final String prefix
+    final boolean tryParseWoutPrefix
 
-    MarkerTagStrategy(String prefix) {
+    PrefixTagStrategy(String prefix, boolean tryParseWoutPrefix) {
         this.prefix = prefix
+        this.tryParseWoutPrefix = tryParseWoutPrefix
     }
 
     @Override
     Version parseTag(Tag tag) {
         try {
-            if (tag.name.startsWith(prefix)) {
-                Version.valueOf(tag.name.replace(prefix, ""))
-            } else {
-                null
+            if (tryParseWoutPrefix && !tag.name.startsWith(prefix)) {
+                return Version.valueOf(tag.name)
+            } else if (tag.name.startsWith(prefix)) {
+                return Version.valueOf(StringUtils.removeStart(tag.name, prefix))
             }
-
-        } catch (ParseException e) {
-            null
+        } catch (ParseException ignore) {
         }
+        return null
     }
+
 }

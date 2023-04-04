@@ -50,7 +50,7 @@ class NewSemverV2StrategySpec extends ProjectSpec {
             1.times {
                 git.commit(message: 'feature commit')
             }
-            git.tag.add(name: "v$nearestNormal")
+            git.tag.add(name: "$prefix$nearestNormal")
         }
 
         distance.times {
@@ -58,7 +58,7 @@ class NewSemverV2StrategySpec extends ProjectSpec {
         }
 
         if (nearestAny != _) {
-            git.tag.add(name: "v$nearestAny")
+            git.tag.add(name: "$prefix$nearestAny")
             distance.times {
                 git.commit(message: 'fix commit')
             }
@@ -75,7 +75,10 @@ class NewSemverV2StrategySpec extends ProjectSpec {
         when:
         project.plugins.apply(PLUGIN_NAME)
         and:
-        def versionExt = project.extensions.findByType(VersionPluginExtension)
+        def versionExt = project.extensions.findByType(VersionPluginExtension).with {
+            it.prefix = prefix
+            return it
+        }
         def version = versionExt.inferVersion(semverV2Scheme)
 
         then:
@@ -385,7 +388,7 @@ class NewSemverV2StrategySpec extends ProjectSpec {
         '1.0.0'       | _                 | 789      | "ci"         | "patch" | "test/build000000.000003"  | "1.0.1-branch.test.build.0.3.789"
         '1.0.0'       | _                 | 3        | "ci"         | "patch" | "test/build.000000.000003" | "1.0.1-branch.test.build.0.3.3"
         '1.0.0'       | _                 | 3        | "ci"         | "patch" | "release/1.00.x"           | "1.0.1-branch.release.1.0.x.3"
-
+        prefix = "prefix-"
         nearestAnyTitle = (nearestAny == _) ? "unset" : nearestAny
         scopeTitle = (scope == _) ? "unset" : scope
     }

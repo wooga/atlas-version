@@ -26,7 +26,7 @@ import wooga.gradle.version.strategies.opinion.SemverV2WithDefaultStrategies
 import wooga.gradle.version.strategies.opinion.UpmStrategies
 import wooga.gradle.version.strategies.opinion.WdkNuGetStrategies
 
-//TODO: Rename to VersionSchemes when breaking change
+//TODO: 3.x Rename to VersionSchemes when breaking change
 /**
  * Version schemes available for use with this plugin.
  * Each scheme consists of at least 4 strategies (development, snapshot, pre-release and final)

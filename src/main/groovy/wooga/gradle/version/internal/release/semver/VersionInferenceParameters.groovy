@@ -22,6 +22,7 @@ import org.ajoberstar.grgit.Branch
 import org.ajoberstar.grgit.Commit
 import org.ajoberstar.grgit.Grgit
 import wooga.gradle.version.VersionPluginExtension
+import wooga.gradle.version.internal.DefaultVersionPluginExtension
 import wooga.gradle.version.internal.release.git.GitVersionRepository
 
 /**
@@ -55,13 +56,13 @@ final class VersionInferenceParameters {
             this.releaseBranchPattern = it.releaseBranchPattern.get()
             this.mainBranchPattern = it.mainBranchPattern.get()
             def git = it.git.get()
-            return withGit(git, extension.baseVersionRepo.get())
+            return withGit(git, extension.versionRepo.get())
         }
     }
 
     VersionInferenceParameters withGit(Grgit git,
                                        GitVersionRepository baseVersionRepo,
-                                       GitVersionRepository ciVersionRepo = GitVersionRepository.fromTagPrefix(git, "ci-"),
+                                       GitVersionRepository ciVersionRepo = GitVersionRepository.fromTagPrefix(git, "ci-"), //TODO: do something about this
                                        GitVersionRepository releaseVersionRepo = GitVersionRepository.fromTagPrefix(git, "release-")) {
         this.nearestVersion = baseVersionRepo.nearestVersion()
         this.nearestCiMarker = ciVersionRepo.nearestVersion()

@@ -54,6 +54,7 @@ class VersionCode {
             this.generator = generator
         }
 
+        //TODO: These providers can be simple types.
         int versionCodeFor(Provider<String> versionProvider, Provider<GitVersionRepository> gitProvider, int offset) {
             if(generator.parameterTypes.length == 0) {
                 return this.generator.call()

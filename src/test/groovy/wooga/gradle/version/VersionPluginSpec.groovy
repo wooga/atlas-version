@@ -565,7 +565,7 @@ class VersionPluginSpec extends ProjectSpec {
         numberOfFinalReleases | numberOfPrereleases | offset | scheme                              | expectedVersionCode
         5                     | 5                   | 0      | VersionCodeScheme.releaseCountBasic | 5
         5                     | 5                   | 3      | VersionCodeScheme.releaseCountBasic | 8
-        10                    | 2                   | 0      | VersionCodeScheme.releaseCount      | 12
+        10                    | 2                   | 0      | VersionCodeScheme.releaseCount      | 14
         7                     | 0                   | 5      | VersionCodeScheme.releaseCount      | 12
         3                     | 8                   | 5      | VersionCodeScheme.none              | 0
         3                     | 8                   | 5      | _                                   | 0

@@ -195,6 +195,8 @@ class VersionPluginIntegrationSpec extends VersionIntegrationSpec {
         "mainBranchPattern"    | "setMainBranchPattern"     | /[alto]-[sierra]/                   | "String"
         "mainBranchPattern"    | "setMainBranchPattern"     | /[whooom]/                          | "Provider<String>"
 
+        "prefix"               | "prefix"                   | "prefix"                            | "String"
+
         value = wrapValueBasedOnType(rawValue, type)
         extensionName = "versionBuilder"
     }
