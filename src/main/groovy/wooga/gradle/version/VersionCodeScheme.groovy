@@ -20,6 +20,8 @@ package wooga.gradle.version
 
 import org.ajoberstar.grgit.Grgit
 import wooga.gradle.version.internal.VersionCode
+import wooga.gradle.version.internal.release.base.BasicTagStrategy
+import wooga.gradle.version.internal.release.git.GitVersionRepository
 
 enum VersionCodeScheme {
     none({ -> 0}),
@@ -29,13 +31,19 @@ enum VersionCodeScheme {
     semver({
         String version, int offset -> VersionCode.generateSemverVersionCode(version, true) + offset
     }),
-    releaseCountBasic({
-        Grgit git, int offset -> VersionCode.generateBuildNumberVersionCode(git, false, offset)
+    releaseCountBasic({ Grgit git, int offset ->
+        //Tag strategy here hardcoded for backwards compatibility
+        def versionRepo = GitVersionRepository.fromTagStrategy(git, new BasicTagStrategy(false))
+         VersionCode.generateBuildNumberVersionCode(versionRepo, false, offset)
     }),
-    releaseCount({
-        Grgit git, int offset -> VersionCode.generateBuildNumberVersionCode(git, true, offset)
+    releaseCount({ Grgit git, int offset ->
+            //Tag strategy here hardcoded for backwards compatibility
+            def versionRepo = GitVersionRepository.fromTagStrategy(git, new BasicTagStrategy(false))
+            VersionCode.generateBuildNumberVersionCode(versionRepo, true, offset)
     })
 
+    @Deprecated
+    //Generator function still here for backwards compatibility reasons. Remove on next major
     final Closure<Integer> generate
 
     VersionCodeScheme(Closure generate) {

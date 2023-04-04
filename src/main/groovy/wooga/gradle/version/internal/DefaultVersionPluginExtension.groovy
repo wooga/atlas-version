@@ -21,7 +21,9 @@ package wooga.gradle.version.internal
 import org.ajoberstar.grgit.Grgit
 import wooga.gradle.version.ReleaseStage
 import wooga.gradle.version.VersionCodeScheme
+import wooga.gradle.version.internal.release.base.BasicTagStrategy
 import wooga.gradle.version.internal.release.base.ReleaseVersion
+import wooga.gradle.version.internal.release.git.GitVersionRepository
 import wooga.gradle.version.internal.release.semver.ChangeScope
 import org.gradle.api.GradleException
 import org.gradle.api.Project
@@ -32,6 +34,7 @@ import wooga.gradle.version.VersionPluginExtension
 class DefaultVersionPluginExtension implements VersionPluginExtension {
 
     private final Project project;
+
 
     DefaultVersionPluginExtension(Project project) {
         this.project = project
@@ -49,10 +52,13 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
         }).orElse(inferVersionIfGitIsPresent())
                 .orElse(new ReleaseVersion(version: VersionPluginConventions.UNINITIALIZED_VERSION))
 
+        def repo = git.mapOnce {
+            Grgit it -> GitVersionRepository.fromTagStrategy(it,  new BasicTagStrategy(false))
+        } as Provider<GitVersionRepository>
         versionCode = versionCodeScheme.map({
             VersionCodeScheme scheme -> VersionCode.Schemes
                     .fromExternal(scheme)
-                    .versionCodeFor(this.version.map { it.version }, git, versionCodeOffset.getOrElse(0))
+                    .versionCodeFor(this.version.map { it.version }, repo, versionCodeOffset.getOrElse(0))
         }.memoize())
 
         // It's development if the development strategy contains the set `stage` OR

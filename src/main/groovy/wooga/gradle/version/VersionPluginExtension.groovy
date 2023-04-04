@@ -24,8 +24,10 @@ import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import wooga.gradle.version.internal.GitStrategyPicker
 import wooga.gradle.version.internal.release.base.ReleaseVersion
+import wooga.gradle.version.internal.release.base.BasicTagStrategy
 import wooga.gradle.version.internal.release.base.TagStrategy
 import wooga.gradle.version.internal.release.base.VersionStrategy
+import wooga.gradle.version.internal.release.git.GitVersionRepository
 import wooga.gradle.version.internal.release.semver.ChangeScope
 import wooga.gradle.version.internal.release.semver.VersionInferenceParameters
 
@@ -248,7 +250,7 @@ trait VersionPluginExtension implements BaseSpec {
         tagStrategy
     }
 
-    TagStrategy tagStrategy = new TagStrategy()
+    TagStrategy tagStrategy = new BasicTagStrategy(true)
 
     /**
      * @return Whether this is a development build
@@ -308,6 +310,10 @@ trait VersionPluginExtension implements BaseSpec {
     Provider<ReleaseStage> getReleaseStage() {
         releaseStage
     }
+
+    Provider<GitVersionRepository> baseVersionRepo = git.mapOnce {
+        Grgit it -> GitVersionRepository.fromTagStrategy(it, tagStrategy)
+    } as Provider<GitVersionRepository>
 
     final Provider<ReleaseStage> releaseStage = providers.provider { ->
         if (isDevelopment.getOrElse(false)) {

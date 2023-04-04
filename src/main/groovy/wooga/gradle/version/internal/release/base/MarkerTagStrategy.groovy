@@ -22,26 +22,25 @@ import com.github.zafarkhaja.semver.ParseException
 import com.github.zafarkhaja.semver.Version
 import org.ajoberstar.grgit.Tag
 
-class MarkerTagStrategy extends TagStrategy {
+class MarkerTagStrategy implements TagStrategy {
 
     private final String prefix
 
-    Closure<Version> parseTag = { Tag tag ->
+    MarkerTagStrategy(String prefix) {
+        this.prefix = prefix
+    }
+
+    @Override
+    Version parseTag(Tag tag) {
         try {
-            if(tag.name.startsWith(prefix)) {
-                Version.valueOf(tag.name.replace(prefix,""))
-            } else
-            {
+            if (tag.name.startsWith(prefix)) {
+                Version.valueOf(tag.name.replace(prefix, ""))
+            } else {
                 null
             }
 
         } catch (ParseException e) {
             null
         }
-    }
-
-    MarkerTagStrategy(String prefix) {
-        super(false)
-        this.prefix = prefix
     }
 }

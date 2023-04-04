@@ -18,13 +18,12 @@
 
 package wooga.gradle.version.internal
 
+import groovy.transform.stc.ClosureParams
+import groovy.transform.stc.SimpleType
 import org.ajoberstar.grgit.Grgit
-import org.eclipse.jgit.lib.ObjectId
-import org.eclipse.jgit.revwalk.RevCommit
-import org.eclipse.jgit.revwalk.RevWalk
 import org.gradle.api.provider.Provider
 import wooga.gradle.version.VersionCodeScheme
-import wooga.gradle.version.internal.release.base.TagStrategy
+import wooga.gradle.version.internal.release.git.GitVersionRepository
 
 class VersionCode {
 
@@ -37,10 +36,10 @@ class VersionCode {
             String version, int offset -> generateSemverVersionCode(version, true) + offset
         }),
         releaseCountBasic(VersionCodeScheme.releaseCountBasic, {
-            Grgit git, int offset -> generateBuildNumberVersionCode(git, false, offset)
+            GitVersionRepository git, int offset -> generateBuildNumberVersionCode(git, false, offset)
         }),
         releaseCount(VersionCodeScheme.releaseCount, {
-            Grgit git, int offset -> generateBuildNumberVersionCode(git, true, offset)
+            GitVersionRepository git, int offset -> generateBuildNumberVersionCode(git, true, offset)
         })
 
         private final VersionCodeScheme external
@@ -55,7 +54,7 @@ class VersionCode {
             this.generator = generator
         }
 
-        int versionCodeFor(Provider<String> versionProvider, Provider<Grgit> gitProvider, int offset) {
+        int versionCodeFor(Provider<String> versionProvider, Provider<GitVersionRepository> gitProvider, int offset) {
             if(generator.parameterTypes.length == 0) {
                 return this.generator.call()
             }
@@ -152,46 +151,7 @@ class VersionCode {
      * @param offset
      * @return
      */
-    static Integer generateBuildNumberVersionCode(Grgit git, Boolean countPrerelease = true, Integer offset = 0) {
-        RevWalk walk = new RevWalk(git.repository.jgit.repo)
-        def strategy = new TagStrategy(false)
-
-        try {
-            walk.retainBody = false
-
-            def toRev = { obj ->
-                def commit = git.resolve.toCommit(obj)
-                def id = ObjectId.fromString(commit.id)
-                walk.parseCommit(id)
-            }
-
-            List tags = git.tag.list().collect { tag ->
-                [version: strategy.parseTag(tag), tag: tag, rev: toRev(tag)]
-            }.findAll {
-                it.version
-            }
-
-            List normalTags = tags.findAll { !it.version.preReleaseVersion }
-            RevCommit head = toRev(git.head())
-
-            def tagsToCalculate = (countPrerelease) ? tags : normalTags
-            return countReachableVersionTags(walk, head, tagsToCalculate) + offset + 1
-        } finally {
-            walk.close()
-        }
-    }
-
-    private static Integer countReachableVersionTags(RevWalk walk, RevCommit head, List versionTags) {
-        walk.reset()
-        walk.markStart(head)
-        Map versionTagsByRev = versionTags.groupBy { it.rev }
-
-        def reachableVersionTags = walk.collectMany { versionTagsByRev.get(it,[]) }
-
-        if (reachableVersionTags) {
-            return reachableVersionTags.size()
-        } else {
-            return 0
-        }
+    static Integer generateBuildNumberVersionCode(GitVersionRepository versionRepo, Boolean countPrerelease = true, Integer offset = 0) {
+        return versionRepo.countReachableVersions(countPrerelease) + offset + 1
     }
 }
