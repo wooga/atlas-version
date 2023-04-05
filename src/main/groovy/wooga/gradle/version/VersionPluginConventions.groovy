@@ -30,7 +30,6 @@ class VersionPluginConventions {
             GIT_ROOT_PROPERTY,
             null
     )
-
     static final PropertyLookup version = new PropertyLookup(
             "VERSION_BUILDER_VERSION",
             "versionBuilder.version",
