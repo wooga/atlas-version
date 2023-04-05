@@ -19,7 +19,6 @@ package wooga.gradle.version
 
 import org.ajoberstar.grgit.Grgit
 import org.eclipse.jgit.errors.RepositoryNotFoundException
-import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.logging.Logging
@@ -71,7 +70,7 @@ class VersionPlugin implements Plugin<Project> {
         def extension = project.extensions.create(VersionPluginExtension, EXTENSION_NAME, DefaultVersionPluginExtension, project)
 
         extension.versionScheme.set(VersionPluginConventions.versionScheme.getStringValueProvider(project).map({
-            VersionScheme.valueOf(it.trim())
+            VersionSchemes.valueOf(it.trim())
         }))
 
         extension.versionCodeScheme.set(VersionPluginConventions.versionCodeScheme.getStringValueProvider(project).map({

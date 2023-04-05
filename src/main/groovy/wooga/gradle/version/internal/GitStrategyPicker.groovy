@@ -1,7 +1,7 @@
 package wooga.gradle.version.internal
 
 import org.ajoberstar.grgit.Grgit
-import wooga.gradle.version.IVersionScheme
+import wooga.gradle.version.VersionScheme
 import wooga.gradle.version.internal.release.base.DefaultVersionStrategy
 import wooga.gradle.version.internal.release.base.VersionStrategy
 
@@ -25,7 +25,7 @@ class GitStrategyPicker {
      * If null, the stage to be used in execution will depend if a fallback is set in the selected strategy itself.
      * @return Selected VersionStrategy or null if no strategy matches.
      */
-    VersionStrategy pickStrategy(IVersionScheme scheme, @Nullable String stage) {
+    VersionStrategy pickStrategy(VersionScheme scheme, @Nullable String stage) {
         return pickStrategy(scheme.strategies, scheme.defaultStrategy, stage)
     }
 

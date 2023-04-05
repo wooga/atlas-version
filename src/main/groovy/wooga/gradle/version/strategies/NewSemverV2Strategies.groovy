@@ -17,7 +17,7 @@
 
 package wooga.gradle.version.strategies
 
-import wooga.gradle.version.IVersionScheme
+import wooga.gradle.version.VersionScheme
 import wooga.gradle.version.ReleaseStage
 import wooga.gradle.version.internal.release.opinion.Strategies
 import wooga.gradle.version.internal.release.semver.SemVerStrategy
@@ -160,7 +160,7 @@ final class NewSemverV2Strategies {
                                     Strategies.PreRelease.COUNT_COMMITS_SINCE_ANY),
     )
 
-    static final IVersionScheme scheme = new IVersionScheme() {
+    static final VersionScheme scheme = new VersionScheme() {
         final SemVerStrategy development = DEVELOPMENT
         final SemVerStrategy snapshot = SNAPSHOT
         final SemVerStrategy preRelease = PRE_RELEASE

@@ -31,10 +31,10 @@ class VersionIntegrationSpec extends IntegrationSpec {
     static wrapValueFallback = { Object rawValue, String type, Closure<String> fallback ->
         switch (type) {
             case "VersionScheme":
-                if(VersionScheme.isInstance(rawValue)) {
-                    return "wooga.gradle.version.VersionScheme.${rawValue.toString()}"
+                if(VersionSchemes.isInstance(rawValue)) {
+                    return "wooga.gradle.version.VersionSchemes.${rawValue.toString()}"
                 } else {
-                    return "wooga.gradle.version.VersionScheme.valueOf('${rawValue.toString()}')"
+                    return "wooga.gradle.version.VersionSchemes.valueOf('${rawValue.toString()}')"
                 }
                 break
             case "VersionCodeScheme":

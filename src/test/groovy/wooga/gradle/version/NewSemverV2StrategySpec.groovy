@@ -11,7 +11,7 @@ class NewSemverV2StrategySpec extends ProjectSpec {
 
     public static final String PLUGIN_NAME = 'net.wooga.version'
 
-    static final IVersionScheme semverV2Scheme = new IVersionScheme() {
+    static final VersionScheme semverV2Scheme = new VersionScheme() {
         final SemVerStrategy development = NewSemverV2Strategies.DEVELOPMENT
         final SemVerStrategy snapshot = NewSemverV2Strategies.SNAPSHOT
         final SemVerStrategy preRelease = NewSemverV2Strategies.PRE_RELEASE

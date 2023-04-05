@@ -9,7 +9,7 @@ import wooga.gradle.version.strategies.NewSemverV1Strategies
 class NewSemverV1StrategySpec extends ProjectSpec {
 
     public static final String PLUGIN_NAME = 'net.wooga.version'
-    static final IVersionScheme semverV1Scheme = new IVersionScheme() {
+    static final VersionScheme semverV1Scheme = new VersionScheme() {
         final SemVerStrategy development = NewSemverV1Strategies.DEVELOPMENT
         final SemVerStrategy snapshot = NewSemverV1Strategies.SNAPSHOT
         final SemVerStrategy preRelease = NewSemverV1Strategies.PRE_RELEASE

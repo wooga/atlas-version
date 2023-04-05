@@ -35,25 +35,25 @@ trait VersionPluginExtension implements BaseSpec {
     /**
      * @return The version scheme being used by the plugin (such as SemVer2)
      */
-    Property<IVersionScheme> getVersionScheme() {
+    Property<VersionScheme> getVersionScheme() {
         versionScheme
     }
 
-    private final Property<IVersionScheme> versionScheme = objects.property(IVersionScheme)
+    private final Property<VersionScheme> versionScheme = objects.property(VersionScheme)
 
-    void versionScheme(IVersionScheme value) {
+    void versionScheme(VersionScheme value) {
         setVersionScheme(value)
     }
 
-    void versionScheme(Provider<IVersionScheme> value) {
+    void versionScheme(Provider<VersionScheme> value) {
         setVersionScheme(value)
     }
 
-    void setVersionScheme(IVersionScheme value) {
+    void setVersionScheme(VersionScheme value) {
         versionScheme.set(value)
     }
 
-    void setVersionScheme(Provider<IVersionScheme> value) {
+    void setVersionScheme(Provider<VersionScheme> value) {
         versionScheme.set(value)
     }
 
@@ -62,7 +62,7 @@ trait VersionPluginExtension implements BaseSpec {
     }
 
     void setVersionScheme(String value) {
-        versionScheme.set(VersionScheme.valueOf(value.trim()))
+        versionScheme.set(VersionSchemes.valueOf(value.trim()))
     }
 
     /**
@@ -344,7 +344,7 @@ trait VersionPluginExtension implements BaseSpec {
      * @throws org.gradle.api.internal.provider.MissingValueException if there is no configured git repository in this extension.
      * or empty if none of the scheme strategies can be applied to the arguments.
      */
-    Provider<ReleaseVersion> inferVersion(IVersionScheme scheme, Provider<String> stageProvider = this.stage,
+    Provider<ReleaseVersion> inferVersion(VersionScheme scheme, Provider<String> stageProvider = this.stage,
                                           Provider<ChangeScope> scopeProvider = this.scope) {
         def strategyProvider = pickStrategy(scheme, stageProvider)
         strategyProvider.map { strategy ->
@@ -357,7 +357,7 @@ trait VersionPluginExtension implements BaseSpec {
         }
     }
 
-    private Provider<VersionStrategy> pickStrategy(IVersionScheme scheme, Provider<String> stageProvider) {
+    private Provider<VersionStrategy> pickStrategy(VersionScheme scheme, Provider<String> stageProvider) {
         return git.map {
             new GitStrategyPicker(it).pickStrategy(scheme, stageProvider.orNull)
         }.orElse( providers.provider{
