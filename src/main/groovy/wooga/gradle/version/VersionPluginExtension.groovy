@@ -392,10 +392,10 @@ trait VersionPluginExtension implements BaseSpec {
     }
 
     private Provider<VersionStrategy> pickStrategy(VersionScheme scheme, Provider<String> stageProvider) {
-        return git.map {
-            new GitStrategyPicker(it).pickStrategy(scheme, stageProvider.orNull)
-        }.orElse( providers.provider{
+        return git.orElse( providers.provider{
             throw new IllegalStateException("A git repository must be available in order to a strategy to be selected")
-        })
+        }).map {
+            new GitStrategyPicker(it).pickStrategy(scheme, stageProvider.orNull)
+        }
     }
 }

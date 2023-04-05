@@ -17,6 +17,7 @@
 package wooga.gradle.version
 
 import com.wooga.gradle.test.IntegrationSpec
+import wooga.gradle.version.internal.release.semver.ChangeScope
 
 class VersionIntegrationSpec extends IntegrationSpec {
 
@@ -30,6 +31,12 @@ class VersionIntegrationSpec extends IntegrationSpec {
 
     static wrapValueFallback = { Object rawValue, String type, Closure<String> fallback ->
         switch (type) {
+            case "ChangeScope":
+                if(rawValue instanceof ChangeScope) {
+                    return "wooga.gradle.version.internal.release.semver.ChangeScope.${rawValue.toString()}"
+                } else {
+                    return "wooga.gradle.version.internal.release.semver.ChangeScope.valueOf('${rawValue.toString()}')"
+                }
             case "VersionScheme":
                 if(VersionSchemes.isInstance(rawValue)) {
                     return "wooga.gradle.version.VersionSchemes.${rawValue.toString()}"

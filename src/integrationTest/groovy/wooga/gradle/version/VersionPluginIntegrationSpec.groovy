@@ -19,6 +19,9 @@ package wooga.gradle.version
 import com.wooga.gradle.PlatformUtils
 import com.wooga.gradle.test.PropertyLocation
 import com.wooga.gradle.test.PropertyQueryTaskWriter
+import com.wooga.gradle.test.writers.PropertyGetterTaskWriter
+import com.wooga.gradle.test.writers.PropertySetterWriter
+import org.ajoberstar.grgit.Grgit
 import wooga.gradle.version.internal.release.semver.ChangeScope
 import spock.lang.Unroll
 
@@ -99,18 +102,18 @@ class VersionPluginIntegrationSpec extends VersionIntegrationSpec {
         "stage"                | "snapshot"          | _                                   | PropertyLocation.environment
         "stage"                | "final"             | _                                   | PropertyLocation.property
         "stage"                | "null"              | _                                   | PropertyLocation.none
-        "versionScheme"        | "semver2"           | VersionSchemes.semver2 | PropertyLocation.environment
-        "versionScheme"        | "semver"            | VersionSchemes.semver  | PropertyLocation.environment
-        "versionScheme"        | "semver2"           | VersionSchemes.semver2 | PropertyLocation.property
-        "versionScheme"        | "semver"            | VersionSchemes.semver  | PropertyLocation.property
-        "versionCodeScheme"    | "releaseCountBasic" | VersionCodeSchemes.releaseCountBasic | PropertyLocation.environment
-        "versionCodeScheme"    | "releaseCount"      | VersionCodeSchemes.releaseCount      | PropertyLocation.environment
-        "versionCodeScheme"    | "semver"            | VersionCodeSchemes.semver            | PropertyLocation.environment
-        "versionCodeScheme"    | "none"              | VersionCodeSchemes.none              | PropertyLocation.environment
-        "versionCodeScheme"    | "releaseCountBasic" | VersionCodeSchemes.releaseCountBasic | PropertyLocation.property
-        "versionCodeScheme"    | "releaseCount"      | VersionCodeSchemes.releaseCount      | PropertyLocation.property
-        "versionCodeScheme"    | "semver"            | VersionCodeSchemes.semver            | PropertyLocation.property
-        "versionCodeScheme"    | "none"              | VersionCodeSchemes.none              | PropertyLocation.property
+        "versionScheme"        | "semver2"           | VersionSchemes.semver2              | PropertyLocation.environment
+        "versionScheme"        | "semver"            | VersionSchemes.semver               | PropertyLocation.environment
+        "versionScheme"        | "semver2"           | VersionSchemes.semver2              | PropertyLocation.property
+        "versionScheme"        | "semver"            | VersionSchemes.semver               | PropertyLocation.property
+        "versionCodeScheme"    | "releaseCountBasic" | VersionCodeSchemes.releaseCountBasic| PropertyLocation.environment
+        "versionCodeScheme"    | "releaseCount"      | VersionCodeSchemes.releaseCount     | PropertyLocation.environment
+        "versionCodeScheme"    | "semver"            | VersionCodeSchemes.semver           | PropertyLocation.environment
+        "versionCodeScheme"    | "none"              | VersionCodeSchemes.none             | PropertyLocation.environment
+        "versionCodeScheme"    | "releaseCountBasic" | VersionCodeSchemes.releaseCountBasic| PropertyLocation.property
+        "versionCodeScheme"    | "releaseCount"      | VersionCodeSchemes.releaseCount     | PropertyLocation.property
+        "versionCodeScheme"    | "semver"            | VersionCodeSchemes.semver           | PropertyLocation.property
+        "versionCodeScheme"    | "none"              | VersionCodeSchemes.none             | PropertyLocation.property
         "versionCodeOffset"    | 100                 | _                                   | PropertyLocation.environment
         "versionCodeOffset"    | 200                 | _                                   | PropertyLocation.property
         "releaseBranchPattern" | /^m.*/              | _                                   | PropertyLocation.property
@@ -156,15 +159,15 @@ class VersionPluginIntegrationSpec extends VersionIntegrationSpec {
         where:
         property               | method                     | rawValue                            | type
         "versionScheme"        | "versionScheme"            | "semver"                            | "String"
-        "versionScheme"        | "versionScheme"            | VersionSchemes.semver2      | "VersionScheme"
-        "versionScheme"        | "versionScheme"            | VersionSchemes.semver       | "Provider<VersionScheme>"
-        "versionScheme"        | "versionScheme"            | VersionSchemes.staticMarker | "Provider<VersionScheme>"
-        "versionScheme"        | "versionScheme.set"        | VersionSchemes.semver2      | "VersionScheme"
-        "versionScheme"        | "versionScheme.set"        | VersionSchemes.semver       | "Provider<VersionScheme>"
-        "versionScheme"        | "versionScheme.set"        | VersionSchemes.staticMarker | "Provider<VersionScheme>"
+        "versionScheme"        | "versionScheme"            | VersionSchemes.semver2              | "VersionScheme"
+        "versionScheme"        | "versionScheme"            | VersionSchemes.semver               | "Provider<VersionScheme>"
+        "versionScheme"        | "versionScheme"            | VersionSchemes.staticMarker         | "Provider<VersionScheme>"
+        "versionScheme"        | "versionScheme.set"        | VersionSchemes.semver2              | "VersionScheme"
+        "versionScheme"        | "versionScheme.set"        | VersionSchemes.semver               | "Provider<VersionScheme>"
+        "versionScheme"        | "versionScheme.set"        | VersionSchemes.staticMarker         | "Provider<VersionScheme>"
         "versionScheme"        | "setVersionScheme"         | "semver"                            | "String"
-        "versionScheme"        | "setVersionScheme"         | VersionSchemes.semver2      | "VersionScheme"
-        "versionScheme"        | "setVersionScheme"         | VersionSchemes.semver       | "Provider<VersionScheme>"
+        "versionScheme"        | "setVersionScheme"         | VersionSchemes.semver2              | "VersionScheme"
+        "versionScheme"        | "setVersionScheme"         | VersionSchemes.semver               | "Provider<VersionScheme>"
 
         "versionCodeScheme"    | "versionCodeScheme"        | "releaseCountBasic"                 | "String"
         "versionCodeScheme"    | "versionCodeScheme"        | VersionCodeSchemes.semver            | "VersionCodeScheme"

@@ -23,9 +23,7 @@ import org.eclipse.jgit.errors.RepositoryNotFoundException
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.logging.Logging
 import org.gradle.api.provider.Provider
-import org.slf4j.Logger
 import wooga.gradle.version.internal.DefaultVersionCodeExtension
 import wooga.gradle.version.internal.DefaultVersionPluginExtension
 import wooga.gradle.version.internal.ToStringProvider
@@ -37,26 +35,44 @@ import wooga.gradle.version.internal.release.semver.ChangeScope
 
 class VersionPlugin implements Plugin<Project> {
     static String EXTENSION_NAME = "versionBuilder"
-    static Logger logger = Logging.getLogger(VersionPlugin)
+    static String VERSION_CODE_EXTENSION_NAME = "versionCode"
 
     @Override
     void apply(Project project) {
-
-        if (project != project.getRootProject()) {
-            logger.warn("net.wooga.atlas-version can only be applied to the root project.")
-            return
-        }
-
         VersionPluginExtension extension = createAndConfigureExtension(project)
         setProjectVersion(project, extension)
     }
 
+    static void applyOnCurrentAndSubProjects(Project project, Closure operation) {
+        operation(project)
+        project.childProjects.values().each { prj ->
+            operation(prj)
+            applyOnCurrentAndSubProjects(prj, operation)
+        }
+        project.parent
+    }
+
     private static void setProjectVersion(Project project, VersionPluginExtension extension) {
         def sharedVersion = new ToStringProvider(extension.version.map({ it.version }))
-        project.allprojects{ Project prj ->
+        applyOnCurrentAndSubProjects(project) { Project prj ->
             prj.setVersion(sharedVersion)
-            prj.extensions.create(VersionCodeExtension, "versionCode", DefaultVersionCodeExtension.class, prj, extension.versionCode)
+            def versionCodeExt = project.extensions.findByName(VERSION_CODE_EXTENSION_NAME) as VersionCodeExtension
+            if(!versionCodeExt) {
+                versionCodeExt = DefaultVersionCodeExtension.empty(prj, VERSION_CODE_EXTENSION_NAME)
+            }
+            versionCodeExt.convention(extension.versionCode)
         }
+
+//        if (project.rootProject == project) {
+//            project.allprojects { Project prj ->
+//                prj.setVersion(sharedVersion)
+//                prj.extensions.create(VersionCodeExtension, "versionCode", DefaultVersionCodeExtension.class, prj, extension.versionCode)
+//            }
+//        } else if(!project.rootProject.plugins.findPlugin(VersionPlugin)) {
+//            project.setVersion(sharedVersion)
+//            project.extensions.create(VersionCodeExtension, "versionCode", DefaultVersionCodeExtension.class, project, extension.versionCode)
+//        }
+
     }
 
     protected static VersionPluginExtension createAndConfigureExtension(Project project) {
@@ -76,7 +92,7 @@ class VersionPlugin implements Plugin<Project> {
             } catch (RepositoryNotFoundException ignore) {
                 project.logger.warn("Git repository not found at $gitRoot ")
             }
-        } as Provider<Grgit>)
+        })
 
         extension.versionScheme.convention(VersionPluginConventions.versionScheme.getStringValueProvider(project).map({
             VersionSchemes.valueOf(it.trim())
