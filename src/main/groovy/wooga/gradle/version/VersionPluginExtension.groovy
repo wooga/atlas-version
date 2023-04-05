@@ -19,7 +19,9 @@
 package wooga.gradle.version
 
 import com.wooga.gradle.BaseSpec
+import com.wooga.gradle.extensions.ProviderExtensions
 import org.ajoberstar.grgit.Grgit
+import org.gradle.api.Transformer
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import wooga.gradle.version.internal.GitStrategyPicker
@@ -315,7 +317,7 @@ trait VersionPluginExtension implements BaseSpec {
         releaseStage
     }
 
-    Provider<GitVersionRepository> versionRepo = git.map {
+    Provider<GitVersionRepository> versionRepo = ProviderExtensions.mapOnce(git) {
         Grgit it -> GitVersionRepository.fromTagStrategy(it, new PrefixVersionParser(prefix.get(), true))
     }
 

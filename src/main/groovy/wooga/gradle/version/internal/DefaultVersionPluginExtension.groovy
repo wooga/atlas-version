@@ -49,10 +49,11 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
         }).orElse(inferVersionIfGitIsPresent())
                 .orElse(new ReleaseVersion(version: VersionPluginConventions.UNINITIALIZED_VERSION))
 
-        versionCode = versionCodeScheme.map({
-            VersionCodeScheme scheme -> VersionCode.Schemes
+        versionCode = versionCodeScheme.map({ VersionCodeScheme scheme ->
+            def version = this.version.map { it.version }.orNull
+            return VersionCode.Schemes
                     .fromExternal(scheme)
-                    .versionCodeFor(this.version.map { it.version }.orNull, versionRepo.orNull, versionCodeOffset.getOrElse(0))
+                    .versionCodeFor(version, versionRepo.orNull, versionCodeOffset.getOrElse(0))
         }.memoize())
 
         // It's development if the development strategy contains the set `stage` OR

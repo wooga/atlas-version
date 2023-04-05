@@ -50,14 +50,14 @@ class VersionCode {
             this.generator = generator
         }
 
-        int versionCodeFor(String version, GitVersionRepository git, int offset) {
+        int versionCodeFor(String version, GitVersionRepository versionRepo, int offset) {
             if(generator.parameterTypes.length == 0) {
                 return this.generator.call()
             }
             if(generator.parameterTypes[0] == String) {
                 return this.generator.call(version, offset)
             } else {
-                return this.generator.call(git, offset)
+                return this.generator.call(versionRepo, offset)
             }
         }
     }

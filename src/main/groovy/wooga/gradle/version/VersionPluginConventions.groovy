@@ -25,13 +25,55 @@ class VersionPluginConventions {
     static final String GIT_ROOT_PROPERTY = "git.root"
     static final String UNINITIALIZED_VERSION = '0.1.0-dev.0.uninitialized'
 
-    static final PropertyLookup version = new PropertyLookup("VERSION_BUILDER_VERSION", "versionBuilder.version", null)
-    static final PropertyLookup versionScheme = new PropertyLookup("VERSION_BUILDER_VERSION_SCHEME", ["versionBuilder.versionScheme", "version.scheme"], VersionSchemes.semver)
-    static final PropertyLookup versionCodeScheme = new PropertyLookup("VERSION_BUILDER_VERSION_CODE_SCHEME", "versionBuilder.versionCodeScheme", VersionCodeScheme.none)
-    static final PropertyLookup versionCodeOffset = new PropertyLookup("VERSION_BUILDER_VERSION_CODE_OFFSET", "versionBuilder.versionCodeOffset", 0)
+    static final PropertyLookup gitRoot = new PropertyLookup(
+            [],
+            GIT_ROOT_PROPERTY,
+            null
+    )
 
-    static final PropertyLookup mainBranchPattern = new PropertyLookup("VERSION_BUILDER_MAIN_BRANCH_PATTERN", "versionBuilder.mainBranchPattern", /(^master$|^develop$)/)
-    static final PropertyLookup releaseBranchPattern = new PropertyLookup("VERSION_BUILDER_RELEASE_BRANCH_PATTERN", "versionBuilder.releaseBranchPattern", /(^release\/.*|^master$)/)
-    static final PropertyLookup stage = new PropertyLookup("VERSION_BUILDER_STAGE", ["versionBuilder.stage", "release.stage"], null)
-    static final PropertyLookup scope = new PropertyLookup("VERSION_BUILDER_SCOPE", ["versionBuilder.scope", "release.scope"], null)
+    static final PropertyLookup version = new PropertyLookup(
+            "VERSION_BUILDER_VERSION",
+            "versionBuilder.version",
+            null)
+
+    static final PropertyLookup versionScheme = new PropertyLookup(
+            "VERSION_BUILDER_VERSION_SCHEME",
+            ["versionBuilder.versionScheme", "version.scheme"],
+            VersionSchemes.semver)
+
+    static final PropertyLookup versionCodeScheme = new PropertyLookup(
+            "VERSION_BUILDER_VERSION_CODE_SCHEME",
+            "versionBuilder.versionCodeScheme",
+            VersionCodeScheme.none)
+
+    static final PropertyLookup versionCodeOffset = new PropertyLookup(
+            "VERSION_BUILDER_VERSION_CODE_OFFSET",
+            "versionBuilder.versionCodeOffset",
+            0)
+
+
+    static final PropertyLookup  prefix = new PropertyLookup(
+            "VERSION_BUILDER_PREFIX",
+            "versionBuilder.prefix",
+            "v")
+
+    static final PropertyLookup mainBranchPattern = new PropertyLookup(
+            "VERSION_BUILDER_MAIN_BRANCH_PATTERN",
+            "versionBuilder.mainBranchPattern",
+            /(^master$|^develop$)/)
+
+    static final PropertyLookup releaseBranchPattern = new PropertyLookup(
+            "VERSION_BUILDER_RELEASE_BRANCH_PATTERN",
+            "versionBuilder.releaseBranchPattern",
+            /(^release\/.*|^master$)/)
+
+    static final PropertyLookup stage = new PropertyLookup(
+            "VERSION_BUILDER_STAGE",
+            ["versionBuilder.stage", "release.stage"],
+            null)
+
+    static final PropertyLookup scope = new PropertyLookup(
+            "VERSION_BUILDER_SCOPE",
+            ["versionBuilder.scope", "release.scope"],
+            null)
 }

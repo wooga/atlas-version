@@ -119,6 +119,8 @@ class VersionPluginIntegrationSpec extends VersionIntegrationSpec {
         "mainBranchPattern"    | /^m.*/              | _                                   | PropertyLocation.property
         "mainBranchPattern"    | /(some|value)/      | _                                   | PropertyLocation.environment
         "mainBranchPattern"    | '/.*/'              | /.*/                                | PropertyLocation.script
+        "prefix"               | "v_"                | _                                   | PropertyLocation.property
+        "prefix"               | "v_"                | _                                   | PropertyLocation.environment
 
         extensionName = "versionBuilder"
         testValue = (expectedValue == _) ? value : expectedValue
@@ -195,6 +197,7 @@ class VersionPluginIntegrationSpec extends VersionIntegrationSpec {
         "mainBranchPattern"    | "setMainBranchPattern"     | /[whooom]/                          | "Provider<String>"
 
         "prefix"               | "prefix"                   | "prefix"                            | "String"
+        "prefix"               | "prefix"                   | "v-"                                | "Provider<String>"
 
         value = wrapValueBasedOnType(rawValue, type)
         extensionName = "versionBuilder"
