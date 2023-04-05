@@ -18,35 +18,10 @@
 
 package wooga.gradle.version
 
-import org.ajoberstar.grgit.Grgit
-import wooga.gradle.version.internal.VersionCode
-import wooga.gradle.version.internal.release.git.GitVersionRepository
-import wooga.gradle.version.internal.release.base.PrefixVersionParser
-
 enum VersionCodeScheme {
-    none({ -> 0}),
-    semverBasic({
-        String version, int offset -> VersionCode.generateSemverVersionCode(version) + offset
-    }),
-    semver({
-        String version, int offset -> VersionCode.generateSemverVersionCode(version, true) + offset
-    }),
-    releaseCountBasic({ Grgit git, int offset ->
-        //Tag strategy here hardcoded for backwards compatibility
-        def versionRepo = GitVersionRepository.fromTagStrategy(git, new PrefixVersionParser("v", false))
-         VersionCode.generateBuildNumberVersionCode(versionRepo, false, offset)
-    }),
-    releaseCount({ Grgit git, int offset ->
-            //Tag strategy here hardcoded for backwards compatibility
-            def versionRepo = GitVersionRepository.fromTagStrategy(git, new PrefixVersionParser("v", false))
-            VersionCode.generateBuildNumberVersionCode(versionRepo, true, offset)
-    })
-
-    @Deprecated
-    //TODO 3.x: remove this generate parameter
-    final Closure<Integer> generate
-
-    VersionCodeScheme(Closure generate) {
-        this.generate = generate
-    }
+    none,
+    semverBasic,
+    semver,
+    releaseCountBasic,
+    releaseCount
 }
