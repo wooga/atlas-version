@@ -78,11 +78,7 @@ class VersionPlugin implements Plugin<Project> {
             VersionCodeScheme.valueOf(it.trim())
         }))
 
-        // TODO: Refactor once integer / object providers are added on gradle-commons
-        extension.versionCodeOffset.set(project.provider({
-            def rawValue = VersionPluginConventions.versionCodeOffset.getValue(project)
-            Integer.parseInt(rawValue.toString())
-        }))
+        extension.versionCodeOffset.set(VersionPluginConventions.versionCodeOffset.getIntegerValueProvider(project))
         extension.prefix.convention("v")
         return extension
     }
