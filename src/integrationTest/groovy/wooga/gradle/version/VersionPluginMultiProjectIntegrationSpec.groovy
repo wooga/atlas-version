@@ -89,7 +89,7 @@ class VersionPluginMultiProjectIntegrationSpec extends VersionIntegrationSpec {
                 stage: "final",
                 scope: ChangeScope.MINOR,
                 versionScheme: "semver",
-                versionCodeScheme: VersionCodeScheme.releaseCountBasic,
+                versionCodeScheme: VersionCodeSchemes.releaseCountBasic,
                 newVersion: "0.1.0",
                 newVersionCode: "2",
 
@@ -101,7 +101,7 @@ class VersionPluginMultiProjectIntegrationSpec extends VersionIntegrationSpec {
                 stage: "rc",
                 scope: ChangeScope.MAJOR,
                 versionScheme: "semver2",
-                versionCodeScheme: VersionCodeScheme.semver,
+                versionCodeScheme: VersionCodeSchemes.semver,
                 newVersion: "2.0.0-rc.1",
                 newVersionCode: "200000",
             ]
@@ -164,7 +164,7 @@ class VersionPluginMultiProjectIntegrationSpec extends VersionIntegrationSpec {
             stage: "rc",
             scope: ChangeScope.MAJOR,
             versionScheme: "semver2",
-            versionCodeScheme: VersionCodeScheme.semver,
+            versionCodeScheme: VersionCodeSchemes.semver,
             newVersion: "2.0.0-rc.1",
             newVersionCode: "200000",
         ]
@@ -189,7 +189,7 @@ class VersionPluginMultiProjectIntegrationSpec extends VersionIntegrationSpec {
             stage: "final",
             scope: ChangeScope.PATCH,
             versionScheme: "semver2",
-            versionCodeScheme: VersionCodeScheme.releaseCount,
+            versionCodeScheme: VersionCodeSchemes.releaseCount,
             newVersion: "0.1.1",
             newVersionCode: "2",
             subprojects: [[
@@ -205,7 +205,7 @@ class VersionPluginMultiProjectIntegrationSpec extends VersionIntegrationSpec {
                 stage: "final",
                 scope: ChangeScope.MAJOR,
                 versionScheme: "semver2",
-                versionCodeScheme: VersionCodeScheme.semver,
+                versionCodeScheme: VersionCodeSchemes.semver,
                 newVersion: "1.0.0",
                 newVersionCode: "100000",
             ]]

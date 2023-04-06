@@ -45,6 +45,7 @@ class VersionIntegrationSpec extends IntegrationSpec {
                 }
                 break
             case "VersionCodeScheme":
+            case "VersionCodeSchemes":
                 if(VersionCodeSchemes.isInstance(rawValue)) {
                     return "wooga.gradle.version.VersionCodeSchemes.${rawValue.toString()}"
                 } else {

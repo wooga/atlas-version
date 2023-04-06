@@ -62,17 +62,6 @@ class VersionPlugin implements Plugin<Project> {
             }
             versionCodeExt.convention(extension.versionCode)
         }
-
-//        if (project.rootProject == project) {
-//            project.allprojects { Project prj ->
-//                prj.setVersion(sharedVersion)
-//                prj.extensions.create(VersionCodeExtension, "versionCode", DefaultVersionCodeExtension.class, prj, extension.versionCode)
-//            }
-//        } else if(!project.rootProject.plugins.findPlugin(VersionPlugin)) {
-//            project.setVersion(sharedVersion)
-//            project.extensions.create(VersionCodeExtension, "versionCode", DefaultVersionCodeExtension.class, project, extension.versionCode)
-//        }
-
     }
 
     protected static VersionPluginExtension createAndConfigureExtension(Project project) {
