@@ -20,6 +20,7 @@ package wooga.gradle.version
 import com.wooga.gradle.extensions.ProviderExtensions
 import org.ajoberstar.grgit.Grgit
 import org.eclipse.jgit.errors.RepositoryNotFoundException
+import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.logging.Logging
@@ -28,6 +29,11 @@ import org.slf4j.Logger
 import wooga.gradle.version.internal.DefaultVersionCodeExtension
 import wooga.gradle.version.internal.DefaultVersionPluginExtension
 import wooga.gradle.version.internal.ToStringProvider
+import wooga.gradle.version.internal.VersionCode
+import wooga.gradle.version.internal.release.base.PrefixVersionParser
+import wooga.gradle.version.internal.release.base.ReleaseVersion
+import wooga.gradle.version.internal.release.git.GitVersionRepository
+import wooga.gradle.version.internal.release.semver.ChangeScope
 
 class VersionPlugin implements Plugin<Project> {
     static String EXTENSION_NAME = "versionBuilder"
@@ -54,6 +60,7 @@ class VersionPlugin implements Plugin<Project> {
     }
 
     protected static VersionPluginExtension createAndConfigureExtension(Project project) {
+
         def extension = project.extensions.create(VersionPluginExtension, EXTENSION_NAME, DefaultVersionPluginExtension, project)
         Provider<String> gitRoot = VersionPluginConventions.gitRoot.getStringValueProvider(project,
                 project.rootProject.projectDir.path
@@ -76,13 +83,50 @@ class VersionPlugin implements Plugin<Project> {
         }))
 
         extension.versionCodeScheme.convention(VersionPluginConventions.versionCodeScheme.getStringValueProvider(project).map({
-            VersionCodeScheme.valueOf(it.trim())
+            VersionCodeSchemes.valueOf(it.trim())
         }))
 
         extension.versionCodeOffset.convention(VersionPluginConventions.versionCodeOffset.getIntegerValueProvider(project))
 
         extension.prefix.convention(VersionPluginConventions.prefix.getStringValueProvider(project))
+        extension.stage.convention(VersionPluginConventions.stage.getStringValueProvider(project))
+        extension.releaseBranchPattern.convention(VersionPluginConventions.releaseBranchPattern.getStringValueProvider(project))
+        extension.mainBranchPattern.convention(VersionPluginConventions.mainBranchPattern.getStringValueProvider(project))
+
+        extension.scope.convention(VersionPluginConventions.scope.getStringValueProvider(project)
+                .map {it?.trim()?.empty? null: it }
+                .map { ChangeScope.valueOf(it.toUpperCase()) })
+
+        extension.version.convention(VersionPluginConventions.version.getStringValueProvider(project)
+            .map {new ReleaseVersion(version: it) }
+            .orElse(inferVersionIfGitIsPresent(project, extension))
+            .orElse(new ReleaseVersion(version: VersionPluginConventions.UNINITIALIZED_VERSION))
+        )
+
+        extension.versionCode.convention(extension.versionCodeScheme.map({ VersionCodeSchemes scheme ->
+            def version = extension.version.map { it.version }.orNull
+            return VersionCode.Schemes
+                    .fromExternal(scheme)
+                    .versionCodeFor(version, extension.versionRepo.orNull, extension.versionCodeOffset.getOrElse(0))
+        }.memoize()))
+
+        extension.stage.convention(VersionPluginConventions.stage.getStringValueProvider(project))
+        extension.releaseBranchPattern.set(VersionPluginConventions.releaseBranchPattern.getStringValueProvider(project))
+        extension.mainBranchPattern.set(VersionPluginConventions.mainBranchPattern.getStringValueProvider(project))
 
         return extension
+    }
+
+    private static Provider<ReleaseVersion> inferVersionIfGitIsPresent(Project project, VersionPluginExtension extension) {
+        def inferredVersion = ProviderExtensions.mapOnce(extension.git) { Grgit git ->
+            def version = extension.inferVersion(extension.versionScheme.get(), extension.stage, extension.scope)
+                    .orElse(project.provider {
+                        throw new GradleException('No version strategies were selected. Run build with --info for more detail.')
+                    }).get()
+            project.logger.warn('Inferred project: {}, version: {}', project.name, version.version)
+            return version
+        }  as Provider<ReleaseVersion>
+
+        return inferredVersion.orElse(new ReleaseVersion(version: VersionPluginConventions.UNINITIALIZED_VERSION))
     }
 }

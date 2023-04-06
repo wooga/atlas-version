@@ -103,14 +103,14 @@ class VersionPluginIntegrationSpec extends VersionIntegrationSpec {
         "versionScheme"        | "semver"            | VersionSchemes.semver  | PropertyLocation.environment
         "versionScheme"        | "semver2"           | VersionSchemes.semver2 | PropertyLocation.property
         "versionScheme"        | "semver"            | VersionSchemes.semver  | PropertyLocation.property
-        "versionCodeScheme"    | "releaseCountBasic" | VersionCodeScheme.releaseCountBasic | PropertyLocation.environment
-        "versionCodeScheme"    | "releaseCount"      | VersionCodeScheme.releaseCount      | PropertyLocation.environment
-        "versionCodeScheme"    | "semver"            | VersionCodeScheme.semver            | PropertyLocation.environment
-        "versionCodeScheme"    | "none"              | VersionCodeScheme.none              | PropertyLocation.environment
-        "versionCodeScheme"    | "releaseCountBasic" | VersionCodeScheme.releaseCountBasic | PropertyLocation.property
-        "versionCodeScheme"    | "releaseCount"      | VersionCodeScheme.releaseCount      | PropertyLocation.property
-        "versionCodeScheme"    | "semver"            | VersionCodeScheme.semver            | PropertyLocation.property
-        "versionCodeScheme"    | "none"              | VersionCodeScheme.none              | PropertyLocation.property
+        "versionCodeScheme"    | "releaseCountBasic" | VersionCodeSchemes.releaseCountBasic | PropertyLocation.environment
+        "versionCodeScheme"    | "releaseCount"      | VersionCodeSchemes.releaseCount      | PropertyLocation.environment
+        "versionCodeScheme"    | "semver"            | VersionCodeSchemes.semver            | PropertyLocation.environment
+        "versionCodeScheme"    | "none"              | VersionCodeSchemes.none              | PropertyLocation.environment
+        "versionCodeScheme"    | "releaseCountBasic" | VersionCodeSchemes.releaseCountBasic | PropertyLocation.property
+        "versionCodeScheme"    | "releaseCount"      | VersionCodeSchemes.releaseCount      | PropertyLocation.property
+        "versionCodeScheme"    | "semver"            | VersionCodeSchemes.semver            | PropertyLocation.property
+        "versionCodeScheme"    | "none"              | VersionCodeSchemes.none              | PropertyLocation.property
         "versionCodeOffset"    | 100                 | _                                   | PropertyLocation.environment
         "versionCodeOffset"    | 200                 | _                                   | PropertyLocation.property
         "releaseBranchPattern" | /^m.*/              | _                                   | PropertyLocation.property
@@ -167,13 +167,13 @@ class VersionPluginIntegrationSpec extends VersionIntegrationSpec {
         "versionScheme"        | "setVersionScheme"         | VersionSchemes.semver       | "Provider<VersionScheme>"
 
         "versionCodeScheme"    | "versionCodeScheme"        | "releaseCountBasic"                 | "String"
-        "versionCodeScheme"    | "versionCodeScheme"        | VersionCodeScheme.semver            | "VersionCodeScheme"
-        "versionCodeScheme"    | "versionCodeScheme"        | VersionCodeScheme.releaseCountBasic | "Provider<VersionCodeScheme>"
-        "versionCodeScheme"    | "versionCodeScheme.set"    | VersionCodeScheme.semver            | "VersionCodeScheme"
-        "versionCodeScheme"    | "versionCodeScheme.set"    | VersionCodeScheme.releaseCountBasic | "Provider<VersionCodeScheme>"
+        "versionCodeScheme"    | "versionCodeScheme"        | VersionCodeSchemes.semver            | "VersionCodeScheme"
+        "versionCodeScheme"    | "versionCodeScheme"        | VersionCodeSchemes.releaseCountBasic | "Provider<VersionCodeScheme>"
+        "versionCodeScheme"    | "versionCodeScheme.set"    | VersionCodeSchemes.semver            | "VersionCodeScheme"
+        "versionCodeScheme"    | "versionCodeScheme.set"    | VersionCodeSchemes.releaseCountBasic | "Provider<VersionCodeScheme>"
         "versionCodeScheme"    | "setVersionCodeScheme"     | "releaseCount"                      | "String"
-        "versionCodeScheme"    | "setVersionCodeScheme"     | VersionCodeScheme.none              | "VersionCodeScheme"
-        "versionCodeScheme"    | "setVersionCodeScheme"     | VersionCodeScheme.releaseCount      | "Provider<VersionCodeScheme>"
+        "versionCodeScheme"    | "setVersionCodeScheme"     | VersionCodeSchemes.none              | "VersionCodeScheme"
+        "versionCodeScheme"    | "setVersionCodeScheme"     | VersionCodeSchemes.releaseCount      | "Provider<VersionCodeScheme>"
 
         "versionCodeOffset"    | "versionCodeOffset"        | 1                                   | "Integer"
         "versionCodeOffset"    | "versionCodeOffset"        | 2                                   | "Provider<Integer>"

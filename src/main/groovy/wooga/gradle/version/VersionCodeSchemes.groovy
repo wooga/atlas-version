@@ -18,7 +18,7 @@
 
 package wooga.gradle.version
 
-enum VersionCodeScheme {
+enum VersionCodeSchemes {
     none,
     semverBasic,
     semver,

@@ -38,10 +38,10 @@ class VersionIntegrationSpec extends IntegrationSpec {
                 }
                 break
             case "VersionCodeScheme":
-                if(VersionCodeScheme.isInstance(rawValue)) {
-                    return "wooga.gradle.version.VersionCodeScheme.${rawValue.toString()}"
+                if(VersionCodeSchemes.isInstance(rawValue)) {
+                    return "wooga.gradle.version.VersionCodeSchemes.${rawValue.toString()}"
                 } else {
-                    return "wooga.gradle.version.VersionCodeScheme.valueOf('${rawValue.toString()}')"
+                    return "wooga.gradle.version.VersionCodeSchemes.valueOf('${rawValue.toString()}')"
                 }
                 break
             case "Grgit":

@@ -44,7 +44,7 @@ class VersionPluginConventions {
     static final PropertyLookup versionCodeScheme = new PropertyLookup(
             "VERSION_BUILDER_VERSION_CODE_SCHEME",
             "versionBuilder.versionCodeScheme",
-            VersionCodeScheme.none)
+            VersionCodeSchemes.none)
 
     static final PropertyLookup versionCodeOffset = new PropertyLookup(
             "VERSION_BUILDER_VERSION_CODE_OFFSET",
