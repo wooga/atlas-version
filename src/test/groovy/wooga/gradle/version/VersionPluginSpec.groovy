@@ -577,6 +577,7 @@ class VersionPluginSpec extends ProjectSpec {
         git.close()
         def gitDir = new File(git.repository.getRootDir(), ".git")
         gitDir.deleteDir()
+        project.ext["versionBuilder.maxGitRootSearchDepth"] = 0
 
         when:
         project.plugins.apply(PLUGIN_NAME)
@@ -825,7 +826,7 @@ class VersionPluginSpec extends ProjectSpec {
         scopeTitle = (scope == _) ? "unset" : scope
     }
 
-    @IgnoreIf({os.isWindows()})
+    @IgnoreIf({os.isWindows()}) //TODO 3.x: This test is freezing on windows for some reason. Check if this is solvable or not.
     @Unroll('verify inferred semver 2.x version from productionMarker: #productionMarkerTitle, ciMarker: #ciMarkerTitle, stage: #stage and branch: #branchName to be #expectedVersion')
     def "uses custom wooga application strategies static marker"() {
         given: "a project with specified release stage and scope"

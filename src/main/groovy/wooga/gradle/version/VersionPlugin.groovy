@@ -23,48 +23,69 @@ import org.eclipse.jgit.errors.RepositoryNotFoundException
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.logging.Logging
 import org.gradle.api.provider.Provider
-import org.slf4j.Logger
 import wooga.gradle.version.internal.DefaultVersionCodeExtension
 import wooga.gradle.version.internal.DefaultVersionPluginExtension
 import wooga.gradle.version.internal.ToStringProvider
 import wooga.gradle.version.internal.VersionCode
-import wooga.gradle.version.internal.release.base.PrefixVersionParser
 import wooga.gradle.version.internal.release.base.ReleaseVersion
-import wooga.gradle.version.internal.release.git.GitVersionRepository
 import wooga.gradle.version.internal.release.semver.ChangeScope
+
+import java.util.stream.Stream
 
 class VersionPlugin implements Plugin<Project> {
     static String EXTENSION_NAME = "versionBuilder"
-    static Logger logger = Logging.getLogger(VersionPlugin)
+    static String VERSION_CODE_EXTENSION_NAME = "versionCode"
 
     @Override
     void apply(Project project) {
-
-        if (project != project.getRootProject()) {
-            logger.warn("net.wooga.atlas-version can only be applied to the root project.")
-            return
-        }
-
         VersionPluginExtension extension = createAndConfigureExtension(project)
         setProjectVersion(project, extension)
     }
 
+    static void applyOnCurrentAndSubProjects(Project project, Closure operation) {
+        operation(project)
+        project.childProjects.values().each { prj ->
+            operation(prj)
+            applyOnCurrentAndSubProjects(prj, operation)
+        }
+        project.parent
+    }
+
     private static void setProjectVersion(Project project, VersionPluginExtension extension) {
         def sharedVersion = new ToStringProvider(extension.version.map({ it.version }))
-        project.allprojects{ Project prj ->
+        applyOnCurrentAndSubProjects(project) { Project prj ->
             prj.setVersion(sharedVersion)
-            prj.extensions.create(VersionCodeExtension, "versionCode", DefaultVersionCodeExtension.class, prj, extension.versionCode)
+            def versionCodeExt = project.extensions.findByName(VERSION_CODE_EXTENSION_NAME) as VersionCodeExtension
+            if(!versionCodeExt) {
+                versionCodeExt = DefaultVersionCodeExtension.empty(prj, VERSION_CODE_EXTENSION_NAME)
+            }
+            versionCodeExt.convention(extension.versionCode)
         }
+    }
+
+    static File findNearestGitFolder(File projectDir, int maxDepth) {
+        if(maxDepth > 0) {
+            def maybeDotGit = Stream.of(projectDir.listFiles( { File file ->
+                file.directory && file.name == ".git"
+            } as FileFilter)).findFirst()
+
+            return maybeDotGit.orElseGet {
+                findNearestGitFolder(projectDir.parentFile, maxDepth-1)
+            }
+        }
+        return null
     }
 
     protected static VersionPluginExtension createAndConfigureExtension(Project project) {
 
         def extension = project.extensions.create(VersionPluginExtension, EXTENSION_NAME, DefaultVersionPluginExtension, project)
-        Provider<String> gitRoot = VersionPluginConventions.gitRoot.getStringValueProvider(project,
-                project.rootProject.projectDir.path
-        )
+
+        Provider<String> gitRoot = VersionPluginConventions.gitRoot.getStringValueProvider(project)
+        .orElse(VersionPluginConventions.maxGitRootSearchDepth.getIntegerValueProvider(project).map {
+            findNearestGitFolder(project.projectDir, it)?.absolutePath
+        })
+
         extension.git.convention(ProviderExtensions.mapOnce(gitRoot) { String it ->
             try {
                 Grgit git = Grgit.open(dir: it)
@@ -76,7 +97,7 @@ class VersionPlugin implements Plugin<Project> {
             } catch (RepositoryNotFoundException ignore) {
                 project.logger.warn("Git repository not found at $gitRoot ")
             }
-        } as Provider<Grgit>)
+        })
 
         extension.versionScheme.convention(VersionPluginConventions.versionScheme.getStringValueProvider(project).map({
             VersionSchemes.valueOf(it.trim())

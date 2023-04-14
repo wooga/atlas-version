@@ -27,13 +27,16 @@ class DefaultVersionCodeExtension implements VersionCodeExtension {
     @Delegate
     private final Property<Integer> innerProvider
 
-    DefaultVersionCodeExtension(Project project, Provider < Integer > innerProvider) {
+    static VersionCodeExtension empty(Project prj, String name) {
+        return prj.extensions.create(VersionCodeExtension, name, DefaultVersionCodeExtension.class, prj)
+    }
+
+    DefaultVersionCodeExtension(Project project) {
         this.innerProvider = project.objects.property(Integer)
-        this.innerProvider.set(innerProvider)
     }
 
     @Override
     String toString() {
-        return innerProvider.getOrNull().toString()
+        return getOrNull().toString()
     }
 }

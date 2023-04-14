@@ -23,6 +23,8 @@ import com.wooga.gradle.extensions.ProviderExtensions
 import org.ajoberstar.grgit.Grgit
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Optional
 import wooga.gradle.version.internal.GitStrategyPicker
 import wooga.gradle.version.internal.release.base.ReleaseVersion
 import wooga.gradle.version.internal.release.base.VersionStrategy
@@ -392,10 +394,10 @@ trait VersionPluginExtension implements BaseSpec {
     }
 
     private Provider<VersionStrategy> pickStrategy(VersionScheme scheme, Provider<String> stageProvider) {
-        return git.map {
-            new GitStrategyPicker(it).pickStrategy(scheme, stageProvider.orNull)
-        }.orElse( providers.provider{
+        return git.orElse( providers.provider{
             throw new IllegalStateException("A git repository must be available in order to a strategy to be selected")
-        })
+        }).map {
+            new GitStrategyPicker(it).pickStrategy(scheme, stageProvider.orNull)
+        }
     }
 }
