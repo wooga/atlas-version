@@ -18,10 +18,6 @@
 
 package wooga.gradle.version.internal
 
-import groovy.transform.stc.ClosureParams
-import groovy.transform.stc.SimpleType
-import org.ajoberstar.grgit.Grgit
-import org.gradle.api.provider.Provider
 import wooga.gradle.version.VersionCodeScheme
 import wooga.gradle.version.internal.release.git.GitVersionRepository
 
@@ -54,16 +50,13 @@ class VersionCode {
             this.generator = generator
         }
 
-        //TODO: These providers can be simple types.
-        int versionCodeFor(Provider<String> versionProvider, Provider<GitVersionRepository> gitProvider, int offset) {
+        int versionCodeFor(String version, GitVersionRepository git, int offset) {
             if(generator.parameterTypes.length == 0) {
                 return this.generator.call()
             }
             if(generator.parameterTypes[0] == String) {
-                def version = versionProvider.get()
                 return this.generator.call(version, offset)
             } else {
-                def git = gitProvider.get()
                 return this.generator.call(git, offset)
             }
         }

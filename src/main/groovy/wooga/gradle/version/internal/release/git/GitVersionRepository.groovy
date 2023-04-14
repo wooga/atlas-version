@@ -3,30 +3,32 @@ package wooga.gradle.version.internal.release.git
 import org.ajoberstar.grgit.Commit
 import org.ajoberstar.grgit.Grgit
 import org.ajoberstar.grgit.Tag
+import wooga.gradle.version.internal.release.base.PrefixVersionParser
+import wooga.gradle.version.internal.release.base.VersionParser
 import wooga.gradle.version.internal.release.semver.NearestVersion
 
 class GitVersionRepository implements Closeable {
 
     static GitVersionRepository fromTagPrefix(Grgit grgit, String prefix) {
-        return fromTagStrategy(grgit, new PrefixTagStrategy(prefix, false))
+        return fromTagStrategy(grgit, new PrefixVersionParser(prefix, false))
     }
 
-    static GitVersionRepository fromTagStrategy(Grgit grgit, TagStrategy strategy) {
+    static GitVersionRepository fromTagStrategy(Grgit grgit, VersionParser strategy) {
         def walker = GrGitWalk.fromGrGit(grgit)
         return new GitVersionRepository(grgit, walker, strategy)
     }
 
     final Grgit grgit
     final GrGitWalk walker
-    final TagStrategy strategy
+    final VersionParser parser
 
-    GitVersionRepository(Grgit grgit, GrGitWalk walker, TagStrategy strategy) {
+    GitVersionRepository(Grgit grgit, GrGitWalk walker, VersionParser parser) {
         this.grgit = grgit
         this.walker = walker
-        this.strategy = strategy
+        this.parser = parser
     }
 
-    NearestVersion nearestVersion(TagStrategy strategy = this.strategy) {
+    NearestVersion nearestVersion(VersionParser strategy = this.parser) {
         def head = grgit.head()
 
         def allVersions = versionsMatching(strategy)
@@ -39,10 +41,10 @@ class GitVersionRepository implements Closeable {
     }
 
     Integer countReachableVersions(Boolean countPrerelease = true) {
-        return countReachableVersions(this.strategy, countPrerelease)
+        return countReachableVersions(this.parser, countPrerelease)
     }
 
-    Integer countReachableVersions(TagStrategy strategy, Boolean countPrerelease = true) {
+    Integer countReachableVersions(VersionParser strategy, Boolean countPrerelease = true) {
         def allVersions = versionsMatching(strategy)
         def normalVersions = allVersions.findAll {!it.version.preReleaseVersion }
         def tagsToCalculate = (countPrerelease) ? allVersions : normalVersions
@@ -87,13 +89,13 @@ class GitVersionRepository implements Closeable {
         return reachableVersionTags? reachableVersionTags.size() : 0
     }
 
-    protected GitVersion createVersion(TagStrategy strategy, Tag tag) {
-        def version = strategy.parseTag(tag)
+    protected GitVersion createVersion(VersionParser strategy, Tag tag) {
+        def version = strategy.parse(tag.name)
         def commit = grgit.resolve.toCommit(tag)
         return version? new GitVersion(version, tag, commit, -1) : null
     }
 
-    protected List<GitVersion> versionsMatching(TagStrategy strategy) {
+    protected List<GitVersion> versionsMatching(VersionParser strategy) {
         return grgit.tag.list().collect { tag ->
             createVersion(strategy, tag)
         }.findAll {it != null }

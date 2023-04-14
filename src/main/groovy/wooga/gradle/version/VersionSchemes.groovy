@@ -26,13 +26,12 @@ import wooga.gradle.version.strategies.opinion.SemverV2WithDefaultStrategies
 import wooga.gradle.version.strategies.opinion.UpmStrategies
 import wooga.gradle.version.strategies.opinion.WdkNuGetStrategies
 
-//TODO: 3.x Rename to VersionSchemes when breaking change
 /**
  * Version schemes available for use with this plugin.
  * Each scheme consists of at least 4 strategies (development, snapshot, pre-release and final)
  * plus additional strategies if so desired. Check IVersionScheme for more details.
  */
-enum VersionScheme implements IVersionScheme {
+enum VersionSchemes implements VersionScheme {
     semver(LegacyNuGetStrategies.DEVELOPMENT,
             LegacyNuGetStrategies.SNAPSHOT,
             LegacyNuGetStrategies.PRE_RELEASE,
@@ -72,7 +71,7 @@ enum VersionScheme implements IVersionScheme {
     final List<VersionStrategy> strategies
     final VersionStrategy defaultStrategy
 
-    VersionScheme(VersionStrategy development, VersionStrategy snapshot, VersionStrategy preRelease, VersionStrategy finalStrategy, SemVerStrategy... others) {
+    VersionSchemes(VersionStrategy development, VersionStrategy snapshot, VersionStrategy preRelease, VersionStrategy finalStrategy, SemVerStrategy... others) {
         this.development = development
         this.snapshot = snapshot
         this.preRelease = preRelease

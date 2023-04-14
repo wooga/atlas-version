@@ -19,7 +19,6 @@ package wooga.gradle.version
 
 import nebula.test.ProjectSpec
 import org.ajoberstar.grgit.Grgit
-import org.gradle.cache.internal.VersionStrategy
 import spock.lang.Ignore
 import spock.lang.Unroll
 import wooga.gradle.version.internal.ToStringProvider
@@ -993,12 +992,12 @@ class VersionPluginSpec extends ProjectSpec {
 
         where:
         nearestNormal | nearestAny | distance | stage      | scope | scheme                | branchName | prefixTag | expectedVersion
-        '1.0.0'       | _          | 1        | "ci"       | _     | VersionScheme.semver2 | "master"   | true      | "1.1.0-master.1"
-        '1.0.0'       | _          | 1        | "ci"       | _     | VersionScheme.semver2 | "master"   | false     | "1.1.0-master.1"
-        '1.0.0'       | _          | 1        | "snapshot" | _     | VersionScheme.semver  | "master"   | true      | "1.0.1-master00001"
-        '1.0.0'       | _          | 1        | "snapshot" | _     | VersionScheme.semver  | "master"   | false     | "1.0.1-master00001"
-        _             | _          | 1        | "ci"       | _     | VersionScheme.semver2 | "master"   | false     | "0.1.0-master.2"
-        _             | _          | 1        | "snapshot" | _     | VersionScheme.semver  | "master"   | false     | "0.0.1-master00002"
+        '1.0.0'       | _          | 1        | "ci"       | _     | VersionSchemes.semver2 | "master" | true  | "1.1.0-master.1"
+        '1.0.0'       | _          | 1        | "ci"       | _     | VersionSchemes.semver2 | "master" | false | "1.1.0-master.1"
+        '1.0.0'       | _          | 1        | "snapshot" | _     | VersionSchemes.semver  | "master" | true  | "1.0.1-master00001"
+        '1.0.0'       | _          | 1        | "snapshot" | _     | VersionSchemes.semver  | "master" | false | "1.0.1-master00001"
+        _             | _          | 1        | "ci"       | _     | VersionSchemes.semver2 | "master" | false | "0.1.0-master.2"
+        _             | _          | 1        | "snapshot" | _     | VersionSchemes.semver  | "master" | false | "0.0.1-master00002"
         nearestAnyTitle = (nearestAny == _) ? "unset" : nearestAny
         scopeTitle = (scope == _) ? "unset" : scope
         tagPrefix = (prefixTag) ? "v" : ""
