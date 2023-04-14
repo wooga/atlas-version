@@ -52,7 +52,7 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
         versionCode = versionCodeScheme.map({
             VersionCodeScheme scheme -> VersionCode.Schemes
                     .fromExternal(scheme)
-                    .versionCodeFor(this.version.map { it.version }, git, versionCodeOffset.getOrElse(0))
+                    .versionCodeFor(this.version.map { it.version }, versionRepo, versionCodeOffset.getOrElse(0))
         }.memoize())
 
         // It's development if the development strategy contains the set `stage` OR

@@ -83,6 +83,7 @@ class VersionPlugin implements Plugin<Project> {
             def rawValue = VersionPluginConventions.versionCodeOffset.getValue(project)
             Integer.parseInt(rawValue.toString())
         }))
-        extension
+        extension.prefix.convention("v")
+        return extension
     }
 }

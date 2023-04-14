@@ -21,6 +21,8 @@ package wooga.gradle.version.internal
 import org.ajoberstar.grgit.Grgit
 import spock.lang.Specification
 import spock.lang.Unroll
+import wooga.gradle.version.internal.release.git.GitVersionRepository
+import wooga.gradle.version.internal.release.git.PrefixTagStrategy
 
 class VersionCodeSpec extends Specification {
 
@@ -122,7 +124,8 @@ class VersionCodeSpec extends Specification {
         }
 
         expect:
-        VersionCode.generateBuildNumberVersionCode(git, countPrerelease, offset) == expectedValue
+        def versionRepository = GitVersionRepository.fromTagStrategy(git, tagStrategy)
+        VersionCode.generateBuildNumberVersionCode(versionRepository, countPrerelease, offset) == expectedValue
 
         cleanup:
         tempDir.deleteDir()
@@ -135,7 +138,7 @@ class VersionCodeSpec extends Specification {
         1                  | 1                      | 0      | true
         3                  | 2                      | 100    | true
         3                  | 5                      | 10     | true
-
+        tagStrategy = new PrefixTagStrategy("v", false)
         message = "when number of normal tags: ${numberOfNormalTags} prerelease tags: ${numberOfPrereleaseTags} and offset: ${offset}"
         expectedValue = numberOfNormalTags + offset + (countPrerelease ? numberOfPrereleaseTags : 0) + 1
     }
@@ -164,7 +167,8 @@ class VersionCodeSpec extends Specification {
         git.checkout(branch: branch)
 
         expect:
-        VersionCode.generateBuildNumberVersionCode(git, countPrerelease, offset) == expectedValue
+        def versionRepository = GitVersionRepository.fromTagStrategy(git, tagStrategy)
+        VersionCode.generateBuildNumberVersionCode(versionRepository, countPrerelease, offset) == expectedValue
 
         cleanup:
         tempDir.deleteDir()
@@ -179,5 +183,6 @@ class VersionCodeSpec extends Specification {
         "develop" | 0      | true            | 5
         "develop" | 30     | false           | 32
         "develop" | 40     | true            | 45
+        tagStrategy = new PrefixTagStrategy("v", false)
     }
 }

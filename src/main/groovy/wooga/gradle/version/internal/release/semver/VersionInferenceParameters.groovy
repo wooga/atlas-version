@@ -22,8 +22,8 @@ import org.ajoberstar.grgit.Branch
 import org.ajoberstar.grgit.Commit
 import org.ajoberstar.grgit.Grgit
 import wooga.gradle.version.VersionPluginExtension
-import wooga.gradle.version.internal.release.base.MarkerTagStrategy
-import wooga.gradle.version.internal.release.base.TagStrategy
+import wooga.gradle.version.internal.DefaultVersionPluginExtension
+import wooga.gradle.version.internal.release.git.GitVersionRepository
 
 /**
  * Working state used by {@link PartialSemVerStrategy}.
@@ -34,22 +34,6 @@ final class VersionInferenceParameters {
 
     static VersionInferenceParameters fromExtension(VersionPluginExtension extension) {
         return new VersionInferenceParameters([:]).withExtension(extension)
-    }
-
-    static VersionInferenceParameters fromGit(Grgit git,
-                                              ChangeScope scope,
-                                              String stage = null,
-                                              String releaseBranchPattern,
-                                              String mainBranchPattern,
-                                              TagStrategy baseTagStrategy,
-                                              TagStrategy ciTagStrategy = new MarkerTagStrategy("ci-"),
-                                              TagStrategy releaseTagStrategy = new MarkerTagStrategy("release-")) {
-        return new VersionInferenceParameters(
-                scope: scope,
-                stage: stage,
-                releaseBranchPattern: releaseBranchPattern,
-                mainBranchPattern: mainBranchPattern
-        ).withGit(git, baseTagStrategy, ciTagStrategy, releaseTagStrategy)
     }
 
     ChangeScope scope
@@ -72,17 +56,17 @@ final class VersionInferenceParameters {
             this.releaseBranchPattern = it.releaseBranchPattern.get()
             this.mainBranchPattern = it.mainBranchPattern.get()
             def git = it.git.get()
-            return withGit(git, extension.tagStrategy)
+            return withGit(git, extension.versionRepo.get())
         }
     }
 
-    VersionInferenceParameters withGit(Grgit git, TagStrategy baseTagStrategy,
-                                       TagStrategy ciTagStrategy = new MarkerTagStrategy("ci-"),
-                                       TagStrategy releaseTagStrategy = new MarkerTagStrategy("release-")) {
-        def locator = new NearestVersionLocator(git)
-        this.nearestVersion = locator.locate(baseTagStrategy)
-        this.nearestCiMarker = locator.locate(ciTagStrategy)
-        this.nearestReleaseMarker = locator.locate(releaseTagStrategy)
+    VersionInferenceParameters withGit(Grgit git,
+                                       GitVersionRepository baseVersionRepo,
+                                       GitVersionRepository ciVersionRepo = GitVersionRepository.fromTagPrefix(git, "ci-"), //TODO: do something about this
+                                       GitVersionRepository releaseVersionRepo = GitVersionRepository.fromTagPrefix(git, "release-")) {
+        this.nearestVersion = baseVersionRepo.nearestVersion()
+        this.nearestCiMarker = ciVersionRepo.nearestVersion()
+        this.nearestReleaseMarker = releaseVersionRepo.nearestVersion()
         this.currentHead = git.head()
         this.currentBranch = git.branch.current()
         this.repoDirty = !git.status().clean
