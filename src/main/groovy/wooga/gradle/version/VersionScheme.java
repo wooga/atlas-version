@@ -13,7 +13,7 @@ import java.util.Optional;
  * A default strategy can also be provided.
  */
 //This has to be a java class (not groovy) because groovy 2 doesn't support java 8 default interface methods.
-public interface VersionScheme { //TODO: Rename to VersionScheme when breaking change
+public interface VersionScheme {
     VersionStrategy getDevelopment();
     VersionStrategy getSnapshot();
     VersionStrategy getPreRelease();

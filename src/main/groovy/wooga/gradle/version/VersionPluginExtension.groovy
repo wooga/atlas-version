@@ -19,6 +19,7 @@
 package wooga.gradle.version
 
 import com.wooga.gradle.BaseSpec
+import com.wooga.gradle.extensions.ProviderExtensions
 import org.ajoberstar.grgit.Grgit
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
@@ -30,23 +31,16 @@ import wooga.gradle.version.internal.release.base.PrefixVersionParser
 import wooga.gradle.version.internal.release.semver.ChangeScope
 import wooga.gradle.version.internal.release.semver.VersionInferenceParameters
 
+//TODO 3.x: review what should be exposed and what shouldnt. Maybe split this into internal/external and/or interface.
 trait VersionPluginExtension implements BaseSpec {
 
     /**
-     * @return The version scheme being used by the plugin (such as SemVer2)
+     * The version scheme being used by the plugin (such as SemVer2)
      */
-    Property<VersionScheme> getVersionScheme() {
-        versionScheme
-    }
-
     private final Property<VersionScheme> versionScheme = objects.property(VersionScheme)
 
-    void versionScheme(VersionScheme value) {
-        setVersionScheme(value)
-    }
-
-    void versionScheme(Provider<VersionScheme> value) {
-        setVersionScheme(value)
+    Property<VersionScheme> getVersionScheme() {
+        versionScheme
     }
 
     void setVersionScheme(VersionScheme value) {
@@ -57,10 +51,6 @@ trait VersionPluginExtension implements BaseSpec {
         versionScheme.set(value)
     }
 
-    void versionScheme(String value) {
-        setVersionScheme(value)
-    }
-
     void setVersionScheme(String value) {
         versionScheme.set(VersionSchemes.valueOf(value.trim()))
     }
@@ -68,25 +58,26 @@ trait VersionPluginExtension implements BaseSpec {
     /**
      * @return The version code scheme being used by the plugin (such as SemVer2, releaseCount)
      */
-    Property<VersionCodeScheme> getVersionCodeScheme() {
+    private final Property<VersionCodeSchemes> versionCodeScheme = objects.property(VersionCodeSchemes)
+
+    Property<VersionCodeSchemes> getVersionCodeScheme() {
         versionCodeScheme
     }
 
-    private final Property<VersionCodeScheme> versionCodeScheme = objects.property(VersionCodeScheme)
 
-    void versionCodeScheme(VersionCodeScheme value) {
+    void versionCodeScheme(VersionCodeSchemes value) {
         setVersionCodeScheme(value)
     }
 
-    void versionCodeScheme(Provider<VersionCodeScheme> value) {
+    void versionCodeScheme(Provider<VersionCodeSchemes> value) {
         setVersionCodeScheme(value)
     }
 
-    void setVersionCodeScheme(VersionCodeScheme value) {
+    void setVersionCodeScheme(VersionCodeSchemes value) {
         versionCodeScheme.set(value)
     }
 
-    void setVersionCodeScheme(Provider<VersionCodeScheme> value) {
+    void setVersionCodeScheme(Provider<VersionCodeSchemes> value) {
         versionCodeScheme.set(value)
     }
 
@@ -95,11 +86,11 @@ trait VersionPluginExtension implements BaseSpec {
     }
 
     void setVersionCodeScheme(String value) {
-        versionCodeScheme.set(VersionCodeScheme.valueOf(value.trim()))
+        versionCodeScheme.set(VersionCodeSchemes.valueOf(value.trim()))
     }
 
     /**
-     * @return If set, used during the evaluation of {@code versionCode}
+     * @return If set, applies an offset to {@code project.versionCode}.
      */
     Property<Integer> getVersionCodeOffset() {
         versionCodeOffset
@@ -124,12 +115,12 @@ trait VersionPluginExtension implements BaseSpec {
     }
 
     /**
-     * @return If set, ....
+     * @return If set, mark matching branches as release branches
      */
     Property<String> getReleaseBranchPattern() {
         releaseBranchPattern
     }
-
+    //TODO 3.x: Defaults for this property are embbed in the strategy. Find a way to get them to extension-level, as well as other defaults.
     private final Property<String> releaseBranchPattern = objects.property(String)
 
     void releaseBranchPattern(String value) {
@@ -149,12 +140,13 @@ trait VersionPluginExtension implements BaseSpec {
     }
 
     /**
-     * @return If set, ...
+     * @return If set, mark matching branches as main branches
      */
     Property<String> getMainBranchPattern() {
         mainBranchPattern
     }
-
+    //TODO 3.x: Defaults for this property are embbed in the strategy. Find a way to get them to extension-level, as well as other defaults.
+    //TODO: 3x. This is true for other properties as well, investigate.
     private final Property<String> mainBranchPattern = objects.property(String)
 
     void mainBranchPattern(String value) {
@@ -174,52 +166,69 @@ trait VersionPluginExtension implements BaseSpec {
     }
 
     /**
-     * @return The instance of the git client to be used
+     * @return The git client used to fetch version tags and local repository information like branch names.
      */
     Property<Grgit> getGit() {
         git
     }
 
-    private final Property<Grgit> git = objects.property(Grgit)
+    final Property<Grgit> git = objects.property(Grgit)
+
+    void setGit(Grgit grgit) {
+        git.set(grgit)
+    }
+
+    void setGit(Provider<Grgit> grgit) {
+        git.set(grgit)
+    }
 
     /**
-     * @return The evaluated version of the project
+     * @return The evaluated version of the project.
+     * A new version will not be calculated if this property is set externally.
      */
-    Provider<ReleaseVersion> getVersion() {
+    Property<ReleaseVersion> getVersion() {
         version
     }
 
-    private Provider<ReleaseVersion> version
+    private final Property<ReleaseVersion> version = objects.property(ReleaseVersion)
 
     void setVersion(Provider<ReleaseVersion> value) {
-        version = value
+        version.set(value)
     }
 
-    void setVersion(String value) {
-        version = providers.provider({ new ReleaseVersion(version: value) })
+    void setVersion(ReleaseVersion version) {
+        version.set(version)
+    }
+
+    void setVersion(String versionStr) {
+        setVersion(new ReleaseVersion(version: versionStr))
     }
 
     /**
-     * @return The evaluated version code of the project
+     * @return The evaluated version code of the project. Won't be calculated if this property is set externally.
      */
-    Provider<Integer> getVersionCode() {
+    Property<Integer> getVersionCode() {
         versionCode
     }
 
-    Provider<Integer> versionCode = objects.property(Integer)
+    private final Property<Integer> versionCode = objects.property(Integer)
 
     void setVersionCode(Provider<Integer> value) {
-        versionCode = value
+        versionCode.set(value)
+    }
+
+    void setVersionCode(Integer value) {
+        versionCode.set(value)
     }
 
     /**
      * @return The stage to be used for evaluating the project version (such as rc, snapshot, final)
      */
-    Provider<String> getStage() {
+    Property<String> getStage() {
         stage
     }
-
-    Provider<String> stage = objects.property(String)
+    //TODO 3.x: This guy defaults are kinda messy, figure this out
+    private final Property<String> stage = objects.property(String)
 
     void setStage(Provider<String> value) {
         stage.set(value)
@@ -232,21 +241,32 @@ trait VersionPluginExtension implements BaseSpec {
     /**
      * @return The scope to be used for evaluating the project version (such as major, minor, patch)
      */
-    Provider<ChangeScope> getScope() {
+    Property<ChangeScope> getScope() {
         scope
     }
 
-    Provider<ChangeScope> scope = objects.property(ChangeScope)
+    private final Property<ChangeScope> scope = objects.property(ChangeScope)
 
     void setScope(Provider<ChangeScope> value) {
-        scope = value
+        scope.set(value)
     }
 
+    void setScope(ChangeScope scope) {
+        this.scope.set(scope)
+    }
+
+    void setScope(String scope) {
+        this.scope.set(ChangeScope.valueOf(scope.trim()))
+    }
+
+    private final Property<String> prefix = objects.property(String)
 
     /**
      * @return Prefix to be used when storing versions. Useful to distinguish projects in a same repository
      */
-    Property<String> prefix = objects.property(String)
+    Property<String> getPrefix() {
+        return prefix
+    }
 
     void setPrefix(String prefix) {
         this.prefix.set(prefix)
@@ -264,35 +284,43 @@ trait VersionPluginExtension implements BaseSpec {
     }
 
     void setIsDevelopment(Provider<Boolean> value) {
-        isDevelopment = value
+        isDevelopment.set(value)
     }
 
-    Provider<Boolean> isDevelopment
+    private final Property<Boolean> isDevelopment = objects.property(Boolean)
 
     /**
      * @return Whether this is a production build
      */
-    Provider<Boolean> getIsFinal() {
+    Property<Boolean> getIsFinal() {
         isFinal
     }
 
-    Provider<Boolean> isFinal
+    private final Property<Boolean> isFinal = objects.property(Boolean)
 
     void setIsFinal(Provider<Boolean> value) {
-        isFinal = value
+        isFinal.set(value)
+    }
+
+    void setIsFinal(Boolean isFinal) {
+        this.isFinal.set(isFinal)
     }
 
     /**
      * @return Whether this is a pre-release build
      */
-    Provider<Boolean> getIsPrerelease() {
+    Property<Boolean> getIsPrerelease() {
         isPrerelease
     }
 
-    Provider<Boolean> isPrerelease
+    private final Property<Boolean> isPrerelease = objects.property(Boolean)
 
     void setIsPrerelease(Provider<Boolean> value) {
-        isPrerelease = value
+        isPrerelease.set(value)
+    }
+
+    void setIsPrerelease(Boolean value) {
+        isPrerelease.set(value)
     }
 
     /**
@@ -302,10 +330,14 @@ trait VersionPluginExtension implements BaseSpec {
         isSnapshot
     }
 
-    Provider<Boolean> isSnapshot
+    private final Property<Boolean> isSnapshot = objects.property(Boolean)
 
     void setIsSnapshot(Provider<Boolean> value) {
-        isSnapshot = value
+        isSnapshot.set(value)
+    }
+
+    void setIsSnapshot(Boolean value) {
+        isSnapshot.set(value)
     }
 
     /**
@@ -314,12 +346,9 @@ trait VersionPluginExtension implements BaseSpec {
     Provider<ReleaseStage> getReleaseStage() {
         releaseStage
     }
-
-    Provider<GitVersionRepository> versionRepo = git.map {
-        Grgit it -> GitVersionRepository.fromTagStrategy(it, new PrefixVersionParser(prefix.get(), true))
-    }
-
-    final Provider<ReleaseStage> releaseStage = providers.provider { ->
+    //TODO 3.x: isDevelopment, isFinal, etc are only used to calculate this. Expose only releaseStage
+    // and don't expose is<<stage>> properties.
+    private final Provider<ReleaseStage> releaseStage = providers.provider { ->
         if (isDevelopment.getOrElse(false)) {
             return ReleaseStage.Development
         } else if (isSnapshot.getOrElse(false)) {
@@ -334,6 +363,11 @@ trait VersionPluginExtension implements BaseSpec {
             }.orNull
         }
     }.orElse(ReleaseStage.Unknown)
+
+    //TODO 3.x don't expose this.
+    Provider<GitVersionRepository> versionRepo = ProviderExtensions.mapOnce(git) { Grgit it ->
+        GitVersionRepository.fromTagStrategy(it, new PrefixVersionParser(prefix.get(), true))
+    }
 
     /**
      * Infers the next version for this project based on extension information and underlying git repository tags.

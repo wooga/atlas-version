@@ -18,16 +18,14 @@
 
 package wooga.gradle.version.internal
 
+import com.wooga.gradle.extensions.ProviderExtensions
 import org.ajoberstar.grgit.Grgit
 import wooga.gradle.version.ReleaseStage
-import wooga.gradle.version.VersionCodeScheme
-import wooga.gradle.version.internal.release.base.ReleaseVersion
-import wooga.gradle.version.internal.release.semver.ChangeScope
-import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.provider.Provider
-import wooga.gradle.version.VersionPluginConventions
 import wooga.gradle.version.VersionPluginExtension
+import wooga.gradle.version.internal.release.base.PrefixVersionParser
+import wooga.gradle.version.internal.release.git.GitVersionRepository
 
 class DefaultVersionPluginExtension implements VersionPluginExtension {
 
@@ -35,32 +33,17 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
 
     DefaultVersionPluginExtension(Project project) {
         this.project = project
-
-        scope = VersionPluginConventions.scope.getStringValueProvider(project)
-        .map {it?.trim()?.empty? null: it }
-        .map {ChangeScope.valueOf(it.toUpperCase()) }
-
-        stage = VersionPluginConventions.stage.getStringValueProvider(project)
-        releaseBranchPattern.set(VersionPluginConventions.releaseBranchPattern.getStringValueProvider(project))
-        mainBranchPattern.set(VersionPluginConventions.mainBranchPattern.getStringValueProvider(project))
-
-        version = VersionPluginConventions.version.getStringValueProvider(project).map({
-            new ReleaseVersion(version: it)
-        }).orElse(inferVersionIfGitIsPresent())
-                .orElse(new ReleaseVersion(version: VersionPluginConventions.UNINITIALIZED_VERSION))
-
-        versionCode = versionCodeScheme.map({
-            VersionCodeScheme scheme -> VersionCode.Schemes
-                    .fromExternal(scheme)
-                    .versionCodeFor(this.version.map { it.version }.orNull, versionRepo.orNull, versionCodeOffset.getOrElse(0))
-        }.memoize())
+        this.versionRepo = ProviderExtensions.mapOnce(git) { Grgit it ->
+            GitVersionRepository.fromTagStrategy(it, new PrefixVersionParser(prefix.get(), true))
+        }
 
         // It's development if the development strategy contains the set `stage` OR
         // if the default strategy's release stage is development
-        isDevelopment = canRunStageWithName(ReleaseStage.Development, stage)
-        isSnapshot = canRunStageWithName(ReleaseStage.Snapshot, stage)
-        isPrerelease = canRunStageWithName(ReleaseStage.Prerelease, stage)
-        isFinal = canRunStageWithName(ReleaseStage.Final, stage)
+        this.isDevelopment = canRunStageWithName(ReleaseStage.Development, stage)
+        this.isSnapshot = canRunStageWithName(ReleaseStage.Snapshot, stage)
+        this.isPrerelease = canRunStageWithName(ReleaseStage.Prerelease, stage)
+        this.isFinal = canRunStageWithName(ReleaseStage.Final, stage)
+
     }
 
     private Provider<Boolean> canRunStageWithName(ReleaseStage releaseStage, Provider<String> stageProvider) {
@@ -74,18 +57,5 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
         .orElse(versionScheme.map({
             it.defaultStrategy.releaseStage == releaseStage
         }))
-    }
-
-    private Provider<ReleaseVersion> inferVersionIfGitIsPresent() {
-        def project = this.project
-        return git.map({ Grgit git ->
-            def version = inferVersion(versionScheme.get(), stage, scope)
-                    .orElse(providers.provider {
-                        throw new GradleException('No version strategies were selected. Run build with --info for more detail.')
-                    }).get()
-            project.logger.warn('Inferred project: {}, version: {}', project.name, version.version)
-            return version
-        }.memoize())
-                .orElse(new ReleaseVersion(version: VersionPluginConventions.UNINITIALIZED_VERSION)) as Provider<ReleaseVersion>
     }
 }

@@ -22,7 +22,6 @@ import org.ajoberstar.grgit.Branch
 import org.ajoberstar.grgit.Commit
 import org.ajoberstar.grgit.Grgit
 import wooga.gradle.version.VersionPluginExtension
-import wooga.gradle.version.internal.DefaultVersionPluginExtension
 import wooga.gradle.version.internal.release.git.GitVersionRepository
 
 /**

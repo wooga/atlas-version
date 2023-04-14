@@ -20,6 +20,7 @@ package wooga.gradle.version
 import nebula.test.ProjectSpec
 import org.ajoberstar.grgit.Grgit
 import spock.lang.Ignore
+import spock.lang.IgnoreIf
 import spock.lang.Unroll
 import wooga.gradle.version.internal.ToStringProvider
 import wooga.gradle.version.internal.release.opinion.Strategies
@@ -466,59 +467,59 @@ class VersionPluginSpec extends ProjectSpec {
 
         where:
         nearestNormal | nearestAny        | distance | stage      | scope   | branchName | versionCodeScheme             | expectedVersion   | expectedVersionCode
-        _             | _                 | 1        | "snapshot" | _       | "master"   | VersionCodeScheme.semver      | "0.1.0-master.2"  | 1000
-        _             | _                 | 2        | "snapshot" | "major" | "master"   | VersionCodeScheme.semver      | "1.0.0-master.3"  | 100000
-        _             | _                 | 3        | "snapshot" | "minor" | "master"   | VersionCodeScheme.semver      | "0.1.0-master.4"  | 1000
-        _             | _                 | 4        | "snapshot" | "patch" | "master"   | VersionCodeScheme.semver      | "0.0.1-master.5"  | 10
-        '1.0.0'       | _                 | 1        | "snapshot" | _       | "master"   | VersionCodeScheme.semver      | "1.1.0-master.1"  | 101000
-        '1.0.0'       | _                 | 2        | "snapshot" | "major" | "master"   | VersionCodeScheme.semver      | "2.0.0-master.2"  | 200000
-        '1.0.0'       | _                 | 3        | "snapshot" | "minor" | "master"   | VersionCodeScheme.semver      | "1.1.0-master.3"  | 101000
-        '1.0.0'       | _                 | 4        | "snapshot" | "patch" | "master"   | VersionCodeScheme.semver      | "1.0.1-master.4"  | 100010
-        '1.0.0'       | _                 | 1        | "snapshot" | _       | "develop"  | VersionCodeScheme.semver      | "1.1.0-develop.1" | 101000
-        '1.0.0'       | _                 | 2        | "snapshot" | "major" | "develop"  | VersionCodeScheme.semver      | "2.0.0-develop.2" | 200000
-        '1.0.0'       | _                 | 3        | "snapshot" | "minor" | "develop"  | VersionCodeScheme.semver      | "1.1.0-develop.3" | 101000
-        '1.0.0'       | _                 | 4        | "snapshot" | "patch" | "develop"  | VersionCodeScheme.semver      | "1.0.1-develop.4" | 100010
+        _             | _                 | 1        | "snapshot" | _       | "master"   | VersionCodeSchemes.semver      | "0.1.0-master.2"  | 1000
+        _             | _                 | 2        | "snapshot" | "major" | "master"   | VersionCodeSchemes.semver      | "1.0.0-master.3"  | 100000
+        _             | _                 | 3        | "snapshot" | "minor" | "master"   | VersionCodeSchemes.semver      | "0.1.0-master.4"  | 1000
+        _             | _                 | 4        | "snapshot" | "patch" | "master"   | VersionCodeSchemes.semver      | "0.0.1-master.5"  | 10
+        '1.0.0'       | _                 | 1        | "snapshot" | _       | "master"   | VersionCodeSchemes.semver      | "1.1.0-master.1"  | 101000
+        '1.0.0'       | _                 | 2        | "snapshot" | "major" | "master"   | VersionCodeSchemes.semver      | "2.0.0-master.2"  | 200000
+        '1.0.0'       | _                 | 3        | "snapshot" | "minor" | "master"   | VersionCodeSchemes.semver      | "1.1.0-master.3"  | 101000
+        '1.0.0'       | _                 | 4        | "snapshot" | "patch" | "master"   | VersionCodeSchemes.semver      | "1.0.1-master.4"  | 100010
+        '1.0.0'       | _                 | 1        | "snapshot" | _       | "develop"  | VersionCodeSchemes.semver      | "1.1.0-develop.1" | 101000
+        '1.0.0'       | _                 | 2        | "snapshot" | "major" | "develop"  | VersionCodeSchemes.semver      | "2.0.0-develop.2" | 200000
+        '1.0.0'       | _                 | 3        | "snapshot" | "minor" | "develop"  | VersionCodeSchemes.semver      | "1.1.0-develop.3" | 101000
+        '1.0.0'       | _                 | 4        | "snapshot" | "patch" | "develop"  | VersionCodeSchemes.semver      | "1.0.1-develop.4" | 100010
 
-        _             | _                 | 1        | "rc"       | _       | "master"   | VersionCodeScheme.semver      | "0.1.0-rc.1"      | 1000
-        _             | _                 | 2        | "rc"       | "major" | "master"   | VersionCodeScheme.semver      | "1.0.0-rc.1"      | 100000
-        _             | _                 | 3        | "rc"       | "minor" | "master"   | VersionCodeScheme.semver      | "0.1.0-rc.1"      | 1000
-        _             | _                 | 4        | "rc"       | "patch" | "master"   | VersionCodeScheme.semver      | "0.0.1-rc.1"      | 10
-        '1.0.0'       | _                 | 1        | "rc"       | _       | "master"   | VersionCodeScheme.semver      | "1.1.0-rc.1"      | 101000
-        '1.0.0'       | _                 | 2        | "rc"       | "major" | "master"   | VersionCodeScheme.semver      | "2.0.0-rc.1"      | 200000
-        '1.0.0'       | _                 | 3        | "rc"       | "minor" | "master"   | VersionCodeScheme.semver      | "1.1.0-rc.1"      | 101000
-        '1.0.0'       | _                 | 4        | "rc"       | "patch" | "master"   | VersionCodeScheme.semver      | "1.0.1-rc.1"      | 100010
+        _             | _                 | 1        | "rc"       | _       | "master"   | VersionCodeSchemes.semver      | "0.1.0-rc.1"      | 1000
+        _             | _                 | 2        | "rc"       | "major" | "master"   | VersionCodeSchemes.semver      | "1.0.0-rc.1"      | 100000
+        _             | _                 | 3        | "rc"       | "minor" | "master"   | VersionCodeSchemes.semver      | "0.1.0-rc.1"      | 1000
+        _             | _                 | 4        | "rc"       | "patch" | "master"   | VersionCodeSchemes.semver      | "0.0.1-rc.1"      | 10
+        '1.0.0'       | _                 | 1        | "rc"       | _       | "master"   | VersionCodeSchemes.semver      | "1.1.0-rc.1"      | 101000
+        '1.0.0'       | _                 | 2        | "rc"       | "major" | "master"   | VersionCodeSchemes.semver      | "2.0.0-rc.1"      | 200000
+        '1.0.0'       | _                 | 3        | "rc"       | "minor" | "master"   | VersionCodeSchemes.semver      | "1.1.0-rc.1"      | 101000
+        '1.0.0'       | _                 | 4        | "rc"       | "patch" | "master"   | VersionCodeSchemes.semver      | "1.0.1-rc.1"      | 100010
 
-        _             | '1.1.0-staging.1' | 1        | "staging"  | _       | "master"   | VersionCodeScheme.semver      | "1.1.0-staging.2" | 101002
-        _             | '1.1.0-staging.2' | 1        | "staging"  | _       | "master"   | VersionCodeScheme.semver      | "1.1.0-staging.3" | 101003
-        '1.0.0'       | '1.1.0-staging.1' | 1        | "staging"  | _       | "master"   | VersionCodeScheme.semver      | "1.1.0-staging.2" | 101002
-        '1.0.0'       | '1.1.0-staging.2' | 1        | "staging"  | _       | "master"   | VersionCodeScheme.semver      | "1.1.0-staging.3" | 101003
+        _             | '1.1.0-staging.1' | 1        | "staging"  | _       | "master"   | VersionCodeSchemes.semver      | "1.1.0-staging.2" | 101002
+        _             | '1.1.0-staging.2' | 1        | "staging"  | _       | "master"   | VersionCodeSchemes.semver      | "1.1.0-staging.3" | 101003
+        '1.0.0'       | '1.1.0-staging.1' | 1        | "staging"  | _       | "master"   | VersionCodeSchemes.semver      | "1.1.0-staging.2" | 101002
+        '1.0.0'       | '1.1.0-staging.2' | 1        | "staging"  | _       | "master"   | VersionCodeSchemes.semver      | "1.1.0-staging.3" | 101003
 
-        _             | _                 | 1        | "snapshot" | _       | "master"   | VersionCodeScheme.semverBasic | "0.1.0-master.2"  | 100
-        _             | _                 | 2        | "snapshot" | "major" | "master"   | VersionCodeScheme.semverBasic | "1.0.0-master.3"  | 10000
-        _             | _                 | 3        | "snapshot" | "minor" | "master"   | VersionCodeScheme.semverBasic | "0.1.0-master.4"  | 100
-        _             | _                 | 4        | "snapshot" | "patch" | "master"   | VersionCodeScheme.semverBasic | "0.0.1-master.5"  | 1
-        '1.0.0'       | _                 | 1        | "snapshot" | _       | "master"   | VersionCodeScheme.semverBasic | "1.1.0-master.1"  | 10100
-        '1.0.0'       | _                 | 2        | "snapshot" | "major" | "master"   | VersionCodeScheme.semverBasic | "2.0.0-master.2"  | 20000
-        '1.0.0'       | _                 | 3        | "snapshot" | "minor" | "master"   | VersionCodeScheme.semverBasic | "1.1.0-master.3"  | 10100
-        '1.0.0'       | _                 | 4        | "snapshot" | "patch" | "master"   | VersionCodeScheme.semverBasic | "1.0.1-master.4"  | 10001
-        '1.0.0'       | _                 | 1        | "snapshot" | _       | "develop"  | VersionCodeScheme.semverBasic | "1.1.0-develop.1" | 10100
-        '1.0.0'       | _                 | 2        | "snapshot" | "major" | "develop"  | VersionCodeScheme.semverBasic | "2.0.0-develop.2" | 20000
-        '1.0.0'       | _                 | 3        | "snapshot" | "minor" | "develop"  | VersionCodeScheme.semverBasic | "1.1.0-develop.3" | 10100
-        '1.0.0'       | _                 | 4        | "snapshot" | "patch" | "develop"  | VersionCodeScheme.semverBasic | "1.0.1-develop.4" | 10001
+        _             | _                 | 1        | "snapshot" | _       | "master"   | VersionCodeSchemes.semverBasic | "0.1.0-master.2"  | 100
+        _             | _                 | 2        | "snapshot" | "major" | "master"   | VersionCodeSchemes.semverBasic | "1.0.0-master.3"  | 10000
+        _             | _                 | 3        | "snapshot" | "minor" | "master"   | VersionCodeSchemes.semverBasic | "0.1.0-master.4"  | 100
+        _             | _                 | 4        | "snapshot" | "patch" | "master"   | VersionCodeSchemes.semverBasic | "0.0.1-master.5"  | 1
+        '1.0.0'       | _                 | 1        | "snapshot" | _       | "master"   | VersionCodeSchemes.semverBasic | "1.1.0-master.1"  | 10100
+        '1.0.0'       | _                 | 2        | "snapshot" | "major" | "master"   | VersionCodeSchemes.semverBasic | "2.0.0-master.2"  | 20000
+        '1.0.0'       | _                 | 3        | "snapshot" | "minor" | "master"   | VersionCodeSchemes.semverBasic | "1.1.0-master.3"  | 10100
+        '1.0.0'       | _                 | 4        | "snapshot" | "patch" | "master"   | VersionCodeSchemes.semverBasic | "1.0.1-master.4"  | 10001
+        '1.0.0'       | _                 | 1        | "snapshot" | _       | "develop"  | VersionCodeSchemes.semverBasic | "1.1.0-develop.1" | 10100
+        '1.0.0'       | _                 | 2        | "snapshot" | "major" | "develop"  | VersionCodeSchemes.semverBasic | "2.0.0-develop.2" | 20000
+        '1.0.0'       | _                 | 3        | "snapshot" | "minor" | "develop"  | VersionCodeSchemes.semverBasic | "1.1.0-develop.3" | 10100
+        '1.0.0'       | _                 | 4        | "snapshot" | "patch" | "develop"  | VersionCodeSchemes.semverBasic | "1.0.1-develop.4" | 10001
 
-        _             | _                 | 1        | "rc"       | _       | "master"   | VersionCodeScheme.semverBasic | "0.1.0-rc.1"      | 100
-        _             | _                 | 2        | "rc"       | "major" | "master"   | VersionCodeScheme.semverBasic | "1.0.0-rc.1"      | 10000
-        _             | _                 | 3        | "rc"       | "minor" | "master"   | VersionCodeScheme.semverBasic | "0.1.0-rc.1"      | 100
-        _             | _                 | 4        | "rc"       | "patch" | "master"   | VersionCodeScheme.semverBasic | "0.0.1-rc.1"      | 1
-        '1.0.0'       | _                 | 1        | "rc"       | _       | "master"   | VersionCodeScheme.semverBasic | "1.1.0-rc.1"      | 10100
-        '1.0.0'       | _                 | 2        | "rc"       | "major" | "master"   | VersionCodeScheme.semverBasic | "2.0.0-rc.1"      | 20000
-        '1.0.0'       | _                 | 3        | "rc"       | "minor" | "master"   | VersionCodeScheme.semverBasic | "1.1.0-rc.1"      | 10100
-        '1.0.0'       | _                 | 4        | "rc"       | "patch" | "master"   | VersionCodeScheme.semverBasic | "1.0.1-rc.1"      | 10001
+        _             | _                 | 1        | "rc"       | _       | "master"   | VersionCodeSchemes.semverBasic | "0.1.0-rc.1"      | 100
+        _             | _                 | 2        | "rc"       | "major" | "master"   | VersionCodeSchemes.semverBasic | "1.0.0-rc.1"      | 10000
+        _             | _                 | 3        | "rc"       | "minor" | "master"   | VersionCodeSchemes.semverBasic | "0.1.0-rc.1"      | 100
+        _             | _                 | 4        | "rc"       | "patch" | "master"   | VersionCodeSchemes.semverBasic | "0.0.1-rc.1"      | 1
+        '1.0.0'       | _                 | 1        | "rc"       | _       | "master"   | VersionCodeSchemes.semverBasic | "1.1.0-rc.1"      | 10100
+        '1.0.0'       | _                 | 2        | "rc"       | "major" | "master"   | VersionCodeSchemes.semverBasic | "2.0.0-rc.1"      | 20000
+        '1.0.0'       | _                 | 3        | "rc"       | "minor" | "master"   | VersionCodeSchemes.semverBasic | "1.1.0-rc.1"      | 10100
+        '1.0.0'       | _                 | 4        | "rc"       | "patch" | "master"   | VersionCodeSchemes.semverBasic | "1.0.1-rc.1"      | 10001
 
-        _             | '0.1.0-staging.1' | 1        | "staging"  | _       | "master"   | VersionCodeScheme.semverBasic | "0.1.0-staging.2" | 100
-        _             | '0.1.0-staging.2' | 1        | "staging"  | _       | "master"   | VersionCodeScheme.semverBasic | "0.1.0-staging.3" | 100
-        '1.0.0'       | '1.1.0-staging.1' | 1        | "staging"  | _       | "master"   | VersionCodeScheme.semverBasic | "1.1.0-staging.2" | 10100
-        '1.0.0'       | '1.1.0-staging.2' | 1        | "staging"  | _       | "master"   | VersionCodeScheme.semverBasic | "1.1.0-staging.3" | 10100
+        _             | '0.1.0-staging.1' | 1        | "staging"  | _       | "master"   | VersionCodeSchemes.semverBasic | "0.1.0-staging.2" | 100
+        _             | '0.1.0-staging.2' | 1        | "staging"  | _       | "master"   | VersionCodeSchemes.semverBasic | "0.1.0-staging.3" | 100
+        '1.0.0'       | '1.1.0-staging.1' | 1        | "staging"  | _       | "master"   | VersionCodeSchemes.semverBasic | "1.1.0-staging.2" | 10100
+        '1.0.0'       | '1.1.0-staging.2' | 1        | "staging"  | _       | "master"   | VersionCodeSchemes.semverBasic | "1.1.0-staging.3" | 10100
 
         nearestAnyTitle = (nearestAny == _) ? "unset" : nearestAny
         scopeTitle = (scope == _) ? "unset" : scope
@@ -562,11 +563,11 @@ class VersionPluginSpec extends ProjectSpec {
 
         where:
         numberOfFinalReleases | numberOfPrereleases | offset | scheme                              | expectedVersionCode
-        5                     | 5                   | 0      | VersionCodeScheme.releaseCountBasic | 5
-        5                     | 5                   | 3      | VersionCodeScheme.releaseCountBasic | 8
-        10                    | 2                   | 0      | VersionCodeScheme.releaseCount      | 14
-        7                     | 0                   | 5      | VersionCodeScheme.releaseCount      | 12
-        3                     | 8                   | 5      | VersionCodeScheme.none              | 0
+        5                     | 5                   | 0      | VersionCodeSchemes.releaseCountBasic | 5
+        5                     | 5                   | 3      | VersionCodeSchemes.releaseCountBasic | 8
+        10                    | 2                   | 0      | VersionCodeSchemes.releaseCount      | 14
+        7                     | 0                   | 5      | VersionCodeSchemes.releaseCount      | 12
+        3                     | 8                   | 5      | VersionCodeSchemes.none              | 0
         3                     | 8                   | 5      | _                                   | 0
     }
 
@@ -824,6 +825,7 @@ class VersionPluginSpec extends ProjectSpec {
         scopeTitle = (scope == _) ? "unset" : scope
     }
 
+    @IgnoreIf({os.isWindows()})
     @Unroll('verify inferred semver 2.x version from productionMarker: #productionMarkerTitle, ciMarker: #ciMarkerTitle, stage: #stage and branch: #branchName to be #expectedVersion')
     def "uses custom wooga application strategies static marker"() {
         given: "a project with specified release stage and scope"

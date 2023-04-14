@@ -27,18 +27,22 @@ class VersionPluginExtensionIntegrationSpec extends VersionIntegrationSpec {
         propertyQuery.matches(expectedValue)
 
         where:
-        property | gradlePropName  | type   | rawValue   | expectedValue
-        "stage"  | "release.stage" | String | "snapshot" | "snapshot"
-        "stage"  | "release.stage" | String | "rc"       | "rc"
-        "stage"  | "release.stage" | String | "final"    | "final"
-        "stage"  | "release.stage" | String | "custom"   | "custom"
-        "stage"  | "release.stage" | String | null       | null
-        "scope"  | "release.scope" | String | "major"    | "MAJOR"
-        "scope"  | "release.scope" | String | "minor"    | "MINOR"
-        "scope"  | "release.scope" | String | "patch"    | "PATCH"
-        "scope"  | "release.scope" | String | "PatCh"    | "PATCH"
-        "scope"  | "release.scope" | String | "PATCH"    | "PATCH"
-        "scope"  | "release.scope" | String | null       | null
+        property | gradlePropName          | type   | rawValue   | expectedValue
+        "stage"  | "release.stage"         | String | "snapshot" | "snapshot"
+        "stage"  | "release.stage"         | String | "rc"       | "rc"
+        "stage"  | "release.stage"         | String | "final"    | "final"
+        "stage"  | "release.stage"         | String | "custom"   | "custom"
+        "stage"  | "release.stage"         | String | null       | null
+
+        "scope"  | "release.scope"         | String | "major"    | "MAJOR"
+        "scope"  | "release.scope"         | String | "minor"    | "MINOR"
+        "scope"  | "release.scope"         | String | "patch"    | "PATCH"
+        "scope"  | "release.scope"         | String | "PatCh"    | "PATCH"
+        "scope"  | "release.scope"         | String | "PATCH"    | "PATCH"
+        "scope"  | "release.scope"         | String | null       | null
+
+        "prefix" | "versionBuilder.prefix" | String | "prefix_"    | "prefix_"
+        "prefix" | "versionBuilder.prefix" | String | null       | "v"
 
 
         set = new PropertySetterWriter("versionBuilder", property)

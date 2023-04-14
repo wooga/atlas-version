@@ -18,46 +18,46 @@
 
 package wooga.gradle.version.internal
 
-import wooga.gradle.version.VersionCodeScheme
+import wooga.gradle.version.VersionCodeSchemes
 import wooga.gradle.version.internal.release.git.GitVersionRepository
 
 class VersionCode {
 
     enum Schemes {
-        none(VersionCodeScheme.none, { -> 0}),
-        semverBasic(VersionCodeScheme.semverBasic, {
+        none(VersionCodeSchemes.none, { -> 0}),
+        semverBasic(VersionCodeSchemes.semverBasic, {
             String version, int offset -> generateSemverVersionCode(version) + offset
         }),
-        semver(VersionCodeScheme.semver, {
+        semver(VersionCodeSchemes.semver, {
             String version, int offset -> generateSemverVersionCode(version, true) + offset
         }),
-        releaseCountBasic(VersionCodeScheme.releaseCountBasic, {
+        releaseCountBasic(VersionCodeSchemes.releaseCountBasic, {
             GitVersionRepository git, int offset -> generateBuildNumberVersionCode(git, false, offset)
         }),
-        releaseCount(VersionCodeScheme.releaseCount, {
+        releaseCount(VersionCodeSchemes.releaseCount, {
             GitVersionRepository git, int offset -> generateBuildNumberVersionCode(git, true, offset)
         })
 
-        private final VersionCodeScheme external
+        private final VersionCodeSchemes external
         private final Closure<Integer> generator
 
-        static Schemes fromExternal(VersionCodeScheme external) {
+        static Schemes fromExternal(VersionCodeSchemes external) {
             return values().find { it.external == external}
         }
 
-        Schemes(VersionCodeScheme external, Closure<Integer> generator) {
+        Schemes(VersionCodeSchemes external, Closure<Integer> generator) {
             this.external = external
             this.generator = generator
         }
 
-        int versionCodeFor(String version, GitVersionRepository git, int offset) {
+        int versionCodeFor(String version, GitVersionRepository versionRepo, int offset) {
             if(generator.parameterTypes.length == 0) {
                 return this.generator.call()
             }
             if(generator.parameterTypes[0] == String) {
                 return this.generator.call(version, offset)
             } else {
-                return this.generator.call(git, offset)
+                return this.generator.call(versionRepo, offset)
             }
         }
     }
@@ -145,6 +145,7 @@ class VersionCode {
      * @param offset
      * @return
      */
+    //TODO: push offset out of the function
     static Integer generateBuildNumberVersionCode(GitVersionRepository versionRepo, Boolean countPrerelease = true, Integer offset = 0) {
         return versionRepo.countReachableVersions(countPrerelease) + offset + 1
     }
