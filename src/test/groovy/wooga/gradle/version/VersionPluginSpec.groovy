@@ -577,6 +577,7 @@ class VersionPluginSpec extends ProjectSpec {
         git.close()
         def gitDir = new File(git.repository.getRootDir(), ".git")
         gitDir.deleteDir()
+        project.ext["versionBuilder.maxGitRootSearchDepth"] = 0
 
         when:
         project.plugins.apply(PLUGIN_NAME)

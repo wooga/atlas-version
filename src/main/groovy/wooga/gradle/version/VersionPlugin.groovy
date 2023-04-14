@@ -28,10 +28,10 @@ import wooga.gradle.version.internal.DefaultVersionCodeExtension
 import wooga.gradle.version.internal.DefaultVersionPluginExtension
 import wooga.gradle.version.internal.ToStringProvider
 import wooga.gradle.version.internal.VersionCode
-import wooga.gradle.version.internal.release.base.PrefixVersionParser
 import wooga.gradle.version.internal.release.base.ReleaseVersion
-import wooga.gradle.version.internal.release.git.GitVersionRepository
 import wooga.gradle.version.internal.release.semver.ChangeScope
+
+import java.util.stream.Stream
 
 class VersionPlugin implements Plugin<Project> {
     static String EXTENSION_NAME = "versionBuilder"
@@ -64,12 +64,28 @@ class VersionPlugin implements Plugin<Project> {
         }
     }
 
+    static File findNearestGitFolder(File projectDir, int maxDepth) {
+        if(maxDepth > 0) {
+            def maybeDotGit = Stream.of(projectDir.listFiles( { File file ->
+                file.directory && file.name == ".git"
+            } as FileFilter)).findFirst()
+
+            return maybeDotGit.orElseGet {
+                findNearestGitFolder(projectDir.parentFile, maxDepth-1)
+            }
+        }
+        return null
+    }
+
     protected static VersionPluginExtension createAndConfigureExtension(Project project) {
 
         def extension = project.extensions.create(VersionPluginExtension, EXTENSION_NAME, DefaultVersionPluginExtension, project)
-        Provider<String> gitRoot = VersionPluginConventions.gitRoot.getStringValueProvider(project,
-                project.rootProject.projectDir.path
-        )
+
+        Provider<String> gitRoot = VersionPluginConventions.gitRoot.getStringValueProvider(project)
+        .orElse(VersionPluginConventions.maxGitRootSearchDepth.getIntegerValueProvider(project).map {
+            findNearestGitFolder(project.projectDir, it)?.absolutePath
+        })
+
         extension.git.convention(ProviderExtensions.mapOnce(gitRoot) { String it ->
             try {
                 Grgit git = Grgit.open(dir: it)

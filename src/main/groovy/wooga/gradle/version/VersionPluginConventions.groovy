@@ -30,6 +30,12 @@ class VersionPluginConventions {
             GIT_ROOT_PROPERTY,
             null
     )
+
+    static final PropertyLookup maxGitRootSearchDepth = new PropertyLookup(
+            "VERSION_BUILDER_MAX_GIT_ROOT_SEARCH_DEPTH",
+            "versionBuilder.maxGitRootSearchDepth",
+            3)
+
     static final PropertyLookup version = new PropertyLookup(
             "VERSION_BUILDER_VERSION",
             "versionBuilder.version",
