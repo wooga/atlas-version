@@ -96,12 +96,11 @@ final class StrategyUtil {
     }
 
     static def splitsPrerelease(String preReleaseVersion) {
-        def withDot = preReleaseVersion =~ (~$/^(\w+)\.(\d+)$$/$)
+        def withDot = Pattern.compile("^(\\w+)\\.(\\d+)\$").matcher(preReleaseVersion)
         if(withDot.matches()) {
             return [withDot.group(1), withDot.group(2)]
         }
-
-        def withoutDot = preReleaseVersion =~ (~$/^(\D+)(\d+)$$/$)
+        def withoutDot = Pattern.compile("^(\\D+)(\\d+)\$").matcher(preReleaseVersion)
         if(withoutDot.matches()) {
             return [withoutDot.group(1), withoutDot.group(2)]
         }
