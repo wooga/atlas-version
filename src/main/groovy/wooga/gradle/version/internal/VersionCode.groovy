@@ -32,10 +32,10 @@ class VersionCode {
             String version, int offset -> generateSemverVersionCode(version, true) + offset
         }),
         releaseCountBasic(VersionCodeSchemes.releaseCountBasic, {
-            GitVersionRepository git, int offset -> generateBuildNumberVersionCode(git, false, offset)
+            GitVersionRepository git, int offset -> generateBuildNumberVersionCode(git, false) + offset
         }),
         releaseCount(VersionCodeSchemes.releaseCount, {
-            GitVersionRepository git, int offset -> generateBuildNumberVersionCode(git, true, offset)
+            GitVersionRepository git, int offset -> generateBuildNumberVersionCode(git, true) + offset
         })
 
         private final VersionCodeSchemes external
@@ -142,11 +142,9 @@ class VersionCode {
      *
      * @param git
      * @param countPrerelease
-     * @param offset
      * @return
      */
-    //TODO: push offset out of the function
-    static Integer generateBuildNumberVersionCode(GitVersionRepository versionRepo, Boolean countPrerelease = true, Integer offset = 0) {
-        return versionRepo.countReachableVersions(countPrerelease) + offset + 1
+    static Integer generateBuildNumberVersionCode(GitVersionRepository versionRepo, Boolean countPrerelease = true) {
+        return versionRepo.countReachableVersions(countPrerelease) + 1
     }
 }

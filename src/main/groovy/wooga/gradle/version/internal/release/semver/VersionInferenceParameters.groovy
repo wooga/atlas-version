@@ -15,13 +15,15 @@
  */
 package wooga.gradle.version.internal.release.semver
 
-
+import com.wooga.gradle.extensions.ProviderExtensions
 import groovy.transform.MapConstructor
 import groovy.transform.ToString
 import org.ajoberstar.grgit.Branch
 import org.ajoberstar.grgit.Commit
 import org.ajoberstar.grgit.Grgit
 import wooga.gradle.version.VersionPluginExtension
+import wooga.gradle.version.internal.DefaultVersionPluginExtension
+import wooga.gradle.version.internal.release.base.PrefixVersionParser
 import wooga.gradle.version.internal.release.git.GitVersionRepository
 
 /**
@@ -48,15 +50,17 @@ final class VersionInferenceParameters {
     Branch currentBranch
     boolean repoDirty
 
-    VersionInferenceParameters withExtension(VersionPluginExtension extension) {
-        extension.with {
-            this.scope = it.scope.orNull
-            this.stage = it.stage.orNull
-            this.releaseBranchPattern = it.releaseBranchPattern.get()
-            this.mainBranchPattern = it.mainBranchPattern.get()
-            def git = it.git.get()
-            return withGit(git, extension.versionRepo.get())
-        }
+    VersionInferenceParameters withExtension(VersionPluginExtension ext) {
+        this.scope = ext.scope.orNull
+        this.stage = ext.stage.orNull
+        this.releaseBranchPattern = ext.releaseBranchPattern.get()
+        this.mainBranchPattern = ext.mainBranchPattern.get()
+        def git = ext.git.get()
+        def versionRepo = ext instanceof DefaultVersionPluginExtension?
+                ((DefaultVersionPluginExtension)ext).versionRepo.get():
+                GitVersionRepository.fromTagStrategy(git, new PrefixVersionParser(ext.prefix.get(), true))
+
+        return withGit(git, versionRepo)
     }
 
     VersionInferenceParameters withGit(Grgit git,

@@ -125,7 +125,7 @@ class VersionCodeSpec extends Specification {
 
         expect:
         def versionRepository = GitVersionRepository.fromTagStrategy(git, tagStrategy)
-        VersionCode.generateBuildNumberVersionCode(versionRepository, countPrerelease, offset) == expectedValue
+        VersionCode.generateBuildNumberVersionCode(versionRepository, countPrerelease) + offset == expectedValue
 
         cleanup:
         tempDir.deleteDir()
@@ -168,7 +168,7 @@ class VersionCodeSpec extends Specification {
 
         expect:
         def versionRepository = GitVersionRepository.fromTagStrategy(git, tagStrategy)
-        VersionCode.generateBuildNumberVersionCode(versionRepository, countPrerelease, offset) == expectedValue
+        VersionCode.generateBuildNumberVersionCode(versionRepository, countPrerelease) + offset == expectedValue
 
         cleanup:
         tempDir.deleteDir()
