@@ -26,12 +26,28 @@ import wooga.gradle.version.internal.release.base.PrefixVersionParser
 import wooga.gradle.version.internal.release.git.GitVersionRepository
 
 class DefaultVersionPluginExtension implements VersionPluginExtension {
-    final Provider<GitVersionRepository> versionRepo;
+    final Provider<GitVersionRepository> versionRepo
+    final Provider<GitVersionRepository> ciVersionRepo
+    final Provider<GitVersionRepository> releaseVersionRepo
 
     DefaultVersionPluginExtension() {
-        versionRepo = ProviderExtensions.mapOnce(git, { Grgit it ->
+        (versionRepo, ciVersionRepo, releaseVersionRepo)  = createVersionRepositories(git, prefix)
+    }
+
+    static Tuple3<Provider<GitVersionRepository>,Provider<GitVersionRepository>,Provider<GitVersionRepository>>
+    createVersionRepositories(Provider<Grgit> git, Provider<String> prefix) {
+        def versionRepo = ProviderExtensions.mapOnce(git, { Grgit it ->
             GitVersionRepository.fromTagStrategy(it, new PrefixVersionParser(prefix.get(), true))
         })
+        def ciVersionRepo = ProviderExtensions.mapOnce(git, {Grgit it ->
+            GitVersionRepository.fromTagStrategy(it, new PrefixVersionParser("${prefix.get()}ci-", false))
+        })
+        def releaseVersionRepo = ProviderExtensions.mapOnce(git, {Grgit it ->
+            GitVersionRepository.fromTagStrategy(it, new PrefixVersionParser("${prefix.get()}release-", false))
+        })
+        return new Tuple3<Provider<GitVersionRepository>,Provider<GitVersionRepository>,Provider<GitVersionRepository>>(
+                versionRepo, ciVersionRepo, releaseVersionRepo
+        )
     }
 
 

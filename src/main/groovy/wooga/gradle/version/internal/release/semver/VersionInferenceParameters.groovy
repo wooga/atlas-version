@@ -21,6 +21,7 @@ import groovy.transform.ToString
 import org.ajoberstar.grgit.Branch
 import org.ajoberstar.grgit.Commit
 import org.ajoberstar.grgit.Grgit
+import org.gradle.api.provider.Provider
 import wooga.gradle.version.VersionPluginExtension
 import wooga.gradle.version.internal.DefaultVersionPluginExtension
 import wooga.gradle.version.internal.release.base.PrefixVersionParser
@@ -56,17 +57,20 @@ final class VersionInferenceParameters {
         this.releaseBranchPattern = ext.releaseBranchPattern.get()
         this.mainBranchPattern = ext.mainBranchPattern.get()
         def git = ext.git.get()
-        def versionRepo = ext instanceof DefaultVersionPluginExtension?
-                ((DefaultVersionPluginExtension)ext).versionRepo.get():
-                GitVersionRepository.fromTagStrategy(git, new PrefixVersionParser(ext.prefix.get(), true))
 
-        return withGit(git, versionRepo)
+        Provider<GitVersionRepository> versionRepo, ciVersionRepo, releaseVersionRepo
+        if(ext instanceof DefaultVersionPluginExtension) {
+            (versionRepo, ciVersionRepo, releaseVersionRepo) = new Tuple3<>(ext.versionRepo, ext.ciVersionRepo, ext.releaseVersionRepo)
+        } else {
+            (versionRepo, ciVersionRepo, releaseVersionRepo) = DefaultVersionPluginExtension.createVersionRepositories(ext.git, ext.prefix)
+        }
+        return withGit(git, versionRepo.get(), ciVersionRepo.get(), releaseVersionRepo.get())
     }
 
     VersionInferenceParameters withGit(Grgit git,
                                        GitVersionRepository baseVersionRepo,
-                                       GitVersionRepository ciVersionRepo = GitVersionRepository.fromTagPrefix(git, "ci-"), //TODO: do something about this
-                                       GitVersionRepository releaseVersionRepo = GitVersionRepository.fromTagPrefix(git, "release-")) {
+                                       GitVersionRepository ciVersionRepo,
+                                       GitVersionRepository releaseVersionRepo) {
         this.nearestVersion = baseVersionRepo.nearestVersion()
         this.nearestCiMarker = ciVersionRepo.nearestVersion()
         this.nearestReleaseMarker = releaseVersionRepo.nearestVersion()
