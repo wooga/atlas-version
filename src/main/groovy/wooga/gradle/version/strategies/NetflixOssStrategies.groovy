@@ -31,7 +31,7 @@ import static wooga.gradle.version.internal.release.semver.StrategyUtil.closure
 /**
  *
  * WARNING: This class have known issues. If you want this to work, please set NetflixOssStrategies.project with your current project.
- * This class is deprecated and may be removed in the next releases.
+ * This class was deprecated in the last major and may be removed in the next releases.
  */
 @Deprecated
 class NetflixOssStrategies {

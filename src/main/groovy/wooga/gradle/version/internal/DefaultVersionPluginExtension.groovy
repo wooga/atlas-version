@@ -34,8 +34,9 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
         (versionRepo, ciVersionRepo, releaseVersionRepo)  = createVersionRepositories(git, prefix)
     }
 
-    static Tuple3<Provider<GitVersionRepository>,Provider<GitVersionRepository>,Provider<GitVersionRepository>>
-    createVersionRepositories(Provider<Grgit> git, Provider<String> prefix) {
+    static Tuple3<Provider<GitVersionRepository>,
+                  Provider<GitVersionRepository>,
+                  Provider<GitVersionRepository>> createVersionRepositories(Provider<Grgit> git, Provider<String> prefix) {
         def versionRepo = ProviderExtensions.mapOnce(git, { Grgit it ->
             GitVersionRepository.fromTagStrategy(it, new PrefixVersionParser(prefix.get(), true))
         })

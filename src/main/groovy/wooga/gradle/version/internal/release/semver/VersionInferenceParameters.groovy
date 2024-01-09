@@ -60,7 +60,7 @@ final class VersionInferenceParameters {
 
         Provider<GitVersionRepository> versionRepo, ciVersionRepo, releaseVersionRepo
         if(ext instanceof DefaultVersionPluginExtension) {
-            (versionRepo, ciVersionRepo, releaseVersionRepo) = new Tuple3<>(ext.versionRepo, ext.ciVersionRepo, ext.releaseVersionRepo)
+            (versionRepo, ciVersionRepo, releaseVersionRepo) = [ext.versionRepo, ext.ciVersionRepo, ext.releaseVersionRepo]
         } else {
             (versionRepo, ciVersionRepo, releaseVersionRepo) = DefaultVersionPluginExtension.createVersionRepositories(ext.git, ext.prefix)
         }
