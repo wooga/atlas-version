@@ -21,17 +21,18 @@ package wooga.gradle.version.internal
 import com.wooga.gradle.extensions.ProviderExtensions
 import org.ajoberstar.grgit.Grgit
 import org.gradle.api.provider.Provider
+import wooga.gradle.version.VersionPluginConventions
 import wooga.gradle.version.VersionPluginExtension
 import wooga.gradle.version.internal.release.base.PrefixVersionParser
 import wooga.gradle.version.internal.release.git.GitVersionRepository
 
 class DefaultVersionPluginExtension implements VersionPluginExtension {
     final Provider<GitVersionRepository> versionRepo
-    final Provider<GitVersionRepository> ciVersionRepo
-    final Provider<GitVersionRepository> releaseVersionRepo
+    final Provider<GitVersionRepository> ciMarkerRepo
+    final Provider<GitVersionRepository> releaseMarkerRepo
 
     DefaultVersionPluginExtension() {
-        (versionRepo, ciVersionRepo, releaseVersionRepo)  = createVersionRepositories(git, prefix)
+        (versionRepo, ciMarkerRepo, releaseMarkerRepo)  = createVersionRepositories(git, prefix)
     }
 
     static Tuple3<Provider<GitVersionRepository>,
@@ -40,15 +41,20 @@ class DefaultVersionPluginExtension implements VersionPluginExtension {
         def versionRepo = ProviderExtensions.mapOnce(git, { Grgit it ->
             GitVersionRepository.fromTagStrategy(it, new PrefixVersionParser(prefix.get(), true))
         })
-        def ciVersionRepo = ProviderExtensions.mapOnce(git, {Grgit it ->
-            GitVersionRepository.fromTagStrategy(it, new PrefixVersionParser("${prefix.get()}ci-", false))
+
+        def ciMarkerRepo = ProviderExtensions.mapOnce(git, {Grgit it ->
+            GitVersionRepository.fromTagStrategy(it, new PrefixVersionParser("${markerPrefix(prefix.get())}ci-", false))
         })
-        def releaseVersionRepo = ProviderExtensions.mapOnce(git, {Grgit it ->
-            GitVersionRepository.fromTagStrategy(it, new PrefixVersionParser("${prefix.get()}release-", false))
+        def releaseMarkerRepo = ProviderExtensions.mapOnce(git, {Grgit it ->
+            GitVersionRepository.fromTagStrategy(it, new PrefixVersionParser("${markerPrefix(prefix.get())}release-", false))
         })
         return new Tuple3<Provider<GitVersionRepository>,Provider<GitVersionRepository>,Provider<GitVersionRepository>>(
-                versionRepo, ciVersionRepo, releaseVersionRepo
+                versionRepo, ciMarkerRepo, releaseMarkerRepo
         )
+    }
+
+    static String markerPrefix(String prefix) {
+        VersionPluginConventions.DEFAULT_PREFIX == prefix? "" : prefix
     }
 
 

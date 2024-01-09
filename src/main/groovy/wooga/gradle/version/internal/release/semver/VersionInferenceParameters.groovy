@@ -15,7 +15,7 @@
  */
 package wooga.gradle.version.internal.release.semver
 
-import com.wooga.gradle.extensions.ProviderExtensions
+
 import groovy.transform.MapConstructor
 import groovy.transform.ToString
 import org.ajoberstar.grgit.Branch
@@ -24,7 +24,6 @@ import org.ajoberstar.grgit.Grgit
 import org.gradle.api.provider.Provider
 import wooga.gradle.version.VersionPluginExtension
 import wooga.gradle.version.internal.DefaultVersionPluginExtension
-import wooga.gradle.version.internal.release.base.PrefixVersionParser
 import wooga.gradle.version.internal.release.git.GitVersionRepository
 
 /**
@@ -60,7 +59,7 @@ final class VersionInferenceParameters {
 
         Provider<GitVersionRepository> versionRepo, ciVersionRepo, releaseVersionRepo
         if(ext instanceof DefaultVersionPluginExtension) {
-            (versionRepo, ciVersionRepo, releaseVersionRepo) = [ext.versionRepo, ext.ciVersionRepo, ext.releaseVersionRepo]
+            (versionRepo, ciVersionRepo, releaseVersionRepo) = [ext.versionRepo, ext.ciMarkerRepo, ext.releaseMarkerRepo]
         } else {
             (versionRepo, ciVersionRepo, releaseVersionRepo) = DefaultVersionPluginExtension.createVersionRepositories(ext.git, ext.prefix)
         }

@@ -50,8 +50,11 @@ class GitVersionRepository implements Closeable {
                                    distanceFromAny: nearestAny.distance, distanceFromNormal: nearestNormal.distance])
     }
 
+    Integer countReachableVersions(Boolean countPrerelease = true) {
+        return countReachableVersions(this.parser, countPrerelease)
+    }
 
-    int countReachableVersions(VersionParser parser = this.parser, Boolean countPrerelease = true) {
+    int countReachableVersions(VersionParser parser, Boolean countPrerelease = true) {
         def allVersions = versionsMatching(parser)
         def normalVersions = allVersions.findAll {!it.version.preReleaseVersion }
         def tagsToCalculate = (countPrerelease) ? allVersions : normalVersions

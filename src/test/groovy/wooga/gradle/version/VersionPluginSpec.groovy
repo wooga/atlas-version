@@ -826,7 +826,7 @@ class VersionPluginSpec extends ProjectSpec {
         scopeTitle = (scope == _) ? "unset" : scope
     }
 
-    @IgnoreIf({os.isWindows()}) //TODO 3.x: This test is freezing on windows for some reason. Check if this is solvable or not.
+    @IgnoreIf({os.isWindows()})
     @Unroll('verify inferred semver 2.x version from productionMarker: #productionMarkerTitle, ciMarker: #ciMarkerTitle, stage: #stage and branch: #branchName to be #expectedVersion')
     def "uses custom wooga application strategies static marker"() {
         given: "a project with specified release stage and scope"

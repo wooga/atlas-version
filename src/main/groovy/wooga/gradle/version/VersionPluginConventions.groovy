@@ -25,6 +25,8 @@ class VersionPluginConventions {
     static final String GIT_ROOT_PROPERTY = "git.root"
     static final String UNINITIALIZED_VERSION = '0.1.0-dev.0.uninitialized'
 
+    static final String DEFAULT_PREFIX = "v"
+
     static final PropertyLookup gitRoot = new PropertyLookup(
             [],
             GIT_ROOT_PROPERTY,
@@ -60,7 +62,7 @@ class VersionPluginConventions {
     static final PropertyLookup  prefix = new PropertyLookup(
             "VERSION_BUILDER_PREFIX",
             "versionBuilder.prefix",
-            "v")
+            DEFAULT_PREFIX)
 
     static final PropertyLookup mainBranchPattern = new PropertyLookup(
             "VERSION_BUILDER_MAIN_BRANCH_PATTERN",
