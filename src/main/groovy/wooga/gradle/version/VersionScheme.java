@@ -21,36 +21,6 @@ import java.util.Optional;
 //This has to be a java class (not groovy) because groovy 2 doesn't support java 8 default interface methods.
 public interface VersionScheme {
 
-    /**
-     * DEPRECATED, please use {@code VersionSchemes.semver}
-     */
-    @Deprecated
-    VersionScheme semver = VersionSchemes.semver;
-
-    /**
-     * DEPRECATED, please use {@code VersionSchemes.semver}
-     */
-    @Deprecated
-    VersionScheme semver2 = VersionSchemes.semver2;
-
-    /**
-     * DEPRECATED, please use {@code VersionSchemes.semver}
-     */
-    @Deprecated
-    VersionScheme staticMarker = VersionSchemes.staticMarker;
-
-    /**
-     * DEPRECATED, please use {@code VersionSchemes.semver}
-     */
-    @Deprecated
-    VersionScheme wdk = VersionSchemes.wdk;
-
-    /**
-     * DEPRECATED, please use {@code VersionSchemes.semver}
-     */
-    @Deprecated
-    VersionScheme upm = VersionSchemes.upm;
-
     VersionStrategy getDevelopment();
     VersionStrategy getSnapshot();
     VersionStrategy getPreRelease();
