@@ -159,13 +159,4 @@ final class SemverV2Strategies {
             preReleaseStrategy: all(Strategies.PreRelease.WITH_BRANCH_NAME,
                                     Strategies.PreRelease.COUNT_COMMITS_SINCE_ANY),
     )
-
-    static final VersionScheme scheme = new VersionScheme() {
-        final SemVerStrategy development = DEVELOPMENT
-        final SemVerStrategy snapshot = SNAPSHOT
-        final SemVerStrategy preRelease = PRE_RELEASE
-        final SemVerStrategy finalStrategy = FINAL
-        final SemVerStrategy defaultStrategy = DEVELOPMENT
-        final List<SemVerStrategy> strategies = [development, snapshot, preRelease, finalStrategy]
-    }
 }

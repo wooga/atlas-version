@@ -54,13 +54,14 @@ enum VersionSchemes implements VersionScheme {
             WdkNuGetStrategies.SNAPSHOT,
             WdkNuGetStrategies.PRE_RELEASE,
             WdkNuGetStrategies.FINAL, WdkNuGetStrategies.PREFLIGHT),
+
     /**
      * Schema for UPM-based unity3d projects. See UpmStrategies for more details.
      * IMPORTANT: please note that the pre-release strategy for this schema does not enforces order between versions.
      */
     upm(UpmStrategies.DEVELOPMENT,
             UpmStrategies.SNAPSHOT,
-            UpmStrategies.PRE_RELEASE.copyWith(enforcePrecedence: false), //this is supposed to be temporary
+            UpmStrategies.PRE_RELEASE.copyWith(enforcePrecedence: false),
             UpmStrategies.FINAL, UpmStrategies.PREFLIGHT)
 
     final VersionStrategy development
