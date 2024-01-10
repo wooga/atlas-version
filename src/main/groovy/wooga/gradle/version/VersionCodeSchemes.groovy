@@ -25,16 +25,3 @@ enum VersionCodeSchemes {
     releaseCountBasic,
     releaseCount
 }
-
-/**
- * Deprecated, Please use VersionCodeSchemes
- */
-@Deprecated
-interface VersionCodeScheme {
-    VersionCodeSchemes none = VersionCodeSchemes.none
-    VersionCodeSchemes semverBasic = VersionCodeSchemes.semverBasic
-    VersionCodeSchemes semver = VersionCodeSchemes.semver
-    VersionCodeSchemes releaseCountBasic = VersionCodeSchemes.releaseCountBasic
-    VersionCodeSchemes releaseCount = VersionCodeSchemes.releaseCount
-}
-
