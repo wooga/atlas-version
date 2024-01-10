@@ -4,16 +4,16 @@ import nebula.test.ProjectSpec
 import org.ajoberstar.grgit.Grgit
 import spock.lang.Unroll
 import wooga.gradle.version.internal.release.semver.SemVerStrategy
-import wooga.gradle.version.strategies.NewSemverV1Strategies
+import wooga.gradle.version.strategies.SemverV1Strategies
 
-class NewSemverV1StrategySpec extends ProjectSpec {
+class SemverV1StrategySpec extends ProjectSpec {
 
     public static final String PLUGIN_NAME = 'net.wooga.version'
     static final VersionScheme semverV1Scheme = new VersionScheme() {
-        final SemVerStrategy development = NewSemverV1Strategies.DEVELOPMENT
-        final SemVerStrategy snapshot = NewSemverV1Strategies.SNAPSHOT
-        final SemVerStrategy preRelease = NewSemverV1Strategies.PRE_RELEASE
-        final SemVerStrategy finalStrategy = NewSemverV1Strategies.FINAL
+        final SemVerStrategy development = SemverV1Strategies.DEVELOPMENT
+        final SemVerStrategy snapshot = SemverV1Strategies.SNAPSHOT
+        final SemVerStrategy preRelease = SemverV1Strategies.PRE_RELEASE
+        final SemVerStrategy finalStrategy = SemverV1Strategies.FINAL
         final SemVerStrategy defaultStrategy = development
         final List<SemVerStrategy> strategies = [development, snapshot, preRelease, finalStrategy]
     }

@@ -5,7 +5,7 @@ import wooga.gradle.version.internal.release.semver.ChangeScope
 import wooga.gradle.version.internal.release.semver.PartialSemVerStrategy
 import wooga.gradle.version.internal.release.semver.SemVerStrategy
 import wooga.gradle.version.internal.release.semver.StrategyUtil
-import wooga.gradle.version.strategies.NewSemverV2Strategies
+import wooga.gradle.version.strategies.SemverV2Strategies
 
 /**
  * SemverV2 strategies that uses MINOR as a fallback in case a change scope is not provided.
@@ -26,8 +26,8 @@ class SemverV2WithDefaultStrategies {
      * }
      * </pre>
      */
-     static final SemVerStrategy FINAL = NewSemverV2Strategies.FINAL.copyWith(
-            normalStrategy: chainDefaultScope(NewSemverV2Strategies.FINAL)
+     static final SemVerStrategy FINAL = SemverV2Strategies.FINAL.copyWith(
+            normalStrategy: chainDefaultScope(SemverV2Strategies.FINAL)
     )
     /**
      * Returns a version strategy to be used for {@code pre-release}/{@code candidate} builds.
@@ -65,8 +65,8 @@ class SemverV2WithDefaultStrategies {
      * }
      * </pre>
      */
-    static final SemVerStrategy PRE_RELEASE = NewSemverV2Strategies.PRE_RELEASE.copyWith(
-            normalStrategy: chainDefaultScope(NewSemverV2Strategies.PRE_RELEASE)
+    static final SemVerStrategy PRE_RELEASE = SemverV2Strategies.PRE_RELEASE.copyWith(
+            normalStrategy: chainDefaultScope(SemverV2Strategies.PRE_RELEASE)
     )
 
     /**
@@ -88,8 +88,8 @@ class SemverV2WithDefaultStrategies {
      * }
      * </pre>
      */
-    static final SemVerStrategy DEVELOPMENT = NewSemverV2Strategies.DEVELOPMENT.copyWith(
-            normalStrategy: chainDefaultScope(NewSemverV2Strategies.DEVELOPMENT),
+    static final SemVerStrategy DEVELOPMENT = SemverV2Strategies.DEVELOPMENT.copyWith(
+            normalStrategy: chainDefaultScope(SemverV2Strategies.DEVELOPMENT),
     )
 
     /**
@@ -120,8 +120,8 @@ class SemverV2WithDefaultStrategies {
      * }
      * </pre>
      */
-    static final SemVerStrategy SNAPSHOT = NewSemverV2Strategies.SNAPSHOT.copyWith(
-            normalStrategy: chainDefaultScope(NewSemverV2Strategies.SNAPSHOT),
+    static final SemVerStrategy SNAPSHOT = SemverV2Strategies.SNAPSHOT.copyWith(
+            normalStrategy: chainDefaultScope(SemverV2Strategies.SNAPSHOT),
     )
 
     private static PartialSemVerStrategy chainDefaultScope(SemVerStrategy base, ChangeScope scope = ChangeScope.MINOR) {

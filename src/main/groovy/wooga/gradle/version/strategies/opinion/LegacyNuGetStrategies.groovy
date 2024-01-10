@@ -6,10 +6,10 @@ import wooga.gradle.version.internal.release.semver.ChangeScope
 import wooga.gradle.version.internal.release.semver.PartialSemVerStrategy
 import wooga.gradle.version.internal.release.semver.SemVerStrategy
 import wooga.gradle.version.internal.release.semver.StrategyUtil
-import wooga.gradle.version.strategies.NewSemverV1Strategies
+import wooga.gradle.version.strategies.SemverV1Strategies
 
 /**
- * NuGet/Paket compatible strategies. Uses NewSemverV1Strategies as basis,
+ * NuGet/Paket compatible strategies. Uses SemverV1Strategies as basis,
  * plus using PATCH as a fallback if no change scope is provided.
  */
 class LegacyNuGetStrategies {
@@ -20,28 +20,28 @@ class LegacyNuGetStrategies {
     static final ChangeScope DEFAULT_SCOPE = ChangeScope.PATCH
 
     /**
-     * Similar to NewSemverV1Strategies.DEVELOPMENT, but its scope defaults to DEFAULT_SCOPE when no scope is provide
+     * Similar to SemverV1Strategies.DEVELOPMENT, but its scope defaults to DEFAULT_SCOPE when no scope is provide
      */
-    static final SemVerStrategy DEVELOPMENT = NewSemverV1Strategies.DEVELOPMENT.copyWith(
-            normalStrategy: chainDefaultScope(NewSemverV1Strategies.DEVELOPMENT)
+    static final SemVerStrategy DEVELOPMENT = SemverV1Strategies.DEVELOPMENT.copyWith(
+            normalStrategy: chainDefaultScope(SemverV1Strategies.DEVELOPMENT)
     )
     /**
-     * Similar to NewSemverV1Strategies.SNAPSHOT, but its scope defaults to DEFAULT_SCOPE when no scope is provide
+     * Similar to SemverV1Strategies.SNAPSHOT, but its scope defaults to DEFAULT_SCOPE when no scope is provide
      */
-    static final SemVerStrategy SNAPSHOT = NewSemverV1Strategies.SNAPSHOT.copyWith(
-            normalStrategy: chainDefaultScope(NewSemverV1Strategies.SNAPSHOT)
+    static final SemVerStrategy SNAPSHOT = SemverV1Strategies.SNAPSHOT.copyWith(
+            normalStrategy: chainDefaultScope(SemverV1Strategies.SNAPSHOT)
     )
     /**
-     * Similar to NewSemverV1Strategies.PRE_RELEASE, but its scope defaults to DEFAULT_SCOPE when no scope is provide
+     * Similar to SemverV1Strategies.PRE_RELEASE, but its scope defaults to DEFAULT_SCOPE when no scope is provide
      */
-    static final SemVerStrategy PRE_RELEASE = NewSemverV1Strategies.PRE_RELEASE.copyWith(
-            normalStrategy: chainDefaultScope(NewSemverV1Strategies.PRE_RELEASE)
+    static final SemVerStrategy PRE_RELEASE = SemverV1Strategies.PRE_RELEASE.copyWith(
+            normalStrategy: chainDefaultScope(SemverV1Strategies.PRE_RELEASE)
     )
     /**
-     * Similar to NewSemverV1Strategies.FINAL, but its scope defaults to DEFAULT_SCOPE when no scope is provide
+     * Similar to SemverV1Strategies.FINAL, but its scope defaults to DEFAULT_SCOPE when no scope is provide
      */
-    static final SemVerStrategy FINAL = NewSemverV1Strategies.FINAL.copyWith(
-            normalStrategy: chainDefaultScope(NewSemverV1Strategies.FINAL)
+    static final SemVerStrategy FINAL = SemverV1Strategies.FINAL.copyWith(
+            normalStrategy: chainDefaultScope(SemverV1Strategies.FINAL)
     )
 
     private static PartialSemVerStrategy chainDefaultScope(SemVerStrategy base, ChangeScope scope = DEFAULT_SCOPE) {
