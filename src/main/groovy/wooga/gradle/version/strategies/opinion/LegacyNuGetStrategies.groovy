@@ -10,14 +10,14 @@ import wooga.gradle.version.strategies.SemverV1Strategies
 
 /**
  * NuGet/Paket compatible strategies. Uses SemverV1Strategies as basis,
- * plus using PATCH as a fallback if no change scope is provided.
+ * plus using MINOR as a fallback if no change scope is provided.
  */
 class LegacyNuGetStrategies {
 
     /**
      * Scope that will be set when no scope is provided to the strategies under this class
      */
-    static final ChangeScope DEFAULT_SCOPE = ChangeScope.PATCH
+    static final ChangeScope DEFAULT_SCOPE = ChangeScope.MINOR
 
     /**
      * Similar to SemverV1Strategies.DEVELOPMENT, but its scope defaults to DEFAULT_SCOPE when no scope is provide

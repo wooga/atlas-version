@@ -17,7 +17,6 @@
 
 package wooga.gradle.version.strategies
 
-import wooga.gradle.version.VersionScheme
 import wooga.gradle.version.ReleaseStage
 import wooga.gradle.version.internal.release.opinion.Strategies
 import wooga.gradle.version.internal.release.semver.SemVerStrategy
