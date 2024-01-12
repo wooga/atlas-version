@@ -20,42 +20,42 @@ package wooga.gradle.version.internal
 
 import com.wooga.gradle.extensions.ProviderExtensions
 import org.ajoberstar.grgit.Grgit
-import wooga.gradle.version.ReleaseStage
-import org.gradle.api.Project
 import org.gradle.api.provider.Provider
+import wooga.gradle.version.VersionPluginConventions
 import wooga.gradle.version.VersionPluginExtension
 import wooga.gradle.version.internal.release.base.PrefixVersionParser
 import wooga.gradle.version.internal.release.git.GitVersionRepository
 
 class DefaultVersionPluginExtension implements VersionPluginExtension {
+    final Provider<GitVersionRepository> versionRepo
+    final Provider<GitVersionRepository> ciMarkerRepo
+    final Provider<GitVersionRepository> releaseMarkerRepo
 
-    private final Project project;
+    DefaultVersionPluginExtension() {
+        (versionRepo, ciMarkerRepo, releaseMarkerRepo)  = createVersionRepositories(git, prefix)
+    }
 
-    DefaultVersionPluginExtension(Project project) {
-        this.project = project
-        this.versionRepo = ProviderExtensions.mapOnce(git) { Grgit it ->
+    static Tuple3<Provider<GitVersionRepository>,
+                  Provider<GitVersionRepository>,
+                  Provider<GitVersionRepository>> createVersionRepositories(Provider<Grgit> git, Provider<String> prefix) {
+        def versionRepo = ProviderExtensions.mapOnce(git, { Grgit it ->
             GitVersionRepository.fromTagStrategy(it, new PrefixVersionParser(prefix.get(), true))
-        }
+        })
 
-        // It's development if the development strategy contains the set `stage` OR
-        // if the default strategy's release stage is development
-        this.isDevelopment = canRunStageWithName(ReleaseStage.Development, stage)
-        this.isSnapshot = canRunStageWithName(ReleaseStage.Snapshot, stage)
-        this.isPrerelease = canRunStageWithName(ReleaseStage.Prerelease, stage)
-        this.isFinal = canRunStageWithName(ReleaseStage.Final, stage)
-
+        def ciMarkerRepo = ProviderExtensions.mapOnce(git, {Grgit it ->
+            GitVersionRepository.fromTagStrategy(it, new PrefixVersionParser("${markerPrefix(prefix.get())}ci-", false))
+        })
+        def releaseMarkerRepo = ProviderExtensions.mapOnce(git, {Grgit it ->
+            GitVersionRepository.fromTagStrategy(it, new PrefixVersionParser("${markerPrefix(prefix.get())}release-", false))
+        })
+        return new Tuple3<Provider<GitVersionRepository>,Provider<GitVersionRepository>,Provider<GitVersionRepository>>(
+                versionRepo, ciMarkerRepo, releaseMarkerRepo
+        )
     }
 
-    private Provider<Boolean> canRunStageWithName(ReleaseStage releaseStage, Provider<String> stageProvider) {
-        def strategy = versionScheme.map{
-            it.strategyFor(releaseStage)
-        }
-
-        return strategy.flatMap { versionStrategy ->
-            stageProvider.map{ stage -> versionStrategy.stages.contains(stage) }
-        }
-        .orElse(versionScheme.map({
-            it.defaultStrategy.releaseStage == releaseStage
-        }))
+    static String markerPrefix(String prefix) {
+        VersionPluginConventions.DEFAULT_PREFIX == prefix? "" : prefix
     }
+
+
 }

@@ -22,6 +22,9 @@ import com.github.zafarkhaja.semver.ParseException
 import com.github.zafarkhaja.semver.Version
 import org.apache.commons.lang3.StringUtils
 
+/**
+ * Parses version based on a prefix. It can try to parse without a prefix if its necessary.
+ */
 class PrefixVersionParser implements VersionParser {
 
     final String prefix

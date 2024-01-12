@@ -7,15 +7,20 @@ import wooga.gradle.version.internal.release.base.PrefixVersionParser
 import wooga.gradle.version.internal.release.base.VersionParser
 import wooga.gradle.version.internal.release.semver.NearestVersion
 
+/**
+ * Version storage in a git backend.
+ */
 class GitVersionRepository implements Closeable {
 
-    static GitVersionRepository fromTagPrefix(Grgit grgit, String prefix) {
-        return fromTagStrategy(grgit, new PrefixVersionParser(prefix, false))
-    }
-
-    static GitVersionRepository fromTagStrategy(Grgit grgit, VersionParser strategy) {
+    /**
+     * Creates a new GitVersionRespository based on a git repository (GrGit instance) and a parser that translates tags into versions.
+     * @param grgit - desired base git repository
+     * @param parser - translates, in this case, git tag names into proper versions
+     * @return GitVersionRepository
+     */
+    static GitVersionRepository fromTagStrategy(Grgit grgit, VersionParser parser) {
         def walker = GrGitWalk.fromGrGit(grgit)
-        return new GitVersionRepository(grgit, walker, strategy)
+        return new GitVersionRepository(grgit, walker, parser)
     }
 
     final Grgit grgit
@@ -28,10 +33,15 @@ class GitVersionRepository implements Closeable {
         this.parser = parser
     }
 
-    NearestVersion nearestVersion(VersionParser strategy = this.parser) {
+    /**
+     * Finds the nearest version to the repository current HEAD.
+     * @param parser - Custom tag name to version parser. Defaults to the one informed in the object creation.
+     * @return NearestVersion with data regarding the nearest version.
+     */
+    NearestVersion nearestVersion(VersionParser parser = this.parser) {
         def head = grgit.head()
 
-        def allVersions = versionsMatching(strategy)
+        def allVersions = versionsMatching(parser)
         def normalVersions = allVersions.findAll { !it.version.preReleaseVersion }
 
         def nearestNormal = nearestVersionFrom(head, normalVersions)
@@ -44,12 +54,17 @@ class GitVersionRepository implements Closeable {
         return countReachableVersions(this.parser, countPrerelease)
     }
 
-    Integer countReachableVersions(VersionParser strategy, Boolean countPrerelease = true) {
-        def allVersions = versionsMatching(strategy)
+    int countReachableVersions(VersionParser parser, Boolean countPrerelease = true) {
+        def allVersions = versionsMatching(parser)
         def normalVersions = allVersions.findAll {!it.version.preReleaseVersion }
         def tagsToCalculate = (countPrerelease) ? allVersions : normalVersions
 
         return countReachableVersions(grgit.head(), tagsToCalculate)
+    }
+
+    protected int countReachableVersions(Commit head, List<GitVersion> versions) {
+        def reachableVersionTags = reachableVersionsFrom(head, versions)
+        return reachableVersionTags? reachableVersionTags.size() : 0
     }
 
     protected Collection<GitVersion> reachableVersionsFrom(Commit head, List<GitVersion> versionTags, boolean unmarkParents = false) {
@@ -84,20 +99,16 @@ class GitVersionRepository implements Closeable {
         }
     }
 
-    protected Integer countReachableVersions(Commit head, List<GitVersion> versions) {
-        def reachableVersionTags = reachableVersionsFrom(head, versions)
-        return reachableVersionTags? reachableVersionTags.size() : 0
-    }
 
-    protected GitVersion createVersion(VersionParser strategy, Tag tag) {
-        def version = strategy.parse(tag.name)
+    protected GitVersion createVersion(VersionParser parser, Tag tag) {
+        def version = parser.parse(tag.name)
         def commit = grgit.resolve.toCommit(tag)
         return version? new GitVersion(version, tag, commit, -1) : null
     }
 
-    protected List<GitVersion> versionsMatching(VersionParser strategy) {
+    protected List<GitVersion> versionsMatching(VersionParser parser) {
         return grgit.tag.list().collect { tag ->
-            createVersion(strategy, tag)
+            createVersion(parser, tag)
         }.findAll {it != null }
     }
 

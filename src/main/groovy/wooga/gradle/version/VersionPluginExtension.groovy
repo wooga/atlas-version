@@ -19,21 +19,15 @@
 package wooga.gradle.version
 
 import com.wooga.gradle.BaseSpec
-import com.wooga.gradle.extensions.ProviderExtensions
 import org.ajoberstar.grgit.Grgit
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.Optional
 import wooga.gradle.version.internal.GitStrategyPicker
 import wooga.gradle.version.internal.release.base.ReleaseVersion
 import wooga.gradle.version.internal.release.base.VersionStrategy
-import wooga.gradle.version.internal.release.git.GitVersionRepository
-import wooga.gradle.version.internal.release.base.PrefixVersionParser
 import wooga.gradle.version.internal.release.semver.ChangeScope
 import wooga.gradle.version.internal.release.semver.VersionInferenceParameters
 
-//TODO 3.x: review what should be exposed and what shouldnt. Maybe split this into internal/external and/or interface.
 trait VersionPluginExtension implements BaseSpec {
 
     /**
@@ -65,7 +59,6 @@ trait VersionPluginExtension implements BaseSpec {
     Property<VersionCodeSchemes> getVersionCodeScheme() {
         versionCodeScheme
     }
-
 
     void versionCodeScheme(VersionCodeSchemes value) {
         setVersionCodeScheme(value)
@@ -122,6 +115,7 @@ trait VersionPluginExtension implements BaseSpec {
     Property<String> getReleaseBranchPattern() {
         releaseBranchPattern
     }
+    //Or not true, or already resolved
     //TODO 3.x: Defaults for this property are embbed in the strategy. Find a way to get them to extension-level, as well as other defaults.
     private final Property<String> releaseBranchPattern = objects.property(String)
 
@@ -147,8 +141,7 @@ trait VersionPluginExtension implements BaseSpec {
     Property<String> getMainBranchPattern() {
         mainBranchPattern
     }
-    //TODO 3.x: Defaults for this property are embbed in the strategy. Find a way to get them to extension-level, as well as other defaults.
-    //TODO: 3x. This is true for other properties as well, investigate.
+
     private final Property<String> mainBranchPattern = objects.property(String)
 
     void mainBranchPattern(String value) {
@@ -229,7 +222,7 @@ trait VersionPluginExtension implements BaseSpec {
     Property<String> getStage() {
         stage
     }
-    //TODO 3.x: This guy defaults are kinda messy, figure this out
+
     private final Property<String> stage = objects.property(String)
 
     void setStage(Provider<String> value) {
@@ -278,78 +271,11 @@ trait VersionPluginExtension implements BaseSpec {
         this.prefix.set(prefix)
     }
 
-    /**
-     * @return Whether this is a development build
-     */
-    Provider<Boolean> getIsDevelopment() {
-        isDevelopment
-    }
+    private final Provider<Boolean> isDevelopment = canRunStageWithName(ReleaseStage.Development, stage)
+    private final Provider<Boolean> isSnapshot = canRunStageWithName(ReleaseStage.Snapshot, stage)
+    private final Provider<Boolean> isPrerelease = canRunStageWithName(ReleaseStage.Prerelease, stage)
+    private final Provider<Boolean> isFinal = canRunStageWithName(ReleaseStage.Final, stage)
 
-    void setIsDevelopment(Provider<Boolean> value) {
-        isDevelopment.set(value)
-    }
-
-    private final Property<Boolean> isDevelopment = objects.property(Boolean)
-
-    /**
-     * @return Whether this is a production build
-     */
-    Property<Boolean> getIsFinal() {
-        isFinal
-    }
-
-    private final Property<Boolean> isFinal = objects.property(Boolean)
-
-    void setIsFinal(Provider<Boolean> value) {
-        isFinal.set(value)
-    }
-
-    void setIsFinal(Boolean isFinal) {
-        this.isFinal.set(isFinal)
-    }
-
-    /**
-     * @return Whether this is a pre-release build
-     */
-    Property<Boolean> getIsPrerelease() {
-        isPrerelease
-    }
-
-    private final Property<Boolean> isPrerelease = objects.property(Boolean)
-
-    void setIsPrerelease(Provider<Boolean> value) {
-        isPrerelease.set(value)
-    }
-
-    void setIsPrerelease(Boolean value) {
-        isPrerelease.set(value)
-    }
-
-    /**
-     * @return Whether this is a snapshot build (such as from a CI environment)
-     */
-    Provider<Boolean> getIsSnapshot() {
-        isSnapshot
-    }
-
-    private final Property<Boolean> isSnapshot = objects.property(Boolean)
-
-    void setIsSnapshot(Provider<Boolean> value) {
-        isSnapshot.set(value)
-    }
-
-    void setIsSnapshot(Boolean value) {
-        isSnapshot.set(value)
-    }
-
-    /**
-     * @return The deduced release stage for this build
-     */
-    Provider<ReleaseStage> getReleaseStage() {
-        releaseStage
-    }
-    //TODO 3.x: isDevelopment, isFinal, etc are only used to calculate this. Expose only releaseStage
-    // and don't expose is<<stage>> properties.
     private final Provider<ReleaseStage> releaseStage = providers.provider { ->
         if (isDevelopment.getOrElse(false)) {
             return ReleaseStage.Development
@@ -366,9 +292,11 @@ trait VersionPluginExtension implements BaseSpec {
         }
     }.orElse(ReleaseStage.Unknown)
 
-    //TODO 3.x don't expose this.
-    Provider<GitVersionRepository> versionRepo = ProviderExtensions.mapOnce(git) { Grgit it ->
-        GitVersionRepository.fromTagStrategy(it, new PrefixVersionParser(prefix.get(), true))
+    /**
+     * @return The deduced release stage for this build
+     */
+    Provider<ReleaseStage> getReleaseStage() {
+        releaseStage
     }
 
     /**
@@ -399,5 +327,18 @@ trait VersionPluginExtension implements BaseSpec {
         }).map {
             new GitStrategyPicker(it).pickStrategy(scheme, stageProvider.orNull)
         }
+    }
+
+    private Provider<Boolean> canRunStageWithName(ReleaseStage releaseStage, Provider<String> stageProvider) {
+        def strategy = versionScheme.map {
+            it.strategyFor(releaseStage)
+        }
+
+        return strategy.flatMap { versionStrategy ->
+            stageProvider.map{ stage -> versionStrategy.stages.contains(stage) }
+        }
+        .orElse(versionScheme.map({
+            it.defaultStrategy.releaseStage == releaseStage
+        }))
     }
 }

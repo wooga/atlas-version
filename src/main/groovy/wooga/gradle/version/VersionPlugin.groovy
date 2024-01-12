@@ -79,7 +79,7 @@ class VersionPlugin implements Plugin<Project> {
 
     protected static VersionPluginExtension createAndConfigureExtension(Project project) {
 
-        def extension = project.extensions.create(VersionPluginExtension, EXTENSION_NAME, DefaultVersionPluginExtension, project)
+         def extension = project.extensions.create(VersionPluginExtension, EXTENSION_NAME, DefaultVersionPluginExtension) as DefaultVersionPluginExtension
 
         Provider<String> gitRoot = VersionPluginConventions.gitRoot.getStringValueProvider(project)
         .orElse(VersionPluginConventions.maxGitRootSearchDepth.getIntegerValueProvider(project).map {
