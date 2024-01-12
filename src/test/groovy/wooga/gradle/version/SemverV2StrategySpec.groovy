@@ -5,17 +5,17 @@ import org.ajoberstar.grgit.Grgit
 import spock.lang.Unroll
 import wooga.gradle.version.internal.release.opinion.Strategies
 import wooga.gradle.version.internal.release.semver.SemVerStrategy
-import wooga.gradle.version.strategies.NewSemverV2Strategies
+import wooga.gradle.version.strategies.SemverV2Strategies
 
-class NewSemverV2StrategySpec extends ProjectSpec {
+class SemverV2StrategySpec extends ProjectSpec {
 
     public static final String PLUGIN_NAME = 'net.wooga.version'
 
     static final VersionScheme semverV2Scheme = new VersionScheme() {
-        final SemVerStrategy development = NewSemverV2Strategies.DEVELOPMENT
-        final SemVerStrategy snapshot = NewSemverV2Strategies.SNAPSHOT
-        final SemVerStrategy preRelease = NewSemverV2Strategies.PRE_RELEASE
-        final SemVerStrategy finalStrategy = NewSemverV2Strategies.FINAL
+        final SemVerStrategy development = SemverV2Strategies.DEVELOPMENT
+        final SemVerStrategy snapshot = SemverV2Strategies.SNAPSHOT
+        final SemVerStrategy preRelease = SemverV2Strategies.PRE_RELEASE
+        final SemVerStrategy finalStrategy = SemverV2Strategies.FINAL
         final SemVerStrategy defaultStrategy = development
         final List<SemVerStrategy> strategies = [development, snapshot, preRelease, finalStrategy]
     }

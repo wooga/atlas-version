@@ -17,89 +17,21 @@
 
 package wooga.gradle.version.strategies
 
+import wooga.gradle.version.VersionScheme
 import wooga.gradle.version.ReleaseStage
 import wooga.gradle.version.internal.release.opinion.Strategies
-import wooga.gradle.version.internal.release.opinion.Strategies.BuildMetadata
-import wooga.gradle.version.internal.release.semver.ChangeScope
-import wooga.gradle.version.internal.release.semver.PartialSemVerStrategy
 import wooga.gradle.version.internal.release.semver.SemVerStrategy
-import wooga.gradle.version.internal.release.semver.SemVerStrategyState
-
-import java.util.regex.Pattern
+import wooga.gradle.version.strategies.partials.NormalPartials
 
 import static wooga.gradle.version.internal.release.semver.StrategyUtil.*
 
-/**
- * Deprecated, please use SemverV2WithDefaultStrategies instead.
- */
-@Deprecated
+
 final class SemverV2Strategies {
 
-    private static final scopes = one(
+    static final NORMAL_STRATEGY = one(
             Strategies.Normal.USE_SCOPE_STATE,
-            Normal.matchBranchPatternAndUseScope(~/feature(?:\/|-).+$/, ChangeScope.MINOR),
-            Normal.matchBranchPatternAndUseScope(~/hotfix(?:\/|-).+$/, ChangeScope.PATCH),
-            Normal.matchBranchPatternAndUseScope(~/fix(?:\/|-).+$/, ChangeScope.MINOR),
-            Strategies.Normal.ENFORCE_GITFLOW_BRANCH_MAJOR_X,
-            Strategies.Normal.ENFORCE_BRANCH_MAJOR_X,
-            Strategies.Normal.ENFORCE_GITFLOW_BRANCH_MAJOR_MINOR_X,
-            Strategies.Normal.ENFORCE_BRANCH_MAJOR_MINOR_X,
-            Strategies.Normal.USE_NEAREST_ANY,
-            Strategies.Normal.useScope(ChangeScope.MINOR)
-    )
-
-    static final class Normal {
-        static PartialSemVerStrategy matchBranchPatternAndUseScope(Pattern pattern, ChangeScope scope) {
-            return closure { SemVerStrategyState state ->
-                def m = state.currentBranch.name =~ pattern
-                if (m.matches()) {
-                    return incrementNormalFromScope(state, scope)
-                }
-
-                return state
-            }
-        }
-    }
-
-    static final class PreRelease {
-        static PartialSemVerStrategy STAGE_BRANCH_NAME = closure { SemVerStrategyState state ->
-            String branchName = state.currentBranch.name
-            String prefix = "branch"
-
-            if (branchName == "HEAD" && System.getenv("BRANCH_NAME")) {
-                branchName = System.getenv("BRANCH_NAME")
-            }
-
-            if (!branchName.matches(state.mainBranchPattern)) {
-                branchName = "$prefix.${branchName.toLowerCase()}"
-            }
-            //Split at branch delimiter /-_+ and replace with .
-            branchName = branchName.replaceAll(/((\/|-|_|\.)+)([\w])/) { all, delimiterAll, delimiter , firstAfter -> ".${firstAfter}" }
-            //Remove all hanging /-_+
-            branchName = branchName.replaceAll(/[-\/_\+]+$/) { "" }
-            //parse all digits and replace with unpadded value e.g. 001 -> 1
-            branchName = branchName.replaceAll(/([\w\.])([0-9]+)/) { all, s, delimiter ->
-                if(s == ".") {
-                    s = ""
-                }
-
-                "${s}.${Integer.parseInt(delimiter).toString()}"
-            }
-            def inferred = state.inferredPreRelease ? "${state.inferredPreRelease}.${branchName}" : "${branchName}"
-            state.copyWith(inferredPreRelease: inferred)
-        }
-    }
-
-    static final SemVerStrategy DEFAULT = new SemVerStrategy(
-            name: '',
-            stages: [] as SortedSet,
-            allowDirtyRepo: true,
-            normalStrategy: scopes,
-            preReleaseStrategy: Strategies.PreRelease.NONE,
-            buildMetadataStrategy: BuildMetadata.NONE,
-            createTag: true,
-            enforcePrecedence: true,
-            releaseStage: ReleaseStage.Unknown
+            NormalPartials.SCOPE_FROM_BRANCH,
+            Strategies.Normal.USE_NEAREST_ANY
     )
 
     /**
@@ -116,12 +48,13 @@ final class SemverV2Strategies {
      * }
      * </pre>
      */
-    static final SemVerStrategy FINAL = DEFAULT.copyWith(
+    static final SemVerStrategy FINAL = Strategies.FINAL.copyWith(
             name: 'production',
+            allowDirtyRepo: true,
+            normalStrategy: NORMAL_STRATEGY,
             stages: ['final','production'] as SortedSet,
             releaseStage: ReleaseStage.Final
     )
-
     /**
      * Returns a version strategy to be used for {@code pre-release}/{@code candidate} builds.
      * <p>
@@ -158,11 +91,13 @@ final class SemverV2Strategies {
      * }
      * </pre>
      */
-    static final SemVerStrategy PRE_RELEASE = DEFAULT.copyWith(
+    static final SemVerStrategy PRE_RELEASE = Strategies.PRE_RELEASE.copyWith(
             name: 'pre-release',
+            normalStrategy: NORMAL_STRATEGY,
             stages: ['rc', 'staging'] as SortedSet,
             preReleaseStrategy: all(Strategies.PreRelease.STAGE_FIXED, Strategies.PreRelease.COUNT_INCREMENTED),
-            releaseStage: ReleaseStage.Prerelease
+            releaseStage: ReleaseStage.Prerelease,
+            allowDirtyRepo: true,
     )
 
     /**
@@ -185,8 +120,8 @@ final class SemverV2Strategies {
      * </pre>
      */
     static final SemVerStrategy DEVELOPMENT = Strategies.DEVELOPMENT.copyWith(
-            normalStrategy: scopes,
-            buildMetadataStrategy: NetflixOssStrategies.BuildMetadata.DEVELOPMENT_METADATA_STRATEGY
+            normalStrategy: NORMAL_STRATEGY,
+            buildMetadataStrategy: Strategies.BuildMetadata.COMMIT_ABBREVIATED_ID,
     )
 
     /**
@@ -217,12 +152,11 @@ final class SemverV2Strategies {
      * }
      * </pre>
      */
-    static final SemVerStrategy SNAPSHOT = DEFAULT.copyWith(
-            name: 'snapshot',
+    static final SemVerStrategy SNAPSHOT = Strategies.SNAPSHOT.copyWith(
             stages: ['ci', 'snapshot', 'SNAPSHOT'] as SortedSet,
-            createTag: false,
-            preReleaseStrategy: all(PreRelease.STAGE_BRANCH_NAME, Strategies.PreRelease.COUNT_COMMITS_SINCE_ANY),
-            enforcePrecedence: false,
-            releaseStage: ReleaseStage.Snapshot
+            normalStrategy: NORMAL_STRATEGY,
+            allowDirtyRepo: true,
+            preReleaseStrategy: all(Strategies.PreRelease.WITH_BRANCH_NAME,
+                                    Strategies.PreRelease.COUNT_COMMITS_SINCE_ANY),
     )
 }
