@@ -203,33 +203,33 @@ class VersionPluginSpec extends ProjectSpec {
 
         where:
         nearestAny      | distance | stage      | scope   | branchName      | expectedVersion
-        _               | 1        | "snapshot" | _       | "master"        | "1.0.1-master00001"
+        _               | 1        | "snapshot" | _       | "master"        | "1.1.0-master00001"
         _               | 2        | "snapshot" | "major" | "master"        | "2.0.0-master00002"
         _               | 3        | "snapshot" | "minor" | "master"        | "1.1.0-master00003"
         _               | 4        | "snapshot" | "patch" | "master"        | "1.0.1-master00004"
 
-        _               | 1        | "snapshot" | _       | "develop"       | "1.0.1-branchDevelop00001"
+        _               | 1        | "snapshot" | _       | "develop"       | "1.1.0-branchDevelop00001"
         _               | 2        | "snapshot" | "major" | "develop"       | "2.0.0-branchDevelop00002"
         _               | 3        | "snapshot" | "minor" | "develop"       | "1.1.0-branchDevelop00003"
         _               | 4        | "snapshot" | "patch" | "develop"       | "1.0.1-branchDevelop00004"
 
-        _               | 1        | "snapshot" | _       | "feature/check" | "1.0.1-branchFeatureCheck00001"
-        _               | 2        | "snapshot" | _       | "hotfix/check"  | "1.0.1-branchHotfixCheck00002"
-        _               | 3        | "snapshot" | _       | "fix/check"     | "1.0.1-branchFixCheck00003"
-        _               | 4        | "snapshot" | _       | "feature-check" | "1.0.1-branchFeatureCheck00004"
-        _               | 5        | "snapshot" | _       | "hotfix-check"  | "1.0.1-branchHotfixCheck00005"
-        _               | 6        | "snapshot" | _       | "fix-check"     | "1.0.1-branchFixCheck00006"
-        _               | 7        | "snapshot" | _       | "PR-22"         | "1.0.1-branchPRTwoTwo00007"
+        _               | 1        | "snapshot" | _       | "feature/check" | "1.1.0-branchFeatureCheck00001"
+        _               | 2        | "snapshot" | _       | "hotfix/check"  | "1.1.0-branchHotfixCheck00002"
+        _               | 3        | "snapshot" | _       | "fix/check"     | "1.1.0-branchFixCheck00003"
+        _               | 4        | "snapshot" | _       | "feature-check" | "1.1.0-branchFeatureCheck00004"
+        _               | 5        | "snapshot" | _       | "hotfix-check"  | "1.1.0-branchHotfixCheck00005"
+        _               | 6        | "snapshot" | _       | "fix-check"     | "1.1.0-branchFixCheck00006"
+        _               | 7        | "snapshot" | _       | "PR-22"         | "1.1.0-branchPRTwoTwo00007"
 
-        _               | 1        | "snapshot" | _       | "release/1.x"   | "1.0.1-branchReleaseOneDotx00001"
-        _               | 2        | "snapshot" | _       | "release-1.x"   | "1.0.1-branchReleaseOneDotx00002"
+        _               | 1        | "snapshot" | _       | "release/1.x"   | "1.1.0-branchReleaseOneDotx00001"
+        _               | 2        | "snapshot" | _       | "release-1.x"   | "1.1.0-branchReleaseOneDotx00002"
         _               | 3        | "snapshot" | _       | "release/1.0.x" | "1.0.1-branchReleaseOneDotZeroDotx00003"
         _               | 4        | "snapshot" | _       | "release-1.0.x" | "1.0.1-branchReleaseOneDotZeroDotx00004"
 
-        _               | 2        | "snapshot" | _       | "1.x"           | "1.0.1-branchOneDotx00002"
+        _               | 2        | "snapshot" | _       | "1.x"           | "1.1.0-branchOneDotx00002"
         _               | 4        | "snapshot" | _       | "1.0.x"         | "1.0.1-branchOneDotZeroDotx00004"
 
-        _               | 1        | "rc"       | _       | "master"        | "1.0.1-rc00001"
+        _               | 1        | "rc"       | _       | "master"        | "1.1.0-rc00001"
         _               | 2        | "rc"       | "major" | "master"        | "2.0.0-rc00001"
         _               | 3        | "rc"       | "minor" | "master"        | "1.1.0-rc00001"
         _               | 4        | "rc"       | "patch" | "master"        | "1.0.1-rc00001"
@@ -237,12 +237,12 @@ class VersionPluginSpec extends ProjectSpec {
         '1.1.0-rc00001' | 1        | "rc"       | _       | "master"        | "1.1.0-rc00002"
         '1.1.0-rc00002' | 1        | "rc"       | _       | "master"        | "1.1.0-rc00003"
 
-        _               | 1        | "rc"       | _       | "release/1.x"   | "1.0.1-rc00001"
-        _               | 2        | "rc"       | _       | "release-1.x"   | "1.0.1-rc00001"
+        _               | 1        | "rc"       | _       | "release/1.x"   | "1.1.0-rc00001"
+        _               | 2        | "rc"       | _       | "release-1.x"   | "1.1.0-rc00001"
         _               | 3        | "rc"       | _       | "release/1.0.x" | "1.0.1-rc00001"
         _               | 4        | "rc"       | _       | "release-1.0.x" | "1.0.1-rc00001"
 
-        _               | 1        | "rc"       | _       | "1.x"           | "1.0.1-rc00001"
+        _               | 1        | "rc"       | _       | "1.x"           | "1.1.0-rc00001"
         _               | 3        | "rc"       | _       | "1.0.x"         | "1.0.1-rc00001"
 
         "1.1.0-rc00001" | 1        | "rc"       | _       | "release/1.x"   | "1.1.0-rc00002"
@@ -253,18 +253,18 @@ class VersionPluginSpec extends ProjectSpec {
         "1.1.0-rc00001" | 1        | "rc"       | _       | "1.x"           | "1.1.0-rc00002"
         "1.0.1-rc00001" | 3        | "rc"       | _       | "1.0.x"         | "1.0.1-rc00002"
 
-        _               | 1        | "final"    | _       | "master"        | "1.0.1"
+        _               | 1        | "final"    | _       | "master"        | "1.1.0"
         _               | 2        | "final"    | "major" | "master"        | "2.0.0"
         _               | 3        | "final"    | "minor" | "master"        | "1.1.0"
         _               | 4        | "final"    | "patch" | "master"        | "1.0.1"
 
-        _               | 1        | "final"    | _       | "release/1.x"   | "1.0.1"
-        _               | 1        | "final"    | _       | "release/1.x"   | "1.0.1"
-        _               | 2        | "final"    | _       | "release-1.x"   | "1.0.1"
+        _               | 1        | "final"    | _       | "release/1.x"   | "1.1.0"
+        _               | 1        | "final"    | _       | "release/1.x"   | "1.1.0"
+        _               | 2        | "final"    | _       | "release-1.x"   | "1.1.0"
         _               | 3        | "final"    | _       | "release/1.0.x" | "1.0.1"
         _               | 4        | "final"    | _       | "release-1.0.x" | "1.0.1"
 
-        _               | 1        | "final"    | _       | "1.x"           | "1.0.1"
+        _               | 1        | "final"    | _       | "1.x"           | "1.1.0"
         _               | 3        | "final"    | _       | "1.0.x"         | "1.0.1"
 
         nearestNormal = '1.0.0'
@@ -325,34 +325,34 @@ class VersionPluginSpec extends ProjectSpec {
 
         where:
         nearestAny       | distance | stage      | scope   | branchName      | expectedVersion
-        _                | 1        | "snapshot" | _       | "master"        | "1.0.1-master00001"
+        _                | 1        | "snapshot" | _       | "master"        | "1.1.0-master00001"
         _                | 2        | "snapshot" | "major" | "master"        | "2.0.0-master00002"
         _                | 3        | "snapshot" | "minor" | "master"        | "1.1.0-master00003"
         _                | 4        | "snapshot" | "patch" | "master"        | "1.0.1-master00004"
 
-        _                | 1        | "snapshot" | _       | "develop"       | "1.0.1-branchDevelop00001"
+        _                | 1        | "snapshot" | _       | "develop"       | "1.1.0-branchDevelop00001"
         _                | 2        | "snapshot" | "major" | "develop"       | "2.0.0-branchDevelop00002"
         _                | 3        | "snapshot" | "minor" | "develop"       | "1.1.0-branchDevelop00003"
         _                | 4        | "snapshot" | "patch" | "develop"       | "1.0.1-branchDevelop00004"
 
-        _                | 1        | "snapshot" | _       | "feature/check" | "1.0.1-branchFeatureCheck00001"
-        _                | 2        | "snapshot" | _       | "hotfix/check"  | "1.0.1-branchHotfixCheck00002"
-        _                | 3        | "snapshot" | _       | "fix/check"     | "1.0.1-branchFixCheck00003"
-        _                | 4        | "snapshot" | _       | "feature-check" | "1.0.1-branchFeatureCheck00004"
-        _                | 5        | "snapshot" | _       | "hotfix-check"  | "1.0.1-branchHotfixCheck00005"
-        _                | 6        | "snapshot" | _       | "fix-check"     | "1.0.1-branchFixCheck00006"
-        _                | 7        | "snapshot" | _       | "PR-22"         | "1.0.1-branchPRTwoTwo00007"
+        _                | 1        | "snapshot" | _       | "feature/check" | "1.1.0-branchFeatureCheck00001"
+        _                | 2        | "snapshot" | _       | "hotfix/check"  | "1.1.0-branchHotfixCheck00002"
+        _                | 3        | "snapshot" | _       | "fix/check"     | "1.1.0-branchFixCheck00003"
+        _                | 4        | "snapshot" | _       | "feature-check" | "1.1.0-branchFeatureCheck00004"
+        _                | 5        | "snapshot" | _       | "hotfix-check"  | "1.1.0-branchHotfixCheck00005"
+        _                | 6        | "snapshot" | _       | "fix-check"     | "1.1.0-branchFixCheck00006"
+        _                | 7        | "snapshot" | _       | "PR-22"         | "1.1.0-branchPRTwoTwo00007"
 
-        _                | 1        | "snapshot" | _       | "release/1.x"   | "1.0.1-branchReleaseOneDotx00001"
-        _                | 2        | "snapshot" | _       | "release-1.x"   | "1.0.1-branchReleaseOneDotx00002"
+        _                | 1        | "snapshot" | _       | "release/1.x"   | "1.1.0-branchReleaseOneDotx00001"
+        _                | 2        | "snapshot" | _       | "release-1.x"   | "1.1.0-branchReleaseOneDotx00002"
         _                | 3        | "snapshot" | _       | "release/1.0.x" | "1.0.1-branchReleaseOneDotZeroDotx00003"
         _                | 4        | "snapshot" | _       | "release-1.0.x" | "1.0.1-branchReleaseOneDotZeroDotx00004"
 
-        _                | 2        | "snapshot" | _       | "1.x"           | "1.0.1-branchOneDotx00002"
+        _                | 2        | "snapshot" | _       | "1.x"           | "1.1.0-branchOneDotx00002"
         _                | 4        | "snapshot" | _       | "1.0.x"         | "1.0.1-branchOneDotZeroDotx00004"
 
         // Pre uses timestamp
-        _                | 1        | "pre"      | _       | "master"        | "1.0.1-pre#TIMESTAMP"
+        _                | 1        | "pre"      | _       | "master"        | "1.1.0-pre#TIMESTAMP"
         _                | 2        | "pre"      | "major" | "master"        | "2.0.0-pre#TIMESTAMP"
         _                | 3        | "pre"      | "minor" | "master"        | "1.1.0-pre#TIMESTAMP"
         _                | 4        | "pre"      | "patch" | "master"        | "1.0.1-pre#TIMESTAMP"
@@ -360,12 +360,12 @@ class VersionPluginSpec extends ProjectSpec {
         '1.1.0-pre00001' | 1        | "pre"      | _       | "master"        | "1.1.0-pre#TIMESTAMP"
         '1.1.0-pre00002' | 1        | "pre"      | _       | "master"        | "1.1.0-pre#TIMESTAMP"
 
-        _                | 1        | "pre"      | _       | "release/1.x"   | "1.0.1-pre#TIMESTAMP"
-        _                | 2        | "pre"      | _       | "release-1.x"   | "1.0.1-pre#TIMESTAMP"
+        _                | 1        | "pre"      | _       | "release/1.x"   | "1.1.0-pre#TIMESTAMP"
+        _                | 2        | "pre"      | _       | "release-1.x"   | "1.1.0-pre#TIMESTAMP"
         _                | 3        | "pre"      | _       | "release/1.0.x" | "1.0.1-pre#TIMESTAMP"
         _                | 4        | "pre"      | _       | "release-1.0.x" | "1.0.1-pre#TIMESTAMP"
 
-        _                | 1        | "pre"      | _       | "1.x"           | "1.0.1-pre#TIMESTAMP"
+        _                | 1        | "pre"      | _       | "1.x"           | "1.1.0-pre#TIMESTAMP"
         _                | 3        | "pre"      | _       | "1.0.x"         | "1.0.1-pre#TIMESTAMP"
 
         "1.1.0-pre00001" | 1        | "pre"      | _       | "release/1.x"   | "1.1.0-pre#TIMESTAMP"
@@ -378,7 +378,7 @@ class VersionPluginSpec extends ProjectSpec {
 
         _                | 4        | "pre"      | _       | "1.0.x"         | "1.0.1-pre#TIMESTAMP"
 
-        _                | 1        | "rc"       | _       | "master"        | "1.0.1-rc00001"
+        _                | 1        | "rc"       | _       | "master"        | "1.1.0-rc00001"
         _                | 2        | "rc"       | "major" | "master"        | "2.0.0-rc00001"
         _                | 3        | "rc"       | "minor" | "master"        | "1.1.0-rc00001"
         _                | 4        | "rc"       | "patch" | "master"        | "1.0.1-rc00001"
@@ -386,12 +386,12 @@ class VersionPluginSpec extends ProjectSpec {
         '1.1.0-rc00001'  | 1        | "rc"       | _       | "master"        | "1.1.0-rc00002"
         '1.1.0-rc00002'  | 1        | "rc"       | _       | "master"        | "1.1.0-rc00003"
 
-        _                | 1        | "rc"       | _       | "release/1.x"   | "1.0.1-rc00001"
-        _                | 2        | "rc"       | _       | "release-1.x"   | "1.0.1-rc00001"
+        _                | 1        | "rc"       | _       | "release/1.x"   | "1.1.0-rc00001"
+        _                | 2        | "rc"       | _       | "release-1.x"   | "1.1.0-rc00001"
         _                | 3        | "rc"       | _       | "release/1.0.x" | "1.0.1-rc00001"
         _                | 4        | "rc"       | _       | "release-1.0.x" | "1.0.1-rc00001"
 
-        _                | 1        | "rc"       | _       | "1.x"           | "1.0.1-rc00001"
+        _                | 1        | "rc"       | _       | "1.x"           | "1.1.0-rc00001"
         _                | 3        | "rc"       | _       | "1.0.x"         | "1.0.1-rc00001"
 
         "1.1.0-rc00001"  | 1        | "rc"       | _       | "release/1.x"   | "1.1.0-rc00002"
@@ -402,18 +402,18 @@ class VersionPluginSpec extends ProjectSpec {
         "1.1.0-rc00001"  | 1        | "rc"       | _       | "1.x"           | "1.1.0-rc00002"
         "1.0.1-rc00001"  | 3        | "rc"       | _       | "1.0.x"         | "1.0.1-rc00002"
 
-        _                | 1        | "final"    | _       | "master"        | "1.0.1"
+        _                | 1        | "final"    | _       | "master"        | "1.1.0"
         _                | 2        | "final"    | "major" | "master"        | "2.0.0"
         _                | 3        | "final"    | "minor" | "master"        | "1.1.0"
         _                | 4        | "final"    | "patch" | "master"        | "1.0.1"
 
-        _                | 1        | "final"    | _       | "release/1.x"   | "1.0.1"
-        _                | 1        | "final"    | _       | "release/1.x"   | "1.0.1"
-        _                | 2        | "final"    | _       | "release-1.x"   | "1.0.1"
+        _                | 1        | "final"    | _       | "release/1.x"   | "1.1.0"
+        _                | 1        | "final"    | _       | "release/1.x"   | "1.1.0"
+        _                | 2        | "final"    | _       | "release-1.x"   | "1.1.0"
         _                | 3        | "final"    | _       | "release/1.0.x" | "1.0.1"
         _                | 4        | "final"    | _       | "release-1.0.x" | "1.0.1"
 
-        _                | 1        | "final"    | _       | "1.x"           | "1.0.1"
+        _                | 1        | "final"    | _       | "1.x"           | "1.1.0"
         _                | 3        | "final"    | _       | "1.0.x"         | "1.0.1"
 
         nearestNormal = '1.0.0'
@@ -466,7 +466,7 @@ class VersionPluginSpec extends ProjectSpec {
         project.versionCode.toString() == expectedVersionCode.toString()
 
         where:
-        nearestNormal | nearestAny        | distance | stage      | scope   | branchName | versionCodeScheme             | expectedVersion   | expectedVersionCode
+        nearestNormal | nearestAny        | distance | stage      | scope   | branchName | versionCodeScheme              | expectedVersion   | expectedVersionCode
         _             | _                 | 1        | "snapshot" | _       | "master"   | VersionCodeSchemes.semver      | "0.1.0-master.2"  | 1000
         _             | _                 | 2        | "snapshot" | "major" | "master"   | VersionCodeSchemes.semver      | "1.0.0-master.3"  | 100000
         _             | _                 | 3        | "snapshot" | "minor" | "master"   | VersionCodeSchemes.semver      | "0.1.0-master.4"  | 1000
@@ -562,13 +562,13 @@ class VersionPluginSpec extends ProjectSpec {
         project.versionCode.toString() == expectedVersionCode.toString()
 
         where:
-        numberOfFinalReleases | numberOfPrereleases | offset | scheme                              | expectedVersionCode
+        numberOfFinalReleases | numberOfPrereleases | offset | scheme                               | expectedVersionCode
         5                     | 5                   | 0      | VersionCodeSchemes.releaseCountBasic | 5
         5                     | 5                   | 3      | VersionCodeSchemes.releaseCountBasic | 8
         10                    | 2                   | 0      | VersionCodeSchemes.releaseCount      | 14
         7                     | 0                   | 5      | VersionCodeSchemes.releaseCount      | 12
         3                     | 8                   | 5      | VersionCodeSchemes.none              | 0
-        3                     | 8                   | 5      | _                                   | 0
+        3                     | 8                   | 5      | _                                    | 0
     }
 
 
@@ -826,7 +826,7 @@ class VersionPluginSpec extends ProjectSpec {
         scopeTitle = (scope == _) ? "unset" : scope
     }
 
-    @IgnoreIf({os.isWindows()})
+    @IgnoreIf({ os.isWindows() })
     @Unroll('verify inferred semver 2.x version from productionMarker: #productionMarkerTitle, ciMarker: #ciMarkerTitle, stage: #stage and branch: #branchName to be #expectedVersion')
     def "uses custom wooga application strategies static marker"() {
         given: "a project with specified release stage and scope"
@@ -994,13 +994,13 @@ class VersionPluginSpec extends ProjectSpec {
         project.version.toString() == expectedVersion
 
         where:
-        nearestNormal | nearestAny | distance | stage      | scope | scheme                | branchName | prefixTag | expectedVersion
-        '1.0.0'       | _          | 1        | "ci"       | _     | VersionSchemes.semver2 | "master" | true  | "1.1.0-master.1"
-        '1.0.0'       | _          | 1        | "ci"       | _     | VersionSchemes.semver2 | "master" | false | "1.1.0-master.1"
-        '1.0.0'       | _          | 1        | "snapshot" | _     | VersionSchemes.semver  | "master" | true  | "1.0.1-master00001"
-        '1.0.0'       | _          | 1        | "snapshot" | _     | VersionSchemes.semver  | "master" | false | "1.0.1-master00001"
-        _             | _          | 1        | "ci"       | _     | VersionSchemes.semver2 | "master" | false | "0.1.0-master.2"
-        _             | _          | 1        | "snapshot" | _     | VersionSchemes.semver  | "master" | false | "0.0.1-master00002"
+        nearestNormal | nearestAny | distance | stage      | scope | scheme                 | branchName | prefixTag | expectedVersion
+        '1.0.0'       | _          | 1        | "ci"       | _     | VersionSchemes.semver2 | "master"   | true      | "1.1.0-master.1"
+        '1.0.0'       | _          | 1        | "ci"       | _     | VersionSchemes.semver2 | "master"   | false     | "1.1.0-master.1"
+        '1.0.0'       | _          | 1        | "snapshot" | _     | VersionSchemes.semver  | "master"   | true      | "1.1.0-master00001"
+        '1.0.0'       | _          | 1        | "snapshot" | _     | VersionSchemes.semver  | "master"   | false     | "1.1.0-master00001"
+        _             | _          | 1        | "ci"       | _     | VersionSchemes.semver2 | "master"   | false     | "0.1.0-master.2"
+        _             | _          | 1        | "snapshot" | _     | VersionSchemes.semver  | "master"   | false     | "0.1.0-master00002"
         nearestAnyTitle = (nearestAny == _) ? "unset" : nearestAny
         scopeTitle = (scope == _) ? "unset" : scope
         tagPrefix = (prefixTag) ? "v" : ""
@@ -1069,12 +1069,12 @@ class VersionPluginSpec extends ProjectSpec {
 
         where:
         branchName          | expectedVersion
-        "master"            | "1.0.1-master00001"
-        "with/slash"        | "1.0.1-branchWithSlash00001"
-        "numbers0123456789" | "1.0.1-branchNumbersZeroOneTwoThreeFourFiveSixSevenEightNine00001"
-        "with/slash"        | "1.0.1-branchWithSlash00001"
-        "with_underscore"   | "1.0.1-branchWithUnderscore00001"
-        "with-dash"         | "1.0.1-branchWithDash00001"
+        "master"            | "1.1.0-master00001"
+        "with/slash"        | "1.1.0-branchWithSlash00001"
+        "numbers0123456789" | "1.1.0-branchNumbersZeroOneTwoThreeFourFiveSixSevenEightNine00001"
+        "with/slash"        | "1.1.0-branchWithSlash00001"
+        "with_underscore"   | "1.1.0-branchWithUnderscore00001"
+        "with-dash"         | "1.1.0-branchWithDash00001"
     }
 
     def "can set custom version directly by property in provided extension"() {
