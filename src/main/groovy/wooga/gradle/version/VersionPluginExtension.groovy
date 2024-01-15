@@ -251,7 +251,7 @@ trait VersionPluginExtension implements BaseSpec {
     }
 
     void setScope(String scope) {
-        this.scope.set(ChangeScope.valueOf(scope.trim()))
+        this.scope.set(ChangeScope.valueOf(scope.trim().toUpperCase()))
     }
 
     private final Property<String> prefix = objects.property(String)

@@ -53,7 +53,7 @@ class VersionPluginMultiProjectIntegrationSpec extends VersionIntegrationSpec {
                     ${applyPlugin(VersionPlugin)}
                     versionBuilder.prefix = ${wrapValueBasedOnType(it.prefix, String)}
                     versionBuilder.stage.set(${wrapValueBasedOnType(it.stage, String)})
-                    versionBuilder.scope = provider{ ${wrapValueBasedOnType(it.scope, "ChangeScope")} }
+                    versionBuilder.scope = ${wrapValueBasedOnType(it.scope, String)}
                     versionBuilder.versionScheme = ${wrapValueBasedOnType(it.versionScheme, String)}
                     versionBuilder.versionCodeScheme = ${wrapValueBasedOnType(it.versionCodeScheme, String)}
 
@@ -87,7 +87,7 @@ class VersionPluginMultiProjectIntegrationSpec extends VersionIntegrationSpec {
                 prefix: "proj1-",
                 nearestNormal: "0.0.1",
                 stage: "final",
-                scope: ChangeScope.MINOR,
+                scope: "MINOR",
                 versionScheme: "semver",
                 versionCodeScheme: VersionCodeSchemes.releaseCountBasic,
                 newVersion: "0.1.0",
@@ -99,7 +99,7 @@ class VersionPluginMultiProjectIntegrationSpec extends VersionIntegrationSpec {
                 prefix: "proj2-",
                 nearestNormal: "1.0.0",
                 stage: "rc",
-                scope: ChangeScope.MAJOR,
+                scope: 'major',
                 versionScheme: "semver2",
                 versionCodeScheme: VersionCodeSchemes.semver,
                 newVersion: "2.0.0-rc.1",
