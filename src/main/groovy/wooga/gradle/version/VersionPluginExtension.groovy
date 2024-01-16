@@ -271,33 +271,37 @@ trait VersionPluginExtension implements BaseSpec {
         this.prefix.set(prefix)
     }
 
-    private final Provider<Boolean> isDevelopment = canRunStageWithName(ReleaseStage.Development, stage)
-    private final Provider<Boolean> isSnapshot = canRunStageWithName(ReleaseStage.Snapshot, stage)
-    private final Provider<Boolean> isPrerelease = canRunStageWithName(ReleaseStage.Prerelease, stage)
-    private final Provider<Boolean> isFinal = canRunStageWithName(ReleaseStage.Final, stage)
-
-    private final Provider<ReleaseStage> releaseStage = providers.provider { ->
-        if (isDevelopment.getOrElse(false)) {
-            return ReleaseStage.Development
-        } else if (isSnapshot.getOrElse(false)) {
-            return ReleaseStage.Snapshot
-        } else if (isPrerelease.getOrElse(false)) {
-            return ReleaseStage.Prerelease
-        } else if (isFinal.getOrElse(false)) {
-            return ReleaseStage.Final
-        } else {
-            return versionScheme.flatMap{scheme ->
-                stage.map {stageName -> scheme.findStageForStageName(stageName) }
-            }.orNull
-        }
-    }.orElse(ReleaseStage.Unknown)
-
     /**
      * @return The deduced release stage for this build
      */
     Provider<ReleaseStage> getReleaseStage() {
-        releaseStage
+        return providers.provider { ->
+            def canRunDevelopment = canRunStageWithName(ReleaseStage.Development, stage)
+            def canRunSnapshot = canRunStageWithName(ReleaseStage.Snapshot, stage)
+            def canRunPrerelease = canRunStageWithName(ReleaseStage.Prerelease, stage)
+            def canRunFinal = canRunStageWithName(ReleaseStage.Final, stage)
+            if (canRunDevelopment.getOrElse(false)) {
+                return ReleaseStage.Development
+            } else if (canRunSnapshot.getOrElse(false)) {
+                return ReleaseStage.Snapshot
+            } else if (canRunPrerelease.getOrElse(false)) {
+                return ReleaseStage.Prerelease
+            } else if (canRunFinal.getOrElse(false)) {
+                return ReleaseStage.Final
+            } else {
+                return versionScheme.flatMap{scheme ->
+                    stage.map {stageName -> scheme.findStageForStageName(stageName) }
+                }.orNull
+            }
+        }.orElse(ReleaseStage.Unknown)
     }
+
+
+    final Provider<Boolean> isDevelopment = getReleaseStage().map {it == ReleaseStage.Development }
+    final Provider<Boolean> isSnapshot = getReleaseStage().map {it == ReleaseStage.Snapshot }
+    final Provider<Boolean> isPrerelease = getReleaseStage().map {it == ReleaseStage.Prerelease }
+    final Provider<Boolean> isFinal = getReleaseStage().map {it == ReleaseStage.Final }
+
 
     /**
      * Infers the next version for this project based on extension information and underlying git repository tags.
