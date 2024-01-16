@@ -19,6 +19,7 @@ package wooga.gradle.version
 
 import nebula.test.ProjectSpec
 import org.ajoberstar.grgit.Grgit
+import org.gradle.api.provider.Provider
 import spock.lang.Ignore
 import spock.lang.IgnoreIf
 import spock.lang.Unroll
@@ -1092,4 +1093,30 @@ class VersionPluginSpec extends ProjectSpec {
         propertyName             | version
         "versionBuilder.version" | "1.2.3"
     }
+
+    def "#stageProperty extension property returns expected value on given #stage"() {
+        given:
+        project.plugins.apply(PLUGIN_NAME)
+        def extension = project.extensions.getByType(VersionPluginExtension)
+
+        when:
+        extension.stage = stage
+
+        then:
+        def stageProvider = extension.properties[stageProperty] as Provider<Boolean>
+        stageProvider.get() == true
+        (allStageProperties - [stageProperty]).each { propName ->
+            assert extension.properties[propName].get() == false, "$propName should return falses"
+        }
+
+        where:
+        stage      | stageProperty
+        "snapshot" | "isSnapshot"
+        "dev"      | "isDevelopment"
+        "rc"       | "isPrerelease"
+        "final"    | "isFinal"
+
+        allStageProperties = ["isSnapshot", "isDevelopment", "isPrerelease", "isFinal"]
+    }
+
 }
