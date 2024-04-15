@@ -53,9 +53,9 @@ class VersionPlugin implements Plugin<Project> {
     }
 
     private static void setProjectVersion(Project project, VersionPluginExtension extension) {
-        def sharedVersion = new ToStringProvider(extension.version.map({ it.version }))
+        def versionProvider = new ToStringProvider(extension.version.map({ it.version }.memoize()))
         applyOnCurrentAndSubProjects(project) { Project prj ->
-            prj.setVersion(sharedVersion)
+            prj.setVersion(versionProvider)
             def versionCodeExt = project.extensions.findByName(VERSION_CODE_EXTENSION_NAME) as VersionCodeExtension
             if(!versionCodeExt) {
                 versionCodeExt = DefaultVersionCodeExtension.empty(prj, VERSION_CODE_EXTENSION_NAME)
