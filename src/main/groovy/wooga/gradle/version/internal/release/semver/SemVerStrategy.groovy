@@ -137,20 +137,24 @@ final class SemVerStrategy implements DefaultVersionStrategy {
      * Composes a string detailing the current repository staged/unstaged files
      */
     static String composeRepositoryStatus(Status status) {
-        StringBuilder str = new StringBuilder()
+        StringBuilder builder = new StringBuilder()
 
         Closure printChangeSet = { label, changeSet ->
-            str.append("\n> ${label}\n")
-            str.append(changeSet.added.collect({ "[ADDED] ${it}" }).join("\n"))
-            str.append(changeSet.modified.collect({ "[MODIFIED] ${it}" }).join("\n"))
-            str.append(changeSet.removed.collect({ "[REMOVED] ${it}" }).join("\n"))
+            builder.append("\n> ${label}\n")
+
+            List<String> lines  = []
+            lines.addAll(changeSet.added.collect({ "[ADDED] ${it}" }))
+            lines.addAll(changeSet.modified.collect({ "[MODIFIED] ${it}"}))
+            lines.addAll(changeSet.removed.collect({ "[REMOVED] ${it}"}))
+
+            builder.append(lines.join("\n"))
         }
 
-        str.append("Repository Status:")
-        printChangeSet("Staged", status.staged)
-        printChangeSet("Unstaged", status.unstaged)
+        builder.append("Git Repository Status:")
+        printChangeSet("Staged Files", status.staged)
+        printChangeSet("Unstaged Files", status.unstaged)
 
-        str.toString()
+        builder.toString()
     }
 
     /**
@@ -158,7 +162,6 @@ final class SemVerStrategy implements DefaultVersionStrategy {
      * strategies in order to infer the version. If the {@code release.stage} is not set, uses the
      * first value in the {@code stages} set (i.e. the one with the lowest precedence). After inferring
      * the version precedence will be enforced, if required by this strategy.
-     *
      */
     @Override
     ReleaseVersion infer(VersionInferenceParameters params) {
