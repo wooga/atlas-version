@@ -36,7 +36,8 @@ class VersionCode {
         }),
         releaseCount(VersionCodeSchemes.releaseCount, {
             GitVersionRepository git, int offset -> generateBuildNumberVersionCode(git, true) + offset
-        })
+        }),
+        timestamp(VersionCodeSchemes.timestamp, { -> generateBuildTimeVersionCode()});
 
         private final VersionCodeSchemes external
         private final Closure<Integer> generator
@@ -147,4 +148,16 @@ class VersionCode {
     static Integer generateBuildNumberVersionCode(GitVersionRepository versionRepo, Boolean countPrerelease = true) {
         return versionRepo.countReachableVersions(countPrerelease) + 1
     }
+
+    /**
+     * Returns the time since 1.1.2024 in seconds
+     * should fit in 31 bits (we need one for the sign) for about 68 years until 2092
+     * @return
+     */
+    static Integer generateBuildTimeVersionCode() {
+        def date = new Date()
+        def buildTime = date.getTime() - 1704063600000 // 1.1.2024
+        return (int)(buildTime / 1000)
+    }
+
 }

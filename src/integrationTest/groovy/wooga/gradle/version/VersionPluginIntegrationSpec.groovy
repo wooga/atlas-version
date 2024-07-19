@@ -114,6 +114,8 @@ class VersionPluginIntegrationSpec extends VersionIntegrationSpec {
         "versionCodeScheme"    | "releaseCount"      | VersionCodeSchemes.releaseCount      | PropertyLocation.property
         "versionCodeScheme"    | "semver"            | VersionCodeSchemes.semver            | PropertyLocation.property
         "versionCodeScheme"    | "none"              | VersionCodeSchemes.none              | PropertyLocation.property
+        "versionCodeScheme"    | "timestamp"         | VersionCodeSchemes.timestamp         | PropertyLocation.environment
+        "versionCodeScheme"    | "timestamp"         | VersionCodeSchemes.timestamp         | PropertyLocation.property
         "versionCodeOffset"    | 100                 | _                                    | PropertyLocation.environment
         "versionCodeOffset"    | 200                 | _                                    | PropertyLocation.property
         "releaseBranchPattern" | /^m.*/              | _                                    | PropertyLocation.property
@@ -179,6 +181,10 @@ class VersionPluginIntegrationSpec extends VersionIntegrationSpec {
         "versionCodeScheme"    | "setVersionCodeScheme"     | "releaseCount"                       | "String"
         "versionCodeScheme"    | "setVersionCodeScheme"     | VersionCodeSchemes.none              | "VersionCodeScheme"
         "versionCodeScheme"    | "setVersionCodeScheme"     | VersionCodeSchemes.releaseCount      | "Provider<VersionCodeScheme>"
+        "versionCodeScheme"    | "versionCodeScheme"        | "timestamp"                          | "String"
+        "versionCodeScheme"    | "versionCodeScheme"        | VersionCodeSchemes.timestamp         | "Provider<VersionCodeScheme>"
+        "versionCodeScheme"    | "versionCodeScheme.set"    | VersionCodeSchemes.timestamp         | "Provider<VersionCodeScheme>"
+
 
         "versionCodeOffset"    | "versionCodeOffset"        | 1                                    | "Integer"
         "versionCodeOffset"    | "versionCodeOffset"        | 2                                    | "Provider<Integer>"
@@ -318,5 +324,33 @@ class VersionPluginIntegrationSpec extends VersionIntegrationSpec {
         "version" | "1.2.3" | PropertyLocation.environment
         extensionName = "versionBuilder"
     }
+
+    // tests that timestamp versioncode scheme generates different versionCodes when called twice 2 seconds apart
+    def "timestamp versionCode scheme generates different versionCodes"() {
+        given: "a timestamp version scheme setting"
+        buildFile << """
+            versionBuilder {
+                versionCodeScheme = "timestamp"
+            }
+        """
+
+        def query = new PropertyQueryTaskWriter("project.versionCode", "")
+        query.write(buildFile)
+
+        when: "executing the task twice with a 2 second delay"
+
+        def version1 = query.getValue(runTasksSuccessfully(query.taskName)).toInteger()
+        // wait 2 seconds
+        Thread.sleep(2000)
+        def version2 = query.getValue(runTasksSuccessfully(query.taskName)).toInteger()
+
+        then:
+        version2 > version1
+        // sanity check, version is bigger than the difference from 1.1.2024 until the time of this test
+        version1 > 17280000
+    }
+
+
+
 
 }

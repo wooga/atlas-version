@@ -23,5 +23,6 @@ enum VersionCodeSchemes {
     semverBasic,
     semver,
     releaseCountBasic,
-    releaseCount
+    releaseCount,
+    timestamp
 }
